@@ -1,0 +1,85 @@
+{
+  "repo": "cli/cli",
+  "cases": [
+    {
+      "target": "v2.40.0",
+      "previous": "v2.39.2",
+      "window_start": "2023-11-27T18:04:17Z",
+      "window_end": "2023-12-07T15:06:02Z",
+      "window_business_days": 7.88,
+      "prs_merged_total": 11,
+      "prs_merged_non_bot": 11,
+      "prs_with_closing_keyword": 6,
+      "issues_closed_completed": 10,
+      "cycle_time_business_days": {
+        "n": 11,
+        "p5": 0.006782407407407407,
+        "p10": 0.007291666666666667,
+        "p50": 2.4327893518518517,
+        "p90": 9.590590277777777,
+        "p95": 10.220908564814813,
+        "mean": 3.884917929292929
+      },
+      "top_labels": [
+        [
+          "external",
+          9
+        ],
+        [
+          "discuss",
+          1
+        ]
+      ]
+    },
+    {
+      "target": "v2.41.0",
+      "previous": "v2.40.0",
+      "window_start": "2023-12-07T15:06:02Z",
+      "window_end": "2024-01-08T14:16:24Z",
+      "window_business_days": 21.97,
+      "prs_merged_total": 16,
+      "prs_merged_non_bot": 13,
+      "prs_with_closing_keyword": 6,
+      "issues_closed_completed": 19,
+      "cycle_time_business_days": {
+        "n": 13,
+        "p5": 0.006541666666666667,
+        "p10": 0.006833333333333334,
+        "p50": 0.060578703703703704,
+        "p90": 4.19321990740741,
+        "p95": 9.882243055555538,
+        "mean": 2.072881054131054
+      },
+      "top_labels": [
+        [
+          "external",
+          10
+        ],
+        [
+          "discuss",
+          1
+        ]
+      ]
+    },
+    {
+      "target": "v2.46.0 (janela ampliada)",
+      "previous": "v2.40.0",
+      "window_start": "2023-12-07T15:06:02Z",
+      "window_end": "2024-03-20T17:08:24Z",
+      "window_business_days": 74.08,
+      "prs_merged_total": 72,
+      "prs_merged_non_bot": 62,
+      "prs_with_closing_keyword": 32,
+      "issues_closed_completed": 92,
+      "cycle_time_business_days": {
+        "n": 62,
+        "p5": 0.006829861111111111,
+        "p10": 0.01055787037037037,
+        "p50": 1.1055439814814814,
+        "p90": 28.992153935185176,
+        "p95": 47.14089178240739,
+        "mean": 9.445007653823177
+      }
+    }
+  ]
+}
