@@ -30,13 +30,13 @@
 
 ## Visão Geral
 
-Projetos de software em ciclos iterativos ou híbridos sofrem com desvios crônicos de prazo causados pela desconexão entre eventos reais de engenharia (PRs, *issues*, falhas de CI) e modelos formais de precedência ($FS$), agravados pelo **viés de convergência de caminhos** ($E[\max(X,Y)] \ge \max(E[X], E[Y])$). Paralelamente, conectar LLMs diretamente a repositórios sem isolamento expõe o projeto a **Injeção Indireta de Prompt (OWASP LLM01)**, **Divulgação de Dados Sensíveis (LLM02:2025)** e **Agência Excessiva (LLM06:2025)**, além de alucinações numéricas.
+Projetos de software em ciclos iterativos ou híbridos sofrem com desvios de prazo causados pela desconexão entre eventos reais de engenharia (PRs, *issues*, falhas de CI) e modelos formais de precedência ($FS$), agravados pelo **viés de convergência de caminhos** ($E[\max(X,Y)] \ge \max(E[X], E[Y])$). Paralelamente, conectar LLMs diretamente a repositórios sem isolamento expõe o projeto a **Injeção Indireta de Prompt (OWASP LLM01)**, **Divulgação de Dados Sensíveis (LLM02:2025)**, **Tratamento Inseguro de Saída (LLM05:2025)**, **Agência Excessiva (LLM06:2025)** e **Consumo Ilimitado (LLM10:2025)**, além de divergências numéricas em sínteses estocásticas.
 
 Este repositório reúne a especificação arquitetural, a monografia completa em LaTeX ([`Docs/Main.tex`](Docs/Main.tex)), os *scripts* auditáveis de dados/figuras e a **Prova de Conceito (`poc-engine`)** em **Go 1.22** de uma **Sombra Digital Governada de Processo** (taxonomia de Kritzinger):
 
 - **Sincronização automatizada (Físico $\rightarrow$ Virtual):** ingestão idempotente de *webhooks* GitHub/CI com validação HMAC-SHA256, *debounce* configurável (30 s) e progresso híbrido (incluindo tratamento explícito de `not_planned` e PRs abandonados).
-- **Motor Estocástico Determinístico (`poc-engine`):** ordenação topológica $\mathcal{O}(\lvert V\rvert+\lvert E\rvert)$, CPM exato e Simulação de Monte Carlo concorrente (PERT-Beta via Marsaglia-Tsang + riscos discretos de Bernoulli) com reprodutibilidade bit a bit via `SplitMix64(S0 ^ k)`.
-- **Governança de IA *Fail-Closed*:** agente LLM em sub-rede isolada (`ai-isolated-net`) sem driver ou rota SQL, restrito a uma *allowlist* sanitizada, classificador estático no servidor (Categorias 1 e 2 + negação por padrão), quarentena de `draft_risks`, cartão anti-persuasão com $\Delta P_{50}/\Delta P_{85}/\Delta \mathrm{IC}_i$ e trilha de auditoria encadeada por **SHA-256** com ancoragem externa **WORM**.
+- **Motor Estocástico Determinístico (`poc-engine`):** ordenação topológica $\mathcal{O}(\lvert V\rvert+\lvert E\rvert)$, CPM exato e Simulação de Monte Carlo concorrente (PERT-Beta via Marsaglia-Tsang + riscos discretos de Bernoulli) com reprodutibilidade determinística em função do índice de iteração via `SplitMix64(S0 ^ k)`, soma compensada de Kahan e cálculo de erro-padrão de Monte Carlo (MCSE).
+- **Governança de IA *Fail-Closed*:** agente LLM em sub-rede isolada (`ai-isolated-net`) sem driver ou rota SQL, restrito a uma *allowlist* sanitizada, classificador estático no servidor (Categorias 1 e 2 + negação por padrão), quarentena de `draft_risks`, cartão segregado com $\Delta P_{50}/\Delta P_{85}/\Delta \mathrm{IC}_i$, alerta simétrico de deriva (`±30%`) e trilha de auditoria encadeada por **SHA-256** com ancoragem externa **WORM**.
 
 ---
 
@@ -59,9 +59,9 @@ flowchart LR
 
 | Camada / Contêiner | Sub-rede Docker | Responsabilidade Central | Garantias Principais |
 | :--- | :--- | :--- | :--- |
-| **Core PM Service** (`Go`) | `core-net` + `ai-isolated-net` | Ingestão HMAC, construção da *allowlist*, classificação binária *fail-closed*, fila Cat. 2 e alertas (RF12) | Negação por padrão (`REJECTED`), verificação numérica ($\le 10^{-2}$), RBAC |
+| **Core PM Service** (`Go`) | `core-net` + `ai-isolated-net` | Ingestão HMAC, construção da *allowlist*, classificação binária *fail-closed*, fila Cat. 2 e alertas (RF12) | Negação por padrão (`REJECTED`), verificação numérica ($\pm 0{,}05$ / $\pm 0{,}01$), RBAC |
 | **PostgreSQL 16** | `core-net` | Estado versionado (`state_version`), cenários em `JSONB`, fila assíncrona e trilha de auditoria | `FOR UPDATE SKIP LOCKED`, `UPDATE`/`DELETE` revogados + cadeia SHA-256 ancorada |
-| **Simulation Worker** (`Go`) | `core-net` | Execução concorrente de CPM + 10.000 iterações Monte Carlo sem alocação no laço interno | Reprodutibilidade bit a bit (1/4/16 *workers*) e latência sub-segundo (`RNF06`) |
+| **Simulation Worker** (`Go`) | `core-net` | Execução concorrente de CPM + 10.000 iterações Monte Carlo com soma de Kahan e MCSE | Reprodutibilidade determinística por índice (1/4/16 *workers*) e latência `< 500 ms` (`RNF06`) |
 | **AI Agent Service** | `ai-isolated-net` | Consome apenas métricas e títulos sanitizados (120/280 chars) e retorna JSON validado por *schema* | Sem `libpq`/`pgx`, sem credenciais SQL, sem código-fonte ou PII |
 
 </details>
@@ -78,34 +78,35 @@ O núcleo estocástico implementado em [`Codigo/`](Codigo/) valida as propriedad
 
 | Validação | Configuração / Escopo | Resultado Medido | Requisito |
 | :--- | :--- | :--- | :--- |
-| **Viés de Convergência (Cenário A)** | Rede 4 tarefas (Figura 1), $N=10.000$, seed `42` | CPM = `10,83` d.u. vs. $P_{50}=11{,}39$ / $P_{85}=12{,}75$ d.u. ($38{,}3\%$ de cumprir meta $\le 11$) | RQ2, RF06 |
-| **Impacto de Mitigação (C vs. C$'$)** | Status $t_s=5$, risco R1 ($p_r=0{,}30, \Delta_r=2$) mitigado | $P_{85}$ cai de `12,77` para `12,20` d.u. ($\Delta P_{85}=-0{,}57$); $\mathrm{IC}_{\mathrm{T3}}$ cai de `78,4%` para `69,3%` | RF09, RQ2 |
-| **Teste KS PERT-Beta ($n=10^6$)** | `TestPertBetaKSGoodnessOfFit` ($D_{\mathrm{crit},0{,}05}=0{,}00136$) | Todas as tarefas T1–T4 aceitas ($D_n \in [0{,}00051;\, 0{,}00130]$, $p \in [0{,}068;\, 0{,}958]$) | RQ2 |
+| **Viés de Convergência (Cenário A)** | Rede 4 tarefas (Figura 1), $N=10.000$, seed `42` | CPM = `10,83` d.u. vs. Média `11,44 (±0,013)`, $P_{50}=11{,}39\text{ (±0,018)}$ / $P_{85}=12{,}75\text{ (±0,020)}$ d.u. | RQ2, RF06 |
+| **Impacto de Mitigação c/ CRN (C vs. C$'$)** | Status $t_s=5$, risco R1 ($p_r=0{,}30, \Delta_r=2$) mitigado | $P_{85}$ cai de `12,77 (±0,020)` para `12,20 (±0,016)` d.u. ($\Delta P_{85}=-0{,}57$); $\mathrm{IC}_{\mathrm{T3}}$ cai de `78,4%` para `69,3%` | RF09, RQ2 |
+| **Teste KS PERT-Beta ($n=10^6$)** | `TestPertBetaKSGoodnessOfFit` ($D_{\mathrm{crit},0{,}05}=0{,}00136$) | $H_0$ não rejeitada em T1–T4 ($D_n \in [0{,}00051;\, 0{,}00130]$, $p \in [0{,}068;\, 0{,}958]$) | RQ2 |
 | **Caso Degenerado ($t_o=t_m=t_p$)** | `TestDegeneratePertBetaZeroVariance` `(5, 5, 5)` | Duração exata `5,00000`, variância `0,00000`, zero `NaN` | RQ2 |
-| **Reprodutibilidade Concorrente** | `TestReproducibilityAcrossWorkers` (1, 4 e 16 *workers*) | Variação máxima `0,000000` em $P_{50}, P_{85}, P_{95}$, $P(F\le 11)$ e $\mathrm{IC}_{\mathrm{T3}}$ | RNF08 |
-| **Desempenho (1 vCPU Linux AMD64)** | Rede sintética 200 tarefas / 300 deps / 40 riscos (5 runs) | Mediana **`259,6 ms`** (`260,4 ± 4,12 ms`), **`38.520 it/s`**, folga **`3,9x`** abaixo de `1,0 s` | RNF06 |
+| **Reprodutibilidade por Índice** | `TestReproducibilityAcrossWorkers` (1, 4 e 16 *workers*) | Variação `0,000000` em Média Kahan (`11,899335`), $P_{50}, P_{85}, P_{95}$, $P(F\le 11)$ e $\mathrm{IC}_{\mathrm{T3}}$ | RNF08 |
+| **Desempenho (200 tarefas / 300 deps)** | Rede sintética em camadas ($N=10.000$, 5 repetições) | Mediana **`62,3 ms`** (8 *workers*) e **`259,6 ms`** (1 vCPU), abaixo da meta de `500 ms` do motor | RNF06 |
+| **Cronograma Pré-Registrado TCC 2** | `TestTCC2ScheduleMonteCarlo` (14 pacotes essenciais, 2 trilhas) | Base: $P_{50}=16{,}80$, $P_{85}=17{,}51$ sem. Com riscos discretos: $P_{50}=17{,}29$, $P_{85}=18{,}30$ sem. ($P(F\le 20)=99{,}6\%$) | Cap. 6 |
 
 <details>
-<summary><strong>Ver tabelas detalhadas: Cenários A–C′ e Teste Kolmogorov-Smirnov (10⁶ amostras)</strong></summary>
+<summary><strong>Ver tabelas detalhadas: Cenários A–C′ (com MCSE) e Teste Kolmogorov-Smirnov (10⁶ amostras)</strong></summary>
 
 #### Cenários da PoC ($N = 10.000$, semente `42`, meta $F \le 11{,}0$ d.u.)
 
-| Cenário | CPM ($F$) | $P_{50}$ | $P_{85}$ | $P_{95}$ | $P(F \le 11)$ | $\mathrm{IC}_{\mathrm{T2}}$ | $\mathrm{IC}_{\mathrm{T3}}$ |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **A.** Início do projeto, sem riscos | 10,83 | 11,39 | 12,75 | 13,64 | 38,3% | 51,1% | 48,9% |
-| **B.** Início, com R1 em T3 | 10,83 | 11,79 | 13,43 | 14,55 | 29,4% | 38,7% | 61,3% |
-| **C.** Status $t_s=5$, R1 ativo ($s_{r,3}=0{,}70$) | 11,02 | 11,47 | 12,77 | 13,55 | 32,2% | 21,6% | 78,4% |
-| **C$'$**. Como C, com R1 mitigado | 11,02 | 11,14 | 12,20 | 12,89 | 43,3% | 30,7% | 69,3% |
+| Cenário | CPM ($F$) | Média ($\pm$MCSE) | $P_{50}$ ($\pm$MCSE) | $P_{85}$ ($\pm$MCSE) | $P_{95}$ ($\pm$MCSE) | $P(F \le 11)$ | $\mathrm{IC}_{\mathrm{T2}}$ | $\mathrm{IC}_{\mathrm{T3}}$ |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **A.** Início do projeto, sem riscos | 10,83 | 11,44 (±0,013) | 11,39 (±0,018) | 12,75 (±0,020) | 13,64 (±0,033) | 38,3% | 51,1% | 48,9% |
+| **B.** Início, com R1 em T3 | 10,83 | 11,89 (±0,015) | 11,79 (±0,018) | 13,43 (±0,028) | 14,55 (±0,035) | 29,4% | 38,7% | 61,3% |
+| **C.** Status $t_s=5$, R1 ativo ($s_{r,3}=0{,}70$) | 11,02 | 11,58 (±0,011) | 11,47 (±0,014) | 12,77 (±0,020) | 13,55 (±0,031) | 32,2% | 21,6% | 78,4% |
+| **C$'$**. Como C, com R1 mitigado | 11,02 | 11,21 (±0,009) | 11,14 (±0,010) | 12,20 (±0,016) | 12,89 (±0,024) | 43,3% | 30,7% | 69,3% |
 
 #### Momentos Analíticos e Teste de Aderência Kolmogorov-Smirnov (`validation_test.go`)
 
-| Tarefa / Caso | $\mu$ analítica | $\mu$ amostral | $\sigma^2$ analítica | $\sigma^2$ amostral | Estatística KS ($D_n$) | *p-valor* KS |
+| Tarefa / Caso | $\mu$ analítica | $\mu$ amostral | $\sigma^2$ analítica | $\sigma^2$ amostral | Estatística KS ($D_n$) | Decisão KS ($\alpha=0{,}05$) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **T1** `(2, 3, 5)` | 3,16667 | 3,16628 | 0,30556 | 0,30549 | `0,00051` (`< 0,00136`) | `0,958` (Aceito) |
-| **T2** `(4, 5, 9)` | 5,50000 | 5,50073 | 0,75000 | 0,75055 | `0,00098` (`< 0,00136`) | `0,291` (Aceito) |
-| **T3** `(3, 5, 10)` | 5,50000 | 5,49985 | 1,60714 | 1,60472 | `0,00130` (`< 0,00136`) | `0,068` (Aceito) |
-| **T4** `(1, 2, 4)` | 2,16667 | 2,16628 | 0,30556 | 0,30549 | `0,00114` (`< 0,00136`) | `0,146` (Aceito) |
-| **Degenerado** `(5, 5, 5)` | 5,00000 | 5,00000 | 0,00000 | 0,00000 | `0,00000` (Exato) | `1,000` (Aceito) |
+| **T1** `(2, 3, 5)` | 3,16667 | 3,16628 | 0,30556 | 0,30549 | `0,00051` (`< 0,00136`) | `p = 0,958` ($H_0$ não rejeitada) |
+| **T2** `(4, 5, 9)` | 5,50000 | 5,50073 | 0,75000 | 0,75055 | `0,00098` (`< 0,00136`) | `p = 0,291` ($H_0$ não rejeitada) |
+| **T3** `(3, 5, 10)` | 5,50000 | 5,49985 | 1,60714 | 1,60472 | `0,00130` (`< 0,00136`) | `p = 0,068` ($H_0$ não rejeitada) |
+| **T4** `(1, 2, 4)` | 2,16667 | 2,16628 | 0,30556 | 0,30549 | `0,00114` (`< 0,00136`) | `p = 0,146` ($H_0$ não rejeitada) |
+| **Degenerado** `(5, 5, 5)` | 5,00000 | 5,00000 | 0,00000 | 0,00000 | `0,00000` (Exato) | `p = 1,000` ($H_0$ não rejeitada) |
 
 </details>
 
@@ -120,11 +121,11 @@ O núcleo estocástico implementado em [`Codigo/`](Codigo/) valida as propriedad
 ### Comandos
 
 ```bash
-# 1. Executar a simulação dos Cenários A, B, C e C' (exporta poc_results.json)
+# 1. Executar a simulação dos Cenários A–C' e do Cronograma TCC 2 (exporta poc_results.json e Docs/resultados_poc.tex)
 cd Codigo
 go run .
 
-# 2. Rodar toda a suíte de validação (ciclos, CPM, momentos, teste KS, degenerado e RNF08)
+# 2. Rodar toda a suíte de validação (ciclos, CPM, momentos, teste KS, degenerado, RNF08 e cronograma TCC 2)
 go test -v -count=1 ./...
 
 # 3. Rodar os benchmarks de desempenho e alocações em 5 repetições (RNF06)
@@ -132,11 +133,11 @@ go test -bench=Benchmark -benchmem -count=5
 ```
 
 ```bash
-# 4. Regenerar as 8 figuras PNG (RGB opaco 200 DPI otimizado para pdflatex/Overleaf)
-python Codigo/generate_figures.py
+# 4. Regenerar e sincronizar as 8 figuras PNG (RGB opaco 200 DPI otimizado para pdflatex/Overleaf)
+cd Codigo && python generate_figures.py
 
-# 5. Reextrair métricas históricas das janelas de release do GitHub CLI (cli/cli)
-python Codigo/extract_dataset.py --repo cli/cli --out Codigo/dataset_backtesting.json
+# 5. Verificar integridade e ausência de PII no dataset local de backtesting (cli/cli)
+python Codigo/extract_dataset.py --verify-local --out Codigo/dataset_backtesting.json
 ```
 
 | Módulo / Script | Função Principal | Observação |
@@ -181,10 +182,12 @@ TCC-01/
 ├── Docs/
 │   ├── Main.tex                      # Monografia completa do TCC 1 (abnTeX2, Cap. 1-6 + Apêndices)
 │   ├── Referencias.bib               # Referências bibliográficas compatíveis com abntex2cite
+│   ├── resultados_poc.tex            # Macros LaTeX geradas automaticamente por Codigo/main.go
 │   ├── capa_fundo.png                # Arte de fundo da capa (suporta também capa_fundo.jpg)
 │   ├── proposta_tcc1_revisada_v6.md  # Versão de referência em Markdown da proposta
 │   └── figuras/                      # Cópias das 8 figuras PNG usadas pelo Main.tex
 ├── figuras/                          # Espelho das 8 figuras PNG geradas na raiz
+├── CONSTRAINTS.md                    # Contrato de qualidade e invariantes verificáveis do projeto
 ├── referencias.bib                   # Cópia em minúsculo para sistemas case-sensitive
 ├── tasks/                            # Plano de correções e checklist da banca
 └── README.md                         # Documentação principal do projeto
