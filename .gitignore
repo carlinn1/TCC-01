@@ -1,0 +1,39 @@
+# LaTeX / abnTeX2 build artifacts
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.brf
+*.fdb_latexmk
+*.fls
+*.idx
+*.ilg
+*.ind
+*.lof
+*.log
+*.lot
+*.nav
+*.out
+*.run.xml
+*.snm
+*.synctex.gz
+*.toc
+
+# Go binaries, coverage, and runtime outputs
+*.exe
+*.test
+Codigo/poc_results.json
+
+# Python cache and virtual environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Environment variables and secrets
+.env
+.env.*
+
+# OS and editor metadata
+.DS_Store
+Thumbs.db
