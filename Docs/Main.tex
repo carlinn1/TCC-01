@@ -38,6 +38,7 @@
 \usepackage[brazilian,hyperpageref]{backref}
 \usepackage[alf]{abntex2cite}
 \usepackage{eso-pic}
+\usepackage{xurl}
 \usepackage{hyperref}
 
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
@@ -79,6 +80,8 @@
 
 \newcommand{\fonteautores}{\par\vspace{1mm}{\small Fonte: Elaborado pelos autores (2026).}}
 \newcommand{\IC}{\mathrm{IC}}
+\newcommand{\mc}[2]{\begin{tabular}{@{}c@{}}$#1$\\[-1.5pt]{\tiny($\pm #2$)}\end{tabular}}
+\newcommand{\thstack}[2]{\begin{tabular}{@{}c@{}}\bfseries #1\\\bfseries #2\end{tabular}}
 
 % Reduz espacos em branco causados por flutuantes (figuras e tabelas)
 \renewcommand{\topfraction}{0.9}
@@ -97,7 +100,7 @@
 
 \setlength{\parindent}{1.3cm}
 \setlength{\parskip}{0.2cm}
-\emergencystretch=1.5em
+\emergencystretch=2.2em
 
 \begin{document}
 \selectlanguage{brazilian}
@@ -538,12 +541,13 @@ Para posicionar a proposta frente à literatura científica, selecionaram-se nov
 
 \begin{table}[htbp]
 \caption{Trabalhos relacionados: análise comparativa de abordagens e lacunas.}\label{tab:relacionados}
-\footnotesize
-\begin{tabularx}{\textwidth}{L{2.5cm} L{2.4cm} L{2.2cm} L{1.4cm} Y}
+{\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabularx}{\textwidth}{L{2.2cm} L{2.4cm} L{2.4cm} L{1.7cm} Y}
 \toprule
 \textbf{Trabalho} & \textbf{Foco} & \textbf{Abordagem} & \textbf{IA} & \textbf{Limitações observadas}\\
 \midrule
-\citeonline{guinea2024} & Revisão sistemática de gêmeos digitais em Eng. Software & Qualitativa/conceitual & Não & Não propõe arquitetura executável nem motor estocástico verificado\\
+\citeonline{guinea2024} & Revisão sistemática de gêmeos digitais em Eng. Software & Qualitativa / conceitual & Não & Não propõe arquitetura executável nem motor estocástico verificado\\
 \citeonline{lehner2025} & Mapeamento de MDE aplicado a gêmeos digitais & Mapeamento (66 de 189 estudos) & Não & Foco em sistemas ciberfísicos; não modela cronogramas de software\\
 \citeonline{hulett2000} & Risco quantitativo em cronogramas & Monte Carlo \textit{vs.} PERT & Não & Sem sincronização contínua por eventos Git/CI nem camada de IA\\
 \citeonline{vanslyke1963} & Monte Carlo em redes PERT & Simulação de caminhos paralelos & Não & Processamento em lote estático; sem progresso parcial nem governança\\
@@ -554,7 +558,7 @@ Para posicionar a proposta frente à literatura científica, selecionaram-se nov
 \citeonline{debenedetti2024} & \textit{Benchmark} AgentDojo (NeurIPS 2024) & Avaliação de ataques e defesas & Agentes LLM & Ambiente genérico de ferramentas; não trata governança de cronogramas\\
 \textbf{Este trabalho} & Sombra Digital Governada para cronogramas & CPM + Monte Carlo (PERT-Beta + Bernoulli) & LLM isolado (\textit{fail-closed}) & Planejamento tático com dependências $FS$; capacidade de recursos infinita no MVP\\
 \bottomrule
-\end{tabularx}
+\end{tabularx}}
 \fonteautores
 \end{table}
 
@@ -566,20 +570,21 @@ A Tabela~\ref{tab:ferramentas} compara soluções comerciais utilizadas na indú
 
 \begin{table}[htbp]
 \caption{Matriz comparativa entre ferramentas existentes no mercado (estado em out. 2026) e o artefato proposto.}\label{tab:ferramentas}
-\scriptsize
-\begin{tabularx}{\textwidth}{L{2.5cm} Y Y Y Y Y Y}
+{\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabularx}{\textwidth}{L{2.2cm} Y Y Y Y Y Y}
 \toprule
 \textbf{Ferramenta} & \textbf{Sinc. Git/CI} & \textbf{CPM e Folgas} & \textbf{Monte Carlo} & \textbf{\textit{What-if}} & \textbf{IA e Governança} & \textbf{Auditoria}\\
 \midrule
-Jira Cloud Plans + Atlassian Rovo$^1$ & Alta (nativa/apps) & Parcial (Gantt determinístico) & Não nativo (exige \textit{plugins} pagos) & Limitado (planos visuais) & Agente Rovo (sem \textit{fail-closed} sob grafo estocástico) & Log relacional administrativo\\
+Jira Cloud Plans + Atlassian Rovo$^1$ & Alta (nativa/\allowbreak apps) & Parcial (Gantt determinístico) & Não nativo (exige \textit{plugins} pagos) & Limitado (planos visuais) & Agente Rovo (sem \textit{fail-closed} sob grafo estocástico) & Log relacional administrativo\\
 Azure DevOps + GitHub Copilot$^2$ & Alta (nativa) & Limitado (\textit{Delivery Plans} sem $TF_i$) & Não nativo & Não & Copilot assistivo (sem isolamento de rede dedicado) & Log padrão de auditoria\\
 LiquidPlanner$^3$ & Baixa (via conectores) & Sim & Sim (intervalos por tarefa) & Parcial & Sem agente LLM governado & Log padrão relacional\\
 ActionableAgile / Nave$^4$ & Média (importa estados) & Não (agnóstico a DAG $FS$) & Sim (apenas por vazão histórica) & Sim (ajuste de vazão) & Sem agente LLM governado & Histórico da plataforma host\\
-Primavera Risk Analysis / Acumen Risk / @RISK$^5$ & Nula (importação manual XER/MPP) & Sim (CPM completo e $\IC_i$) & Sim (PERT-Beta, correlações e eventos) & Sim (cenários completos) & Sem agente LLM governado nem \textit{allowlist} & Log de arquivos/banco corporativo\\
-\textbf{Artefato proposto} & \textbf{Especificado (TCC1) / Implementação (TCC2):} \textit{webhooks} HMAC idempotentes & \textbf{Verificado na PoC (TCC1):} CPM exato e $TF_i$ & \textbf{Verificado na PoC (TCC1):} PERT-Beta + Bernoulli & \textbf{Verificado na PoC (TCC1) / Persistência (TCC2)} & \textbf{Especificado (TCC1) / Implementação (TCC2):} LLM isolado + \textit{fail-closed} & \textbf{Especificado (TCC1) / Implementação (TCC2):} SHA-256 + âncora HMAC/Ed25519\\
+Primavera Risk Analysis / Acumen Risk / @RISK$^5$ & Nula (importação manual XER/\allowbreak MPP) & Sim (CPM completo e $\IC_i$) & Sim (PERT-Beta, correlações e eventos) & Sim (cenários completos) & Sem agente LLM governado nem \textit{allowlist} & Log de arquivos / banco corporativo\\
+\textbf{Artefato proposto} & \textbf{Especificado (TCC1) / Implem. (TCC2):} \textit{webhooks} HMAC idempotentes & \textbf{Verificado na PoC (TCC1):} CPM exato e $TF_i$ & \textbf{Verificado na PoC (TCC1):} PERT-Beta + Bernoulli & \textbf{Verificado na PoC (TCC1) / Persistência (TCC2)} & \textbf{Especificado (TCC1) / Implem. (TCC2):} LLM isolado + \textit{fail-closed} & \textbf{Especificado (TCC1) / Implem. (TCC2):} SHA-256 + âncora HMAC/\allowbreak Ed25519\\
 \bottomrule
-\end{tabularx}
-\par\vspace{1mm}{\tiny Fontes técnicas consultadas em 20 out. 2026: $^1$Atlassian Plans Dependency Management \& Rovo Agent Security (\url{https://support.atlassian.com/jira-software-cloud/docs/manage-dependencies-in-advanced-roadmaps/}); $^2$Microsoft Azure Boards Delivery Plans (\url{https://learn.microsoft.com/en-us/azure/devops/boards/plans/review-team-plans}); $^3$LiquidPlanner Predictive Scheduling Engine (\url{https://www.liquidplanner.com/features/predictive-scheduling/}); $^4$ActionableAgile Monte Carlo Forecasting (\url{https://www.55degrees.se/products/actionableagile}); $^5$Oracle Primavera Risk Analysis User's Guide (\url{https://docs.oracle.com/cd/E51302_01/help/en/helpmain.htm}) e Deltek Acumen Risk Documentation.}
+\end{tabularx}}
+\par\vspace{1mm}{\tiny\raggedright Fontes técnicas consultadas em 20 out. 2026: $^1$Atlassian Plans Dependency Management \& Rovo Agent Security (\url{https://support.atlassian.com/jira-software-cloud/docs/manage-dependencies-in-advanced-roadmaps/}); $^2$Microsoft Azure Boards Delivery Plans (\url{https://learn.microsoft.com/en-us/azure/devops/boards/plans/review-team-plans}); $^3$LiquidPlanner Predictive Scheduling Engine (\url{https://www.liquidplanner.com/features/predictive-scheduling/}); $^4$ActionableAgile Monte Carlo Forecasting (\url{https://www.55degrees.se/products/actionableagile}); $^5$Oracle Primavera Risk Analysis User's Guide (\url{https://docs.oracle.com/cd/E51302_01/help/en/helpmain.htm}) e Deltek Acumen Risk Documentation.\par}
 \end{table}
 
 Conforme sintetizado na Tabela~\ref{tab:ferramentas}, ferramentas como Jira e Azure DevOps incorporaram assistentes baseados em LLMs até 2026 (Atlassian Rovo e GitHub Copilot), mas permanecem desprovidas de simulação de Monte Carlo nativa acoplada ao grafo de dependências e não oferecem retenção de mutações condicionada à visualização prévia de deslocamentos de percentis ($\Delta P_{50}, \Delta P_{85}$) calculados por um motor estocástico determinístico.
@@ -721,8 +726,10 @@ A inspeção da Tabela~\ref{tab:backtesting} fundamenta seis definições metodo
     \item \textbf{Nível 1 (Regra Primária --- Quantis Regularizados Estendidos $Q_{05}/\hat{m}_{\mathrm{HSM}}/Q_{95}$):} aplicável sempre que $Q_{50} > 0{,}25$ d.u. (menos de 50\% da massa truncada no piso) e $Q_{95} > 0{,}25$ d.u. Define-se $t_o = \max(0{,}25;\,Q_{05})$, $t_p = Q_{95}$ e estima-se a moda $t_m = \min(\max(\hat{m}_{\mathrm{HSM}},\,t_o),\,t_p)$ pelo estimador não paramétrico robusto \textit{Half-Sample Mode} (HSM) de \citeonline{bickel2006}, com $\lambda=4$;
     \item \textbf{Nível 2 (Variante Comparativa de Sensibilidade --- Casamento de Quantis $Q_{10}/Q_{90}$):} avaliada no pacote \texttt{E09} exclusivamente para classes empíricas cujo quantil inferior supere estritamente o piso ($Q_{10} > 0{,}25 + \delta$, com $\delta=0{,}05$ d.u.), determinando-se $[t_o, t_p]$ pela solução de:
     \begin{equation}\label{eq:quantile_matching}
-    F_{\mathrm{Beta}}\!\left(\frac{Q_{10}-t_o}{t_p-t_o};\,\alpha(t_o,t_m,t_p),\beta(t_o,t_m,t_p)\right)=0{,}10,\quad
-    F_{\mathrm{Beta}}\!\left(\frac{Q_{90}-t_o}{t_p-t_o};\,\alpha(t_o,t_m,t_p),\beta(t_o,t_m,t_p)\right)=0{,}90;
+    \begin{aligned}
+    F_{\mathrm{Beta}}\!\left(\frac{Q_{10}-t_o}{t_p-t_o};\,\alpha(t_o,t_m,t_p),\beta(t_o,t_m,t_p)\right) &= 0{,}10,\\
+    F_{\mathrm{Beta}}\!\left(\frac{Q_{90}-t_o}{t_p-t_o};\,\alpha(t_o,t_m,t_p),\beta(t_o,t_m,t_p)\right) &= 0{,}90;
+    \end{aligned}
     \end{equation}
     \item \textbf{Nível 3 (\textit{Fallback} Determinístico --- \textit{Bootstrap} Empírico Direto):} acionado automaticamente sempre que $Q_{50} \le 0{,}25$ d.u. (concentração de massa $\ge 50\%$ no piso operacional, como ocorre no Caso 2, \texttt{v2.41.0}, onde $7/13 = 53{,}8\%$ das observações atingem $0{,}25$ d.u., tornando inadequado o ajuste de uma densidade Beta unimodal contínua) ou quando $t_p \le t_o$. Nesse caso, as durações das tarefas no Monte Carlo são sorteadas por reamostragem com reposição diretamente do vetor histórico causal.
   \end{itemize}
@@ -734,14 +741,16 @@ A inspeção da Tabela~\ref{tab:backtesting} fundamenta seis definições metodo
 
 \begin{table}[htbp]
 \caption{Resultados do piloto executável de parametrização em três níveis e \textit{replay} causal ($t_c=25\%$, $N=5.000$) nas três janelas extraídas do GitHub CLI (\texttt{cli/cli}).}\label{tab:piloto_backtesting}
-\scriptsize
-\begin{tabularx}{\textwidth}{L{2.8cm} L{1.8cm} L{3.1cm} L{2.4cm} c c c}
-\toprule
-\textbf{Janela} & \textbf{No piso ($0{,}25$)} & \textbf{Regra acionada} & \textbf{Parâmetros $(t_o;t_m;t_p)$} & \textbf{$y_{\text{real}}$ (d.u.)} & \textbf{$\hat{P}_{50}$ / $\hat{P}_{85}$} & \textbf{Erro $|y-\hat{P}_{50}|$ / CRPS}\\
-\midrule
 \input{tabelas/tab_piloto_backtesting.tex}
+{\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabularx}{\textwidth}{Y c L{3.45cm} c c c c}
+\toprule
+\textbf{Janela} & \thstack{No piso}{($0{,}25$)} & \textbf{Regra acionada} & \textbf{Parâmetros $(t_o;t_m;t_p)$} & \thstack{$y_{\text{real}}$}{(d.u.)} & \thstack{$\hat{P}_{50}$ /}{$\hat{P}_{85}$} & \thstack{$|y-\hat{P}_{50}|$}{/ CRPS}\\
+\midrule
+\tabRowsPilotoBacktesting
 \bottomrule
-\end{tabularx}
+\end{tabularx}}
 {\small Fonte: Elaborado pelos autores via \texttt{Codigo/pilot\_backtesting.py} e \texttt{Codigo/pilot\_backtesting\_results.json} (2026).}
 \end{table}
 
@@ -770,17 +779,18 @@ Para garantir que a avaliação das hipóteses H1a e H1b seja estatisticamente c
 
 \begin{table}[htbp]
 \caption{Poder estatístico binomial exato do critério de equivalência em $[80\%, 90\%]$ para H1b em função de $M$ e do nível do intervalo de score de Wilson.}\label{tab:poder_h1b}
-\footnotesize
-\begin{tabularx}{\textwidth}{L{4.8cm} c c c c c}
+{\scriptsize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabularx}{\textwidth}{Y c c c c c}
 \toprule
-\textbf{Desenho amostral e critério} & \textbf{Região aceita $k$} & \textbf{Poder ($p=0{,}85$)} & \textbf{Poder ($p=0{,}83$)} & \textbf{Poder ($p=0{,}87$)} & \textbf{Erro Tipo I ($0{,}80$/$0{,}90$)}\\
+\textbf{Desenho amostral e critério} & \thstack{Região}{aceita $k$} & \thstack{Poder}{($p=0{,}85$)} & \thstack{Poder}{($p=0{,}83$)} & \thstack{Poder}{($p=0{,}87$)} & \thstack{Erro Tipo I}{($0{,}80$/$0{,}90$)}\\
 \midrule
 $M=200$, IC Wilson 95\% (anterior) & $\emptyset$ (vazia) & $0{,}0\%$ & $0{,}0\%$ & $0{,}0\%$ & $0{,}0\%$ / $0{,}0\%$\\
 $M=200$, TOST $\alpha=0{,}05$ (IC Wilson 90\%) & $[170,\,173]$ & $30{,}1\%$ & $18{,}3\%$ & $27{,}7\%$ & $4{,}3\%$ / $3{,}7\%$\\
 $M=400$, TOST $\alpha=0{,}05$ (IC Wilson 90\%) & $[334,\,350]$ & $75{,}2\%$ & $42{,}1\%$ & $62{,}1\%$ & $4{,}3\%$ / $3{,}8\%$\\
 \textbf{$M=500$, TOST $\alpha=0{,}05$ (IC Wilson 90\% --- Adotado)} & $[415,\,438]$ & \textbf{86,2\%} & \textbf{52,7\%} & \textbf{67,0\%} & $4{,}1\%$ / $4{,}0\%$\\
 \bottomrule
-\end{tabularx}
+\end{tabularx}}
 {\small Fonte: Calculado exatamente via \texttt{Codigo/power\_h1b.py} e exportado em \texttt{Codigo/power\_h1b\_results.json} (2026).}
 \end{table}
 
@@ -795,12 +805,15 @@ Nos Regimes R1 a R6 (convergência paralela sob violação moderada), testa-se a
 
 Na \textbf{Dimensão 5 (Fidelidade numérica do LLM e ablação de explicabilidade)}, corrige-se o problema de pseudo-replicação estatística: como invocações repetidas de um mesmo cenário com \texttt{temperature = 0.0} são determinísticas ($n_{\mathrm{ef}}=1$ por cenário), o protocolo gera programaticamente \textbf{$n=300$ cenários distintos de recomendação} mediante amostragem fatorial estratificada completa:
 \begin{equation}
-5\text{ topologias} \times 3\text{ regimes de risco} \times 4\text{ perfis de progresso/atraso} \times 5\text{ sementes PRNG} = 300\text{ cenários},
+\begin{aligned}
+5\text{ topologias} &\times 3\text{ regimes de risco} \times 4\text{ perfis de progresso/atraso} \\
+&\times 5\text{ sementes PRNG} = 300\text{ cenários},
+\end{aligned}
 \end{equation}
 executando cada cenário 1 vez em \texttt{temperature = 0.0} em um modelo aberto da família Llama-3 com pesos fixados (operação local em 8B quantizado para hardware de 12--16 GB de VRAM ou 70B via provedor dedicado com versão imutável) e em um modelo comercial de referência via API com versão fixada (\texttt{Gemini-2.5-Flash}). Avaliam-se de forma independente:
 \begin{enumerate}
   \item \textbf{Fidelidade numérica intrínseca do LLM, eficácia do verificador e política de regeneração (H2a):} mede-se primeiramente a \textbf{taxa bruta de divergência numérica do LLM antes do verificador pós-geração}, reportando seu intervalo exato de Clopper-Pearson a 95\% (com 0 falhas em 300 cenários, o limite superior pela Regra dos Três é $\approx 1{,}0\%$ e por Clopper-Pearson exato é $1{,}22\%$; com 1 falha em 300, é $1{,}85\%$; exige-se pré-verificador $\mathrm{UB}_{95\%} \le 2{,}0\%$). Adicionalmente, executa-se um estudo exploratório em \texttt{temperature = 0.2} sobre 30 cenários $\times$ 5 repetições ($150$ execuções), reportando o intervalo de confiança ajustado por agrupamento (\textit{cluster bootstrap} por cenário). Em separado, a eficácia do verificador determinístico em Go — que aplica expressão regular para extrair literais numéricos associados a $P_{50}$, $P_{85}$, $P_{95}$, $T_{\mathrm{CPM}}$, $\IC_i$ e $TF_i$ e exige concordância dentro de $\pm 0{,}05$ para números com 1 casa decimal (ex.: \texttt{12,8} face a \texttt{12,77}) e $\pm 0{,}01$ para 2 casas decimais — é testada sobre uma bateria balanceada de 200 respostas sintéticas (100 com mutações numéricas injetadas e 100 íntegras), exigindo-se revocação (\textit{recall}) de 100\% e zero falsos positivos. Em operação real, caso o verificador rejeite uma resposta do LLM, o \textit{AI Agent Service} aciona no máximo 2 tentativas de regeneração informando o erro de validação; persistindo a falha, descarta a saída do LLM e retorna um resumo determinístico pré-formatado (\textit{fallback} seguro), registrando a latência adicional de cada tentativa;
-  \item \textbf{Ablação pareada de explicabilidade estrutural e especificação do extrator (H2b):} os mesmos 300 cenários (nos quais a tarefa crítica estocástica $i^*$ possui $\IC_{i^*} > 50\%$ mas folga determinística $TF_{i^*} > 0$ devido ao viés de convergência) são submetidos ao LLM sob duas condições pareadas: \textbf{Condição I} (\textit{allowlist} completa contendo $\IC_i$) e \textbf{Condição II} (ablação da coluna $\IC_i$, mantendo apenas $TF_i$). O extrator determinístico pré-fixado classifica a resposta como acerto ($Y=1$) se e somente se: (a) a sentença de diagnóstico principal casar com a expressão regular de identificação do ID canônico ou título sanitizado da tarefa-alvo $i^*$ associada ao dicionário léxico pré-registrado de criticidade $\mathcal{L}_{\text{crit}} = \{\texttt{gargalo}, \texttt{caminho crítico estocástico}, \texttt{maior risco de atraso}, \texttt{convergência}, \texttt{prioritária}\}$; e (b) nenhuma tarefa distratora $j \ne i^*$ com $\IC_j < 30\%$ for apontada como gargalo primário na mesma conclusão. Os pares binários $(Y_{\mathrm{I}}, Y_{\mathrm{II}})$ são submetidos ao teste exato de McNemar ($\alpha=0{,}05$). Para validar o extrator automático dentro do pacote essencial \texttt{E10}, uma subamostra estratificada de 50 pares (100 respostas anonimizadas quanto à condição) é avaliada às cegas pelos dois autores de forma independente, exigindo-se concordância inter-avaliadores $\kappa$ de Cohen $\ge 0{,}80$ (com avaliação por terceiro juiz externo convidado prevista como extensão desejável no pacote \texttt{D03}).
+  \item \textbf{Ablação pareada de explicabilidade estrutural e especificação do extrator (H2b):} os mesmos 300 cenários (nos quais a tarefa crítica estocástica $i^*$ possui $\IC_{i^*} > 50\%$ mas folga determinística $TF_{i^*} > 0$ devido ao viés de convergência) são submetidos ao LLM sob duas condições pareadas: \textbf{Condição I} (\textit{allowlist} completa contendo $\IC_i$) e \textbf{Condição II} (ablação da coluna $\IC_i$, mantendo apenas $TF_i$). O extrator determinístico pré-fixado classifica a resposta como acerto ($Y=1$) se e somente se: (a) a sentença de diagnóstico principal casar com a expressão regular de identificação do ID canônico ou título sanitizado da tarefa-alvo $i^*$ associada ao dicionário léxico pré-registrado de criticidade $\mathcal{L}_{\text{crit}}$ (\texttt{gargalo}, \texttt{caminho crítico estocástico}, \texttt{maior risco de atraso}, \texttt{convergência}, \texttt{prioritária}); e (b) nenhuma tarefa distratora $j \ne i^*$ com $\IC_j < 30\%$ for apontada como gargalo primário na mesma conclusão. Os pares binários $(Y_{\mathrm{I}}, Y_{\mathrm{II}})$ são submetidos ao teste exato de McNemar ($\alpha=0{,}05$). Para validar o extrator automático dentro do pacote essencial \texttt{E10}, uma subamostra estratificada de 50 pares (100 respostas anonimizadas quanto à condição) é avaliada às cegas pelos dois autores de forma independente, exigindo-se concordância inter-avaliadores $\kappa$ de Cohen $\ge 0{,}80$ (com avaliação por terceiro juiz externo convidado prevista como extensão desejável no pacote \texttt{D03}).
 \end{enumerate}
 
 A Tabela~\ref{tab:protocolo} consolida as cinco dimensões do protocolo experimental.
@@ -904,8 +917,9 @@ Para sustentar o isolamento transacional, a idempotência de eventos, a avaliaç
 
 \begin{table}[htbp]
 \caption{Especificação das entidades do esquema relacional da Sombra Digital Governada.}\label{tab:esquema_er}
-\scriptsize
-\begin{tabularx}{\textwidth}{L{3.1cm} L{2.8cm} Y}
+{\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabularx}{\textwidth}{L{3.35cm} L{2.75cm} Y}
 \toprule
 \textbf{Tabela} & \textbf{Chaves (PK / FK)} & \textbf{Atributos críticos, invariantes de domínio e controle de concorrência}\\
 \midrule
@@ -921,7 +935,7 @@ Para sustentar o isolamento transacional, a idempotência de eventos, a avaliaç
 \texttt{audit\_logs} & PK: \texttt{id} (\texttt{BIGSERIAL}) & \texttt{timestamp}, \texttt{actor\_id}, \texttt{action\_type}, \texttt{payload\_canonical}, \texttt{prev\_hash} (\texttt{UNIQUE}), \texttt{hash} (SHA-256); \texttt{UPDATE}/\texttt{DELETE} revogados e bloqueados por \textit{trigger}\\
 \texttt{audit\_anchors} & PK: \texttt{anchor\_id} & \texttt{log\_id} (FK), \texttt{head\_hash}, \texttt{anchored\_at}, \texttt{auth\_scheme} (\texttt{HMAC\_SHA256} ou \texttt{ED25519}), \texttt{signature}, \texttt{external\_uri}\\
 \bottomrule
-\end{tabularx}
+\end{tabularx}}
 \fonteautores
 \end{table}
 
@@ -967,8 +981,9 @@ Para conciliar a privacidade e minimização de dados (RNF02) com a existência 
 
 \begin{table}[htbp]
 \caption{Especificação formal da \textit{allowlist} enviada ao \textit{AI Agent Service} e campos bloqueados (RNF02).}\label{tab:allowlist}
-\footnotesize
-\begin{tabularx}{\textwidth}{L{3.4cm} L{2.3cm} Y}
+{\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabularx}{\textwidth}{L{3.2cm} L{2.7cm} Y}
 \toprule
 \textbf{Campo / Categoria} & \textbf{Política} & \textbf{Regra de sanitização e papel no modelo}\\
 \midrule
@@ -979,7 +994,7 @@ Vetor de tarefas: \texttt{task\_id}, $(t_o, t_m, t_p)$, $c_i$, $TF_i$, $\IC_i$, 
 Código-fonte, \textit{diffs} de PR e logs de CI & \textbf{Bloqueado} & Jamais incluídos no JSON enviado ao LLM (proteção de propriedade intelectual)\\
 Corpos brutos de \textit{commits}, comentários de revisão e PII & \textbf{Bloqueado} & Nomes civis, e-mails de autores (\texttt{git author}) e discussões livres são retidos no \textit{Core}\\
 \bottomrule
-\end{tabularx}
+\end{tabularx}}
 \fonteautores
 \end{table}
 
@@ -989,7 +1004,7 @@ Essa definição explicita a superfície do teste de CA1: como os campos \texttt
   \item \textbf{Remoção de caracteres invisíveis e de controle bidirecional:} elimina caracteres de controle ASCII (\texttt{0x00}--\texttt{0x1F}), espaços de largura zero (\texttt{U+200B}--\texttt{U+200F}, \texttt{U+FEFF}) e marcadores de sobrescrita bidirecional (\textit{Trojan Source}: \texttt{U+202A}--\texttt{U+202E}, \texttt{U+2066}--\texttt{U+2069});
   \item \textbf{Filtragem léxica por expressões regulares:} substitui por marcadores neutros quaisquer endereços de e-mail, URLs (\texttt{http://}, \texttt{https://}), menções \texttt{@usuario}, chaves hexadecimais/JWT, tags HTML/XML (\texttt{<...>}) e cercas de blocos de código Markdown (\texttt{```});
   \item \textbf{Truncamento rígido por contagem de runas UTF-8:} limita estritamente \texttt{task\_title} a 120 caracteres e \texttt{issue\_pr\_summary} a 280 caracteres;
-  \item \textbf{Isolamento estrutural de dados no \textit{prompt} (\textit{spotlighting}):} os campos sanitizados são encapsulados em delimitadores exclusivos (\texttt{<untrusted\_git\_metadata>...</untrusted\_git\_metadata>}), e o \textit{prompt} de sistema instrui o modelo a tratar todo conteúdo interno a essas tags exclusivamente como texto descritivo passivo, jamais como comando operacional.
+  \item \textbf{Isolamento estrutural de dados no \textit{prompt} (\textit{spotlighting}):} os campos sanitizados são encapsulados em delimitadores exclusivos (\texttt{<untrusted\_git\_}\allowbreak\texttt{metadata>...}\allowbreak\texttt{</untrusted\_git\_}\allowbreak\texttt{metadata>}), e o \textit{prompt} de sistema instrui o modelo a tratar todo conteúdo interno a essas tags exclusivamente como texto descritivo passivo, jamais como comando operacional.
 \end{enumerate}
 Assim, o LLM recebe contexto semântico real para formular recomendações úteis, enquanto a contenção de segurança depende das barreiras determinísticas do servidor \cite{debenedetti2025camel,beurerkellner2025patterns}, e não da suposição de que o modelo não sofrerá \textit{prompt injection}.
 
@@ -999,21 +1014,22 @@ Toda resposta oriunda do \textit{AI Agent Service} é processada pelo validador 
 
 \begin{table}[htbp]
 \caption{Catálogo estático de ações da IA e regras determinísticas de governança no servidor (\textit{fail-closed}).}\label{tab:governanca}
-\scriptsize
-\begin{tabularx}{\textwidth}{L{4.0cm} L{2.0cm} L{2.9cm} Y}
+{\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabularx}{\textwidth}{L{4.2cm} L{2.0cm} L{2.8cm} Y}
 \toprule
 \textbf{Ação (\texttt{action\_type})} & \textbf{Categoria} & \textbf{Decisão no servidor} & \textbf{Mecanismo de contenção e auditoria}\\
 \midrule
 \texttt{GENERATE\_STATUS\_SUMMARY} & 1 (Autônoma) & Execução controlada & Verificação automática dos números citados contra a \textit{allowlist} ($\pm 0{,}05$ p/ 1 casa; $\pm 0{,}01$ p/ 2 casas) e limite de taxa\\
 \texttt{CREATE\_DRAFT\_RISK} & 1 (Autônoma) & Grava em \texttt{draft\_risks} & Cota máxima de 3 rascunhos por \texttt{state\_version}; texto puro sem links/HTML; \textbf{inativo nos cálculos} até promoção via Cat. 2\\
-\texttt{REQUEST\_SCENARIO\_SIMULATION} & 1 (Autônoma) & Simulação efêmera & Cota de 2 simulações \textit{what-if} por ciclo; persiste apenas em \texttt{simulation\_scenarios} sem alterar linha de base\\
-\texttt{UPDATE\_TASK\_ESTIMATES} & 2 (Restrita) & Retida na fila + Alerta simétrico & Exige aprovação do Gerente com $\Delta P_{50}$, $\Delta P_{85}$ e $\Delta P_{95}$ (CRN); emite \texttt{UNVERIFIED\_ESTIMATE\_SHIFT\_WARNING} se $|\Delta t_m|$ ou $|\Delta t_p| > 30\%$ sem evento empírico\\
+\texttt{REQUEST\_SCENARIO\_}\allowbreak\texttt{SIMULATION} & 1 (Autônoma) & Simulação efêmera & Cota de 2 simulações \textit{what-if} por ciclo; persiste apenas em \texttt{simulation\_scenarios} sem alterar linha de base\\
+\texttt{UPDATE\_TASK\_ESTIMATES} & 2 (Restrita) & Retida na fila + Alerta simétrico & Exige aprovação do Gerente com $\Delta P_{50}$, $\Delta P_{85}$ e $\Delta P_{95}$ (CRN); emite \texttt{UNVERIFIED\_ESTIMATE\_}\allowbreak\texttt{SHIFT\_WARNING} se $|\Delta t_m|$ ou $|\Delta t_p| > 30\%$ sem evento empírico\\
 \texttt{MODIFY\_DEPENDENCY\_GRAPH} & 2 (Restrita) & Validação de DAG + Fila & Verifica aciclicidade por ordenação topológica; propostas cíclicas são descartadas imediatamente\\
 \texttt{ACTIVATE\_OR\_MITIGATE\_RISK} & 2 (Restrita) & Retida na fila & Promove rascunho ou altera estado de risco após aprovação humana com visualização de $\Delta\IC_i$\\
 \texttt{UPDATE\_PROJECT\_BASELINE} & 2 (Restrita) & Retida com dupla confirmação & Exige confirmação expressa do Gerente e justificativa própria no log\\
-\textbf{Qualquer outro valor, ausente ou fora do JSON Schema} & \textbf{Inválida (\textit{Fail-Closed})} & \textbf{Negação imediata (\texttt{REJECTED})} & \textbf{Regra de negar por padrão:} zero mutações, descarte do pacote, alerta determinístico e gravação de \texttt{SECURITY\_POLICY\_VIOLATION} em \texttt{audit\_logs}\\
+\textbf{Qualquer outro valor, ausente ou fora do JSON Schema} & \textbf{Inválida (\textit{Fail-Closed})} & \textbf{Negação imediata (\texttt{REJECTED})} & \textbf{Regra de negar por padrão:} zero mutações, descarte do pacote, alerta determinístico e gravação de \texttt{SECURITY\_POLICY\_}\allowbreak\texttt{VIOLATION} em \texttt{audit\_logs}\\
 \bottomrule
-\end{tabularx}
+\end{tabularx}}
 \fonteautores
 \end{table}
 
@@ -1021,9 +1037,10 @@ Para cobrir de forma sistemática as cinco categorias do OWASP Top 10 for LLM Ap
 
 \begin{enumerate}
   \item \textbf{Isolamento, máquina de estados e expiração de \texttt{CREATE\_DRAFT\_RISK} e propostas (\texttt{LLM01} e \texttt{LLM06}):} embora classificada na Categoria 1 por não alterar os cálculos ativos do cronograma, a criação de rascunho grava na tabela de quarentena \texttt{draft\_risks} com cota rígida de 3 registros ativos (\texttt{status = DRAFT}) por \texttt{state\_version}. Quando a cota é atingida, novas requisições autônomas de rascunho na mesma versão recebem rejeição determinística (\texttt{QUOTA\_EXCEEDED}) sem bloquear alertas do \textit{Core}. Os registros de \texttt{draft\_risks} e \texttt{ai\_proposals} obedecem a uma máquina de estados determinística:
+  {\small
   \begin{equation}
-  \texttt{DRAFT} \longrightarrow \texttt{PENDING\_APPROVAL} \longrightarrow \big\{\texttt{APPROVED},\;\texttt{REJECTED},\;\texttt{STALE},\;\texttt{EXPIRED}\big\}.
-  \end{equation}
+  \texttt{DRAFT} \to \texttt{PENDING\_APPROVAL} \to \big\{\texttt{APPROVED},\;\texttt{REJECTED},\;\texttt{STALE},\;\texttt{EXPIRED}\big\}.
+  \end{equation}}
   Se o estado do projeto avançar mais de $\Delta v = 5$ versões ou transcorrerem 7 dias sem deliberação, uma rotina de limpeza transita rascunhos não promovidos para \texttt{EXPIRED}. Além disso, toda aprovação humana de Categoria 2 executa verificação atômica de concorrência otimista (\texttt{WHERE id = \$1 AND base\_state\_version = current\_state\_version}): caso um novo \textit{webhook} tenha incrementado \texttt{state\_version} após a simulação da proposta, o servidor bloqueia a efetivação imediata, marca a proposta como \texttt{STALE} (obsoleta) e exige reexecução do cenário \textit{what-if} sobre a versão atual;
   \item \textbf{Tratamento seguro de saída e proteção contra XSS (\texttt{LLM05:2025} / \texttt{LLM02:2023}):} toda saída textual do LLM é validada contra esquema JSON com \texttt{additionalProperties: false}, escapada no servidor e renderizada exclusivamente como nós de texto puro no React (proibição de \texttt{dangerouslySetInnerHTML} e de interpretadores Markdown com suporte a HTML/links clicáveis), sob cabeçalho HTTP \texttt{Content-Security-Policy: default-src 'self'; script-src 'self'; object-src 'none'};
   \item \textbf{Controle de consumo, orçamento de \textit{tokens} e disparo condicional (\texttt{LLM10:2025} / \texttt{LLM04:2023}):} o \textit{AI Agent Service} não é invocado a cada \textit{webhook} bruto, mas apenas após a janela de \textit{debounce} de 30 s e condicionado a um gatilho determinístico de relevância: $|\Delta P_{85}| \ge 0{,}5$ d.u., $|\Delta\IC_i| \ge 10$ pontos percentuais, ocorrência de \texttt{CI\_FAILURE}/\texttt{PR\_ABANDONED} ou solicitação manual do gerente. O serviço aplica ainda \textit{rate limiting} por projeto (máximo de 6 invocações/minuto) e teto de \texttt{max\_tokens = 1024} por resposta;
@@ -1055,7 +1072,10 @@ A Tabela~\ref{tab:stride_owasp} consolida o modelo de ameaças completo da arqui
 
 Cada evento ingerido, recomendação da IA, rejeição \textit{fail-closed} ou decisão humana gera um registro sequencial $k$ na tabela \texttt{audit\_logs}, cujo resumo criptográfico $H_k$ é calculado por:
 \begin{equation}
-H_k = \mathrm{SHA256}\big(k \;\|\; \texttt{timestamp}_k \;\|\; \texttt{actor\_id}_k \;\|\; \texttt{action\_type}_k \;\|\; \mathrm{canonical\_json}(\texttt{payload}_k) \;\|\; H_{k-1}\big),
+\begin{aligned}
+H_k = \mathrm{SHA256}\big(&k \;\|\; \texttt{timestamp}_k \;\|\; \texttt{actor\_id}_k \;\|\; \texttt{action\_type}_k \\
+&\;\|\; \mathrm{canonical\_json}(\texttt{payload}_k) \;\|\; H_{k-1}\big),
+\end{aligned}
 \end{equation}
 com bloco gênese fixado em $H_0 = 0^{64}$ (Figura~\ref{fig:hash}). Para impedir condições de corrida nas quais duas transações concorrentes leiam o mesmo último hash $H_{k-1}$ e bifurquem (\textit{fork}) a cadeia, a inserção em \texttt{audit\_logs} é protegida por duas travas complementares no PostgreSQL: (i) restrição de unicidade \texttt{UNIQUE (prev\_hash)} na tabela; e (ii) aquisição de bloqueio exclusivo de serialização por projeto (\texttt{pg\_advisory\_xact\_lock(project\_id)} combinado a \texttt{SELECT hash FROM audit\_logs ORDER BY id DESC LIMIT 1 FOR UPDATE}) dentro do \textit{trigger} \texttt{BEFORE INSERT}, garantindo ordenação estritamente linear.
 
@@ -1091,12 +1111,12 @@ O motor \texttt{poc-engine} foi implementado em Go utilizando apenas a bibliotec
 \begin{enumerate}
   \item \texttt{model.go}: definição das estruturas de tarefas, dependências $FS$, riscos discretos de Bernoulli, resultados estocásticos, diferenças pareadas CRN (\texttt{CRNDiffResult}) e validação defensiva de entrada (\texttt{ValidateTasksAndDeps} e \texttt{ValidateNetwork}, rejeitando estimativas inválidas, progressos fora de $[0,1]$, probabilidades fora de $[0,1]$, IDs duplicados, referências órfãs e grafos cíclicos);
   \item \texttt{random.go}: gerador determinístico splittable SplitMix64 de 64 bits \cite{steele2014,lecuyer2017}, amostrador Gama pelo método de rejeição de \citeonline{marsaglia2000}, amostrador PERT-Beta com suporte a $\lambda > 0$ configurável e tratamento explícito do caso degenerado $t_o = t_m = t_p$, função Beta incompleta regularizada $I_x(\alpha,\beta)$ por frações contínuas de Lentz e estatística de aderência de Kolmogorov-Smirnov na amostra integral ($n=10^6$) e em múltiplas sementes;
-  \item \texttt{cpm.go}: validação de aciclicidade, ordenação topológica em tempo linear $\mathcal{O}(|V|+|E|)$, CPM determinístico parametrizado por $\lambda$ (\texttt{CalculateExpectedDurationWithLambda}) e vetores de trabalho de tamanho $\mathcal{O}(|V|)$ pré-alocados por \textit{worker};
+  \item \texttt{cpm.go}: validação de aciclicidade, ordenação topológica em tempo linear $\mathcal{O}(|V|+|E|)$, CPM determinístico parametrizado por $\lambda$ (\texttt{CalculateExpected}\allowbreak\texttt{DurationWithLambda}) e vetores de trabalho de tamanho $\mathcal{O}(|V|)$ pré-alocados por \textit{worker};
   \item \texttt{simulator.go}: orquestrador de Monte Carlo concorrente com particionamento de iterações entre $W$ \textit{workers}, fluxo pseudoaleatório determinístico por índice de iteração $k \in \{0,\dots,N-1\}$ segundo $s_k = \mathrm{SplitMix64}(S_0 \oplus k)$ \cite{steele2014,lecuyer2017} consumido em ordem canônica estrita de ID de tarefa antes dos ensaios de Bernoulli (com subfluxos por entidade $s_{k,\mathrm{id}}$ especificados para alterações de parâmetros no TCC2), contadores inteiros locais por \textit{worker} (\texttt{workerCritCounts}) livres de falso compartilhamento de cache (\textit{false sharing}), redução pós-barreira (\texttt{wg.Wait()}) em ordem canônica de índice por soma compensada de Kahan, cálculo do Erro-Padrão de Monte Carlo ($\mathrm{MCSE}$) \cite{law2015} e avaliador de diferenças pareadas por Números Aleatórios Comuns (\texttt{ComputeCRNDiff});
   \item \texttt{engine\_test.go} e \texttt{validation\_test.go}: suíte automatizada de verificação analítica de momentos, validação de entrada inválida, teste KS exato ($n=10^6$) e multi-semente (100 sementes $\times 10.000$), independência de fluxos PRNG, reprodutibilidade determinística entre 1, 4 e 16 \textit{workers}, simulação nominal e sob estresse do cronograma do TCC2 e \textit{benchmarks} de escalabilidade em 1, 2, 4 e 8 \textit{workers}.
 \end{enumerate}
 
-Para assegurar reprodutibilidade científica e eliminar divergências de transcrição manual, todos os artefatos de código (\texttt{Codigo/}), o arquivo de macros numéricas (\texttt{Docs/resultados\_poc.tex}) e os fragmentos de tabelas (\texttt{Docs/tabelas/*.tex}) exportados automaticamente por \texttt{Codigo/main.go}, o estudo de poder estatístico (\texttt{Codigo/power\_h1b.py}), o extrator e o piloto de \textit{backtesting} (\texttt{Codigo/extract\_dataset.py}, \texttt{Codigo/pilot\_backtesting.py} e \texttt{Codigo/dataset\_backtesting.json}) e o gerador estático de figuras (\texttt{Codigo/generate\_figures.py}) encontram-se sob controle de versão Git no repositório público do trabalho (\url{https://github.com/carlinn1/TCC-01}, detalhado no Apêndice~\ref{apd:extracao}). As medições de desempenho e escalabilidade multi-\textit{worker} foram executadas em processador Intel Core i5-8400 (2,80 GHz, 6 núcleos físicos, arquitetura AMD64, Windows, Go 1.27).
+Para assegurar reprodutibilidade científica e eliminar divergências de transcrição manual, todos os artefatos de código (\texttt{Codigo/}), o arquivo de macros numéricas (\texttt{Docs/}\allowbreak\texttt{resultados\_poc.tex}) e os fragmentos de tabelas (\texttt{Docs/}\allowbreak\texttt{tabelas/*.tex}) exportados automaticamente por \texttt{Codigo/main.go}, o estudo de poder estatístico (\texttt{Codigo/}\allowbreak\texttt{power\_h1b.py}), o extrator e o piloto de \textit{backtesting} (\texttt{Codigo/}\allowbreak\texttt{extract\_dataset.py}, \texttt{Codigo/}\allowbreak\texttt{pilot\_backtesting.py} e \texttt{Codigo/}\allowbreak\texttt{dataset\_backtesting.json}) e o gerador estático de figuras (\texttt{Codigo/}\allowbreak\texttt{generate\_figures.py}) encontram-se sob controle de versão Git no repositório público do trabalho (\url{https://github.com/carlinn1/TCC-01}, detalhado no Apêndice~\ref{apd:extracao}). As medições de desempenho e escalabilidade multi-\textit{worker} foram executadas em processador Intel Core i5-8400 (2,80 GHz, 6 núcleos físicos, arquitetura AMD64, Windows, Go 1.27).
 
 \section{Rede de Validação e Cenários Operacionais}\label{sec:poc_cenarios}
 
@@ -1132,27 +1152,31 @@ A PoC executou $N=10.000$ iterações em cada cenário com semente mestre $S_0=4
 
 \begin{table}[htbp]
 \caption{Resultados da PoC em Go nos quatro cenários ($N=10.000$ iterações, semente 42), com Erro-Padrão de Monte Carlo ($\pm\mathrm{MCSE}$) e diferença pareada por Números Aleatórios Comuns (CRN).}\label{tab:resultados}
-\scriptsize
-\begin{tabularx}{\textwidth}{X c c c c c c}
-\toprule
-\textbf{Cenário} & \textbf{CPM} & \textbf{Média $\bar{F}$ ($\pm$MCSE)} & \textbf{$P_{50}$ ($\pm$MCSE)} & \textbf{$P_{85}$ ($\pm$MCSE)} & \textbf{$P_{95}$ ($\pm$MCSE)} & \textbf{$P(F\le 11)$}\\
-\midrule
 \input{tabelas/tab_poc_cenarios.tex}
+{\scriptsize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabularx}{\textwidth}{Y c c c c c c}
+\toprule
+\textbf{Cenário} & \textbf{CPM} & \thstack{Média $\bar{F}$}{($\pm$MCSE)} & \thstack{$P_{50}$}{($\pm$MCSE)} & \thstack{$P_{85}$}{($\pm$MCSE)} & \thstack{$P_{95}$}{($\pm$MCSE)} & \textbf{$P(F\le 11)$}\\
+\midrule
+\tabRowsPocCenarios
 \bottomrule
-\end{tabularx}
+\end{tabularx}}
 \par\vspace{1mm}{\small Fonte: Saída reprodutível de \texttt{poc-engine} (\texttt{Docs/tabelas/tab\_poc\_cenarios.tex}). Nota: na linha CRN ($\text{C}'-\text{C}$), o erro-padrão pareado da diferença de médias é $0{,}0059$ d.u. contra $0{,}0146$ d.u. sob amostragem independente (redução de variância de $6{,}1\times$).}
 \end{table}
 
 \begin{table}[htbp]
 \caption{Índice de Criticidade empírico ($\IC_i$ em \%) obtido pela PoC em Go.}\label{tab:ic}
-\footnotesize
-\begin{tabularx}{\textwidth}{X c c c c}
+\input{tabelas/tab_poc_ic.tex}
+{\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{Y c c c c}
 \toprule
 \textbf{Cenário} & \textbf{T1} & \textbf{T2} & \textbf{T3} & \textbf{T4}\\
 \midrule
-\input{tabelas/tab_poc_ic.tex}
+\tabRowsPocIC
 \bottomrule
-\end{tabularx}
+\end{tabularx}}
 {\small Fonte: Resultados da execução da PoC (\texttt{Docs/tabelas/tab\_poc\_ic.tex}).}
 \end{table}
 
@@ -1190,40 +1214,44 @@ A análise conjunta das Tabelas~\ref{tab:resultados} e \ref{tab:ic} e da Figura~
 
 \section{Verificação Analítica do Amostrador, Teste de Kolmogorov-Smirnov e Caso Degenerado}\label{sec:ks_test}
 
-Para verificar a corretude estatística do amostrador PERT-Beta em relação à distribuição paramétrica teórica especificada (além da igualdade de média e variância), a suíte de testes (\texttt{validation\_test.go}) submete $n = 10^6$ amostras independentes de cada tarefa ao \textbf{teste de aderência de Kolmogorov-Smirnov (KS)} de uma amostra contra a Função de Distribuição Acumulada (CDF) Beta regularizada exata $F(x) = I_{(x-t_o)/(t_p-t_o)}(\alpha, \beta)$ (validada analiticamente contra polinômios fechados em \texttt{TestRegularizedIncompleteBetaAnalytical}), calculando o supremo exato sobre todas as $n = 10^6$ estatísticas de ordem $X_{(1)} \le \dots \le X_{(n)}$:
+Para verificar a corretude estatística do amostrador PERT-Beta em relação à distribuição paramétrica teórica especificada (além da igualdade de média e variância), a suíte de testes (\texttt{validation\_test.go}) submete $n = 10^6$ amostras independentes de cada tarefa ao \textbf{teste de aderência de Kolmogorov-Smirnov (KS)} de uma amostra contra a Função de Distribuição Acumulada (CDF) Beta regularizada exata $F(x) = I_{(x-t_o)/(t_p-t_o)}(\alpha, \beta)$ (validada analiticamente contra polinômios fechados em \texttt{TestRegularized}\allowbreak\texttt{IncompleteBetaAnalytical}), calculando o supremo exato sobre todas as $n = 10^6$ estatísticas de ordem $X_{(1)} \le \dots \le X_{(n)}$:
 \begin{equation}
 D_n = \max_{1 \le j \le n} \max\!\left\{\left|\frac{j}{n} - F(X_{(j)})\right|,\;\left|F(X_{(j)}) - \frac{j-1}{n}\right|\right\},
 \end{equation}
-e confrontando-o também com a aproximação em malha uniforme de 2.000 pontos (diferença inferior a $2\times 10^{-5}$ em todas as tarefas). Para $n = 10^6$ ao nível de significância $\alpha_{\mathrm{sig}} = 0{,}05$, o valor crítico assintótico de Kolmogorov é $D_{\mathrm{crit}} = 1{,}3581 / \sqrt{10^6} = 0{,}001358$. Complementarmente, para demonstrar que a não rejeição não depende de uma semente isolada, a função \texttt{RunKSMultiSeedSuite} executa $100$ sementes independentes ($S \in \{1000,\dots,1099\}$, $n=10.000$ amostras por semente) para cada tarefa, verificando que a taxa empírica de rejeição em $\alpha_{\mathrm{sig}}=0{,}05$ situa-se entre $3\%$ e $8\%$ (média de $5{,}0\%$, dentro do intervalo binomial exato de 95\% $[1\%, 10\%]$ para um teste calibrado), enquanto \texttt{TestSplitMix64StreamIndependence} confirma correlação serial lag-1 ($r = -0{,}0188$) e inter-tarefas ($r = 0{,}0004$) próximas de zero ($|r| \le 0{,}03$). O teste \texttt{TestDegeneratePertBetaZeroVariance} verifica ainda o caso degenerado $t_o = t_m = t_p = 5{,}0$ (variância zero sem \texttt{NaN}). A Tabela~\ref{tab:momentos} consolida os resultados.
+e confrontando-o também com a aproximação em malha uniforme de 2.000 pontos (diferença inferior a $2\times 10^{-5}$ em todas as tarefas). Para $n = 10^6$ ao nível de significância $\alpha_{\mathrm{sig}} = 0{,}05$, o valor crítico assintótico de Kolmogorov é $D_{\mathrm{crit}} = 1{,}3581 / \sqrt{10^6} = 0{,}001358$. Complementarmente, para demonstrar que a não rejeição não depende de uma semente isolada, a função \texttt{RunKSMultiSeedSuite} executa $100$ sementes independentes ($S \in \{1000,\dots,1099\}$, $n=10.000$ amostras por semente) para cada tarefa, verificando que a taxa empírica de rejeição em $\alpha_{\mathrm{sig}}=0{,}05$ situa-se entre $3\%$ e $8\%$ (média de $5{,}0\%$, dentro do intervalo binomial exato de 95\% $[1\%, 10\%]$ para um teste calibrado), enquanto \texttt{TestSplitMix64}\allowbreak\texttt{StreamIndependence} confirma correlação serial lag-1 ($r = -0{,}0188$) e inter-tarefas ($r = 0{,}0004$) próximas de zero ($|r| \le 0{,}03$). O teste \texttt{TestDegeneratePertBeta}\allowbreak\texttt{ZeroVariance} verifica ainda o caso degenerado $t_o = t_m = t_p = 5{,}0$ (variância zero sem \texttt{NaN}). A Tabela~\ref{tab:momentos} consolida os resultados.
 
 \begin{table}[htbp]
 \caption{Verificação analítica de momentos e teste de aderência de Kolmogorov-Smirnov na amostra integral ($n=10^6$) e em 100 sementes independentes ($100 \times 10.000$).}\label{tab:momentos}
-\scriptsize
-\begin{tabularx}{\textwidth}{L{2.2cm} c c c c c}
-\toprule
-\textbf{Tarefa $(t_o,t_m,t_p)$} & \textbf{$\mu$ teór. / amostral} & \textbf{$\sigma^2$ teór. / amostral} & \textbf{$D_n$ exato ($10^6$)} & \textbf{$p$-valor ($10^6$)} & \textbf{Rejeições (100 sem.)}\\
-\midrule
 \input{tabelas/tab_ks.tex}
+{\scriptsize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabularx}{\textwidth}{Y c c c c c}
+\toprule
+\textbf{Tarefa $(t_o,t_m,t_p)$} & \thstack{$\mu$}{(teór. / am.)} & \thstack{$\sigma^2$}{(teór. / am.)} & \thstack{$D_n$ exato}{($n=10^6$)} & \thstack{$p$-valor}{($n=10^6$)} & \thstack{Rejeições}{(100 sem.)}\\
+\midrule
+\tabRowsKS
 Degenerado $(5, 5, 5)$ & $5{,}000$ / $5{,}000$ & $0{,}000$ / $0{,}000$ & $0{,}00000$ & --- (massa pontual) & 0/100 ($0\%$, exato)\\
 \bottomrule
-\end{tabularx}
+\end{tabularx}}
 \par\vspace{1mm}{\small Fonte: Saída reprodutível de \texttt{poc-engine} (\texttt{Docs/tabelas/tab\_ks.tex}, $D_{\mathrm{crit},0{,}05}=0{,}001358$ para $n=10^6$).}
 \end{table}
 
 \section{Reprodutibilidade Determinística por Índice de Iteração (RNF08)}
 
-O teste \texttt{TestReproducibilityAcrossWorkers} verifica se a derivação de subfluxos por índice global de iteração $k = 0,\dots,N-1$ combinada à redução pós-barreira (\texttt{wg.Wait()}) em ordem canônica garante invariância de resultados em ponto flutuante (\texttt{float64}) independentemente do número de \textit{goroutines}. Cada \textit{worker} $w \in \{0,\dots,W-1\}$ grava o término simulado na posição exclusiva \texttt{finishDates[k]} e acumula a criticidade em seu vetor inteiro privado \texttt{workerCritCounts[w][i]} de tamanho $\mathcal{O}(|V|)$ — eliminando tanto a alocação de uma matriz booleana $\mathcal{O}(|V|\cdot N)$ quanto o falso compartilhamento de linhas de cache L1/L2 entre núcleos de CPU —, e a média $\bar{F}$ é computada após a barreira via soma compensada de Kahan. A Tabela~\ref{tab:repro} confirma divergência máxima igual a zero até a sexta casa decimal entre execuções com 1, 4 e 16 \textit{workers} sobre o Cenário B ($S_0 = 12345$, $N = 5.000$).
+O teste \texttt{TestReproducibility}\allowbreak\texttt{AcrossWorkers} verifica se a derivação de subfluxos por índice global de iteração $k = 0,\dots,N-1$ combinada à redução pós-barreira (\texttt{wg.Wait()}) em ordem canônica garante invariância de resultados em ponto flutuante (\texttt{float64}) independentemente do número de \textit{goroutines}. Cada \textit{worker} $w \in \{0,\dots,W-1\}$ grava o término simulado na posição exclusiva \texttt{finishDates[k]} e acumula a criticidade em seu vetor inteiro privado \texttt{workerCritCounts[w][i]} de tamanho $\mathcal{O}(|V|)$ — eliminando tanto a alocação de uma matriz booleana $\mathcal{O}(|V|\cdot N)$ quanto o falso compartilhamento de linhas de cache L1/L2 entre núcleos de CPU —, e a média $\bar{F}$ é computada após a barreira via soma compensada de Kahan. A Tabela~\ref{tab:repro} confirma divergência máxima igual a zero até a sexta casa decimal entre execuções com 1, 4 e 16 \textit{workers} sobre o Cenário B ($S_0 = 12345$, $N = 5.000$).
 
 \begin{table}[htbp]
 \caption{Reprodutibilidade determinística em função do índice de iteração entre 1, 4 e 16 \textit{workers} (RNF08, Cenário B, $S_0=12345, N=5.000$).}\label{tab:repro}
-\scriptsize
-\begin{tabularx}{\textwidth}{L{3.8cm} c c c c c c}
-\toprule
-\textbf{Configuração de concorrência} & \textbf{Média $\bar{F}$} & \textbf{$P_{50}$} & \textbf{$P_{85}$} & \textbf{$P_{95}$} & \textbf{$P(F\le 11)$} & \textbf{$\IC(\text{T3})$}\\
-\midrule
 \input{tabelas/tab_reprodutibilidade.tex}
+{\scriptsize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabularx}{\textwidth}{Y c c c c c c}
+\toprule
+\textbf{Configuração} & \textbf{Média $\bar{F}$} & \textbf{$P_{50}$} & \textbf{$P_{85}$} & \textbf{$P_{95}$} & \textbf{$P(F\le 11)$} & \textbf{$\IC(\text{T3})$}\\
+\midrule
+\tabRowsRepro
 \bottomrule
-\end{tabularx}
+\end{tabularx}}
 \par\vspace{1mm}{\small Fonte: Saída reprodutível de \texttt{poc-engine} (\texttt{Docs/tabelas/tab\_reprodutibilidade.tex}).}
 \end{table}
 
@@ -1239,14 +1267,16 @@ A Tabela~\ref{tab:bench} apresenta os resultados de desempenho e escalabilidade 
 
 \begin{table}[htbp]
 \caption{\textit{Benchmark} de desempenho computacional e escalabilidade multi-\textit{worker} em 5 repetições (RNF06, $N=10.000$ iterações, Intel Core i5-8400 @ 2,80 GHz, 6 núcleos).}\label{tab:bench}
-\scriptsize
-\begin{tabularx}{\textwidth}{L{4.2cm} c c c c c c}
-\toprule
-\textbf{Carga e Configuração} & \textbf{V / E / R} & \textbf{\textit{Workers}} & \textbf{Mediana (ms)} & \textbf{Média $\pm$ DP (ms)} & \textbf{[Mín; Máx] (ms)} & \textbf{Vazão (it/s)}\\
-\midrule
 \input{tabelas/tab_benchmarks.tex}
+{\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabularx}{\textwidth}{Y c c c c c c}
+\toprule
+\textbf{Carga e Configuração} & \textbf{V/E/R} & \thstack{Wor-}{kers} & \thstack{Mediana}{(ms)} & \thstack{Média $\pm$ DP}{(ms)} & \thstack{[Mín; Máx]}{(ms)} & \thstack{Vazão}{(it/s)}\\
+\midrule
+\tabRowsBenchmarks
 \bottomrule
-\end{tabularx}
+\end{tabularx}}
 {\small Fonte: Saída reprodutível de \texttt{poc-engine} (\texttt{Docs/tabelas/tab\_benchmarks.tex}).}
 \end{table}
 
@@ -1308,8 +1338,10 @@ Na Tabela~\ref{tab:cronograma}, todas as médias esperadas satisfazem exatamente
 
 \begin{table}[htbp]
 \caption{Cronograma pré-registrado do TCC2 (20 semanas: 08/03/2027 a 23/07/2027) em duas trilhas de execução com estimativas O/M/P e esperança PERT.}\label{tab:cronograma}
-\scriptsize
-\begin{tabularx}{\textwidth}{c L{3.9cm} c c c c c Y}
+{\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\renewcommand{\arraystretch}{0.86}
+\begin{tabularx}{\textwidth}{c L{3.0cm} c c c c c Y}
 \toprule
 \textbf{ID} & \textbf{Pacote de trabalho} & \textbf{Trilha} & \textbf{O/M/P} & \textbf{Esp.} & \textbf{Sem.} & \textbf{Prec.} & \textbf{Entregável verificável (DoD inclui doc/testes)}\\
 \midrule
@@ -1334,7 +1366,7 @@ D01 & Visualização interativa do grafo de precedências (DAG) na SPA & Desejá
 D02 & Painel interativo de sensibilidade paramétrica na SPA & Desejável & 0,5/1,0/1,5 & 1,00 & 15--16 & E09, E11 & Visualização comparativa das curvas de sensibilidade\\
 D03 & Terceiro avaliador externo convidado na subamostra da Dimensão 5 & Desejável & 0,5/1,0/1,5 & 1,00 & 16--17 & E10 & Auditoria externa complementar de concordância ($\kappa\ge 0{,}80$)\\
 \bottomrule
-\end{tabularx}
+\end{tabularx}}
 \fonteautores
 \end{table}
 
@@ -1385,14 +1417,16 @@ A Tabela~\ref{tab:sim_tcc2} apresenta os resultados exportados automaticamente p
 
 \begin{table}[htbp]
 \caption{Simulação de Monte Carlo do cronograma pré-registrado do TCC2 pelo motor \texttt{poc-engine} ($N=10.000$, semente 42, meta de 20 semanas) nos cenários nominal, de estresse e com cortes de contingência.}\label{tab:sim_tcc2}
-\scriptsize
-\begin{tabularx}{\textwidth}{X c c c c c c}
-\toprule
-\textbf{Configuração do Cronograma TCC2} & \textbf{CPM} & \textbf{Média $\bar{F}$ ($\pm$MCSE)} & \textbf{$P_{50}$ ($\pm$MCSE)} & \textbf{$P_{85}$ ($\pm$MCSE)} & \textbf{$P_{95}$ ($\pm$MCSE)} & \textbf{$P(F\le 20)$}\\
-\midrule
 \input{tabelas/tab_tcc2_mc.tex}
+{\scriptsize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabularx}{\textwidth}{Y c c c c c c}
+\toprule
+\textbf{Configuração do Cronograma TCC2} & \textbf{CPM} & \thstack{Média $\bar{F}$}{($\pm$MCSE)} & \thstack{$P_{50}$}{($\pm$MCSE)} & \thstack{$P_{85}$}{($\pm$MCSE)} & \thstack{$P_{95}$}{($\pm$MCSE)} & \textbf{$P(F\le 20)$}\\
+\midrule
+\tabRowsTccDoisMC
 \bottomrule
-\end{tabularx}
+\end{tabularx}}
 \par\vspace{1mm}{\small Fonte: Saída reprodutível de \texttt{poc-engine} (\texttt{Docs/tabelas/tab\_tcc2\_mc.tex}). Caminho crítico determinístico ($16{,}75$ sem.): $\texttt{E02}\rightarrow\texttt{E03}\rightarrow\texttt{E05}\rightarrow\texttt{E08}\rightarrow\texttt{E09}\rightarrow\texttt{E10}\rightarrow\texttt{E12}\rightarrow\texttt{E13}\rightarrow\texttt{E14}$. Folgas totais determinísticas: $TF(\text{E11})=1{,}58$ sem., $TF(\text{E06})=TF(\text{E07})=0{,}50$ sem., $TF(\text{E01})=TF(\text{E04})=0{,}42$ sem.}
 \end{table}
 
@@ -1416,8 +1450,9 @@ A Tabela~\ref{tab:riscos} sintetiza os riscos técnicos e metodológicos mapeado
 
 \begin{table}[htbp]
 \caption{Matriz de riscos da pesquisa e estratégias de mitigação no TCC2.}\label{tab:riscos}
-\footnotesize
-\begin{tabularx}{\textwidth}{L{3.8cm} c c Y}
+{\scriptsize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabularx}{\textwidth}{L{3.9cm} c c Y}
 \toprule
 \textbf{Risco identificado} & \textbf{Impacto} & \textbf{Prob.} & \textbf{Mitigação e plano de contingência}\\
 \midrule
@@ -1428,7 +1463,7 @@ Latência/cota de API e rotulagem nas 300 execuções da IA (\texttt{R\_LLM}: $p
 Injeção indireta de \textit{prompt}, XSS ou persuasão do aprovador & Alto & Média & Sub-rede isolada (\texttt{ai-isolated-net}), sanitização NFKC, validação \textit{fail-closed}, CSP estrito, cartão determinístico segregado e alerta simétrico de deriva $\pm 30\%$\\
 Adulteração direta da tabela \texttt{audit\_logs} no banco & Médio & Baixa & Revogação de permissões SQL, \textit{trigger} de bloqueio e serialização no topo, cadeia SHA-256 e ancoragem externa autenticada via HMAC-SHA256 ou Ed25519\\
 \bottomrule
-\end{tabularx}
+\end{tabularx}}
 \fonteautores
 \end{table}
 
@@ -1455,7 +1490,7 @@ A Prova de Conceito implementada em Go (\texttt{poc-engine}, com $94{,}2\%$ de c
 % =====================================================================
 \postextual
 \bibliographystyle{abntex2-alf}
-\bibliography{referencias}
+\bibliography{Referencias}
 
 \begin{apendicesenv}
 \partapendices
@@ -1465,8 +1500,8 @@ A Prova de Conceito implementada em Go (\texttt{poc-engine}, com $94{,}2\%$ de c
 Este apêndice consolida as decisões de engenharia de software e de pilha tecnológica para a construção integradora do MVP nos pacotes E02 a E11 do TCC2:
 \begin{itemize}
   \item \textbf{Isolamento de contêineres e sub-redes (Docker Compose):} implantação declarativa \cite{merkel2014} com duas redes bridge isoladas (\texttt{core-net} com \texttt{internal: true} para o PostgreSQL 16 e o \textit{Simulation Worker}; \texttt{ai-isolated-net} restrita à comunicação HTTP entre \textit{Core PM Service} e \textit{AI Agent Service});
-  \item \textbf{Interface web mínima (React, TypeScript e Vite) e Server-Sent Events (SSE):} SPA construída com Vite \cite{vite2024} consumindo eventos unidirecionais padronizados pelo W3C \cite{w3c2015} para atualização reativa de curvas CDF e da fila de aprovação, protegida por cabeçalho \texttt{Content-Security-Policy: default-src 'self'; script-src 'self'; object-src 'none'} e renderização exclusiva em texto puro (mitigação de \texttt{LLM05:2025});
-  \item \textbf{Fila assíncrona transacional:} a tabela \texttt{simulation\_jobs} é consumida pelos processos do \textit{Simulation Worker} via \texttt{SELECT id, payload FROM simulation\_jobs WHERE status = 'PENDING' ORDER BY created\_at FOR UPDATE SKIP LOCKED} no PostgreSQL 16 \cite{postgresql2024}, garantindo semântica \textit{at-least-once} sem necessidade de manter corretores externos;
+  \item \textbf{Interface web mínima (React, TypeScript e Vite) e Server-Sent Events (SSE):} SPA construída com Vite \cite{vite2024} consumindo eventos unidirecionais padronizados pelo W3C \cite{w3c2015} para atualização reativa de curvas CDF e da fila de aprovação, protegida por cabeçalho \texttt{Content-Security-Policy:}\allowbreak\ \texttt{default-src 'self';}\allowbreak\ \texttt{script-src 'self';}\allowbreak\ \texttt{object-src 'none'} e renderização exclusiva em texto puro (mitigação de \texttt{LLM05:2025});
+  \item \textbf{Fila assíncrona transacional:} a tabela \texttt{simulation\_jobs} é consumida pelos processos do \textit{Simulation Worker} via consulta \texttt{SELECT id, payload FROM simulation\_jobs WHERE status = 'PENDING' ORDER BY created\_at FOR UPDATE SKIP LOCKED} no PostgreSQL 16 \cite{postgresql2024}, garantindo semântica \textit{at-least-once} sem necessidade de manter corretores externos;
   \item \textbf{Agrupamento temporal (\textit{Debounce}) e controle de cota da IA:} janela deslizante configurável de 30 s no \textit{Core PM Service} que agrupa rajadas de \textit{webhooks} em uma única transição consolidada de \texttt{state\_version}, disparando o \textit{AI Agent Service} apenas sob gatilho condicional de relevância ($|\Delta P_{85}| \ge 0{,}5$ d.u., $|\Delta\IC_i| \ge 10$ p.p. ou falha operacional) e limite de 6 chamadas/minuto (\texttt{LLM10:2025});
   \item \textbf{Invalidação de cenários obsoletos e idempotência:} toda simulação grava \texttt{base\_state\_version} (recebendo \texttt{is\_stale = true} caso o estado avance antes da decisão humana), com chaves únicas (\texttt{UNIQUE}) sobre \texttt{X-GitHub-Delivery} (\texttt{delivery\_id}) e \texttt{idempotency\_key}.
 \end{itemize}
@@ -1476,24 +1511,31 @@ Este apêndice consolida as decisões de engenharia de software e de pilha tecno
 Para assegurar reprodutibilidade integral dos resultados reportados nas Tabelas~\ref{tab:backtesting}, \ref{tab:piloto_backtesting}, \ref{tab:poder_h1b}, \ref{tab:resultados}, \ref{tab:ic}, \ref{tab:momentos}, \ref{tab:repro}, \ref{tab:bench} e \ref{tab:sim_tcc2}, os artefatos de código, testes e dados estão estruturados no repositório público do projeto:
 
 \begin{itemize}
-  \item \textbf{URL do Repositório Público:} \url{https://github.com/carlinn1/TCC-01} (repositório público com código-fonte da PoC, \textit{scripts} de extração/piloto/poder/figuras/auditoria, ADRs em \texttt{Docs/adr/} e instantâneo JSON pseudonimizado preparado para depósito no Zenodo sob licença aberta);
+  \item \textbf{URL do Repositório Público:} \url{https://github.com/carlinn1/TCC-01} (repositório público com código-fonte da PoC, \textit{scripts} de extração/\allowbreak piloto/\allowbreak poder/\allowbreak figuras/\allowbreak auditoria, ADRs em \texttt{Docs/adr/} e instantâneo JSON pseudonimizado preparado para depósito no Zenodo sob licença aberta);
   \item \textbf{Estrutura de diretórios e artefatos de verificação:}
   \begin{itemize}
-    \item \texttt{Codigo/}: pacote Go do motor \texttt{poc-engine} (\texttt{go.mod}, \texttt{model.go}, \texttt{random.go}, \texttt{cpm.go}, \texttt{simulator.go}, \texttt{main.go}, \texttt{engine\_test.go}, \texttt{validation\_test.go}, cobertura de testes de $94{,}2\%$), que exporta automaticamente \texttt{Codigo/poc\_results.json}, as macros LaTeX em \texttt{Docs/resultados\_poc.tex} e os fragmentos de tabelas em \texttt{Docs/tabelas/*.tex};
-    \item \texttt{Codigo/extract\_dataset.py} e \texttt{Codigo/dataset\_backtesting.json}: extrator em Python 3.11+ que consulta a API REST e o histórico Git do repositório \texttt{cli/cli}, filtra contas \texttt{Bot}, separa fechamentos \texttt{completed} de \texttt{not\_planned} e PRs fechados sem \textit{merge}, exporta os vetores itemizados pseudonimizados (\texttt{PR\_01} a \texttt{PR\_n}), calcula a fração de truncamento no piso de $0{,}25$ d.u. e a sensibilidade a $\{0{,}10;\,0{,}25;\,0{,}50\}$ d.u. e oferece verificação local offline (\texttt{--verify-local});
-    \item \texttt{Codigo/pilot\_backtesting.py} e \texttt{Codigo/pilot\_backtesting\_results.json}: piloto executável da Dimensão 3 que implementa a árvore de decisão em três níveis ($Q_{05}/\hat{m}_{\mathrm{HSM}}/Q_{95}$, casamento $Q_{10}/Q_{90}$ e \textit{fallback} de \textit{bootstrap} empírico) e exporta \texttt{Docs/tabelas/tab\_piloto\_backtesting.tex};
-    \item \texttt{Codigo/power\_h1b.py} e \texttt{Codigo/power\_h1b\_results.json}: cálculo binomial exato do poder estatístico do teste de equivalência TOST ($\alpha=0{,}05$, IC de Wilson a 90\%) para a hipótese H1b;
-    \item \texttt{Codigo/generate\_figures.py} e \texttt{Docs/figuras/}: gerador reprodutível das 8 imagens PNG RGB opacas em 200 DPI referenciadas em \texttt{Docs/Main.tex} (lendo diretamente os vetores empíricos de \texttt{Codigo/poc\_results.json});
-    \item \texttt{Codigo/check\_latex.py} e \texttt{Codigo/check\_numbers.py}: \textit{scripts} automatizados de auditoria que verificam a ausência de \textit{warnings} de referências/citações e de \texttt{Overfull}/\texttt{Underfull} no log do \texttt{pdflatex} e a sincronia numérica exata entre \texttt{poc\_results.json}, \texttt{dataset\_backtesting.json} e o texto LaTeX.
+    \item \texttt{Codigo/}: pacote Go do motor \texttt{poc-engine} (\texttt{go.mod}, \texttt{model.go}, \texttt{random.go}, \texttt{cpm.go}, \texttt{simulator.go}, \texttt{main.go}, \texttt{engine\_test.go}, \texttt{validation\_test.go}, cobertura de testes de $94{,}2\%$), que exporta automaticamente \texttt{Codigo/}\allowbreak\texttt{poc\_results.json}, as macros LaTeX em \texttt{Docs/}\allowbreak\texttt{resultados\_poc.tex} e os fragmentos de tabelas em \texttt{Docs/}\allowbreak\texttt{tabelas/*.tex};
+    \item \texttt{Codigo/extract\_dataset.py} e \texttt{Codigo/}\allowbreak\texttt{dataset\_backtesting.json}: extrator em Python 3.11+ que consulta a API REST e o histórico Git do repositório \texttt{cli/cli}, filtra contas \texttt{Bot}, separa fechamentos \texttt{completed} de \texttt{not\_planned} e PRs fechados sem \textit{merge}, exporta os vetores itemizados pseudonimizados (\texttt{PR\_01} a \texttt{PR\_n}), calcula a fração de truncamento no piso de $0{,}25$ d.u. e a sensibilidade a $\{0{,}10;\,0{,}25;\,0{,}50\}$ d.u. e oferece verificação local offline (\texttt{--verify-local});
+    \item \texttt{Codigo/pilot\_backtesting.py} e \texttt{Codigo/}\allowbreak\texttt{pilot\_backtesting\_results.json}: piloto executável da Dimensão 3 que implementa a árvore de decisão em três níveis ($Q_{05}/\hat{m}_{\mathrm{HSM}}/Q_{95}$, casamento $Q_{10}/Q_{90}$ e \textit{fallback} de \textit{bootstrap} empírico) e exporta \texttt{Docs/}\allowbreak\texttt{tabelas/}\allowbreak\texttt{tab\_piloto\_backtesting.tex};
+    \item \texttt{Codigo/power\_h1b.py} e \texttt{Codigo/}\allowbreak\texttt{power\_h1b\_results.json}: cálculo binomial exato do poder estatístico do teste de equivalência TOST ($\alpha=0{,}05$, IC de Wilson a 90\%) para a hipótese H1b;
+    \item \texttt{Codigo/generate\_figures.py} e \texttt{Docs/figuras/}: gerador reprodutível das 8 imagens PNG RGB opacas em 200 DPI referenciadas em \texttt{Docs/Main.tex} (lendo diretamente os vetores empíricos de \texttt{Codigo/}\allowbreak\texttt{poc\_results.json});
+    \item \texttt{Codigo/check\_latex.py} e \texttt{Codigo/check\_numbers.py}: \textit{scripts} automatizados de auditoria que verificam a ausência de \textit{warnings} de referências/\allowbreak citações, posicionamento seguro dos fragmentos de tabela e a sincronia numérica exata entre \texttt{poc\_results.json}, \texttt{dataset\_backtesting.json} e o texto LaTeX.
   \end{itemize}
   \item \textbf{Comandos exatos de reprodução:}
   \begin{enumerate}
-    \item Verificação funcional, analítica, teste KS ($10^6$ + 100 sementes), CRN, reprodutibilidade entre \textit{workers}, simulação do cronograma do TCC2 e exportação de \texttt{poc\_results.json}, \texttt{Docs/resultados\_poc.tex} e \texttt{Docs/tabelas/*.tex}:\\
-    \texttt{cd Codigo \&\& go test -count=1 -cover ./... \&\& go run .}
-    \item Execução do estudo de poder estatístico (H1b), verificação do dataset local, execução do piloto de \textit{backtesting} e regeneração das 8 figuras PNG:\\
-    \texttt{cd Codigo \&\& python power\_h1b.py \&\& python extract\_dataset.py --verify-local \&\& python pilot\_backtesting.py \&\& python generate\_figures.py}
-    \item Auditoria automatizada de consistência numérica e compilação LaTeX:\\
-    \texttt{python Codigo/check\_numbers.py \&\& python Codigo/check\_latex.py}
+    \item Verificação funcional, analítica, teste KS ($10^6$ + 100 sementes), CRN, reprodutibilidade entre \textit{workers}, simulação do cronograma do TCC2 e exportação de \texttt{poc\_results.json}, \texttt{Docs/resultados\_poc.tex} e \texttt{Docs/tabelas/*.tex}:
+    \begin{quote}\small\raggedright\ttfamily
+    cd Codigo \&\& go test -count=1 -cover ./... \&\& go run .
+    \end{quote}
+    \item Execução do estudo de poder estatístico (H1b), verificação do dataset local, execução do piloto de \textit{backtesting} e regeneração das 8 figuras PNG:
+    \begin{quote}\small\raggedright\ttfamily
+    cd Codigo \&\& python power\_h1b.py \&\& python extract\_dataset.py --verify-local \&\&\\
+    python pilot\_backtesting.py \&\& python generate\_figures.py
+    \end{quote}
+    \item Auditoria automatizada de consistência numérica e integridade LaTeX/BibTeX:
+    \begin{quote}\small\raggedright\ttfamily
+    python Codigo/check\_numbers.py \&\& python Codigo/check\_latex.py
+    \end{quote}
   \end{enumerate}
 \end{itemize}
 
