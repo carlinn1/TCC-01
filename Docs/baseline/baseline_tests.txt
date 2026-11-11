@@ -1,0 +1,40 @@
+﻿=== RUN   TestCycleDetection
+--- PASS: TestCycleDetection (0.00s)
+=== RUN   TestAnalyticalCPM
+--- PASS: TestAnalyticalCPM (0.00s)
+=== RUN   TestReproducibilityAcrossWorkers
+--- PASS: TestReproducibilityAcrossWorkers (0.01s)
+=== RUN   TestPertBetaMomentsMatchAnalytical
+    validation_test.go:53: T1  mu=3.16628 (analítico 3.16667)  var=0.30549 (analítico 0.30556)
+    validation_test.go:53: T2  mu=5.50073 (analítico 5.50000)  var=0.75055 (analítico 0.75000)
+    validation_test.go:53: T3  mu=5.49985 (analítico 5.50000)  var=1.60472 (analítico 1.60714)
+    validation_test.go:53: T4  mu=2.16628 (analítico 2.16667)  var=0.30549 (analítico 0.30556)
+--- PASS: TestPertBetaMomentsMatchAnalytical (0.41s)
+=== RUN   TestPertBetaKSGoodnessOfFit
+    validation_test.go:209: T1  KS D_n=0.00051 (< D_crit=0.00136)  p-valor=0.958
+    validation_test.go:209: T2  KS D_n=0.00098 (< D_crit=0.00136)  p-valor=0.291
+    validation_test.go:209: T3  KS D_n=0.00130 (< D_crit=0.00136)  p-valor=0.068
+    validation_test.go:209: T4  KS D_n=0.00114 (< D_crit=0.00136)  p-valor=0.146
+--- PASS: TestPertBetaKSGoodnessOfFit (0.79s)
+=== RUN   TestDegeneratePertBetaZeroVariance
+    validation_test.go:245: Caso degenerado (5,5,5): P50=5.00000, P85=5.00000, P95=5.00000, var=0.00000
+--- PASS: TestDegeneratePertBetaZeroVariance (0.00s)
+=== RUN   TestDeterministicCPMScenarios
+--- PASS: TestDeterministicCPMScenarios (0.00s)
+=== RUN   TestPrintReproducibilityValues
+    validation_test.go:288: workers= 1  Mean=11.899335  P50=11.789667  P85=13.399960  P95=14.503067  P(F<=11)=28.2600%  IC(T3)=59.6200%
+    validation_test.go:288: workers= 4  Mean=11.899335  P50=11.789667  P85=13.399960  P95=14.503067  P(F<=11)=28.2600%  IC(T3)=59.6200%
+    validation_test.go:288: workers=16  Mean=11.899335  P50=11.789667  P85=13.399960  P95=14.503067  P(F<=11)=28.2600%  IC(T3)=59.6200%
+--- PASS: TestPrintReproducibilityValues (0.01s)
+=== RUN   TestTCC2ScheduleMonteCarlo
+    validation_test.go:317: TCC2 Base (sem riscos): CPM=16.75 sem | Media=16.81 (±0.007) | P50=16.80 (±0.010) | P85=17.51 (±0.013) | P95=17.94 (±0.015) | P(F<=20)=100.0%
+    validation_test.go:319: TCC2 Com Riscos (R_DAG, R_LEAK, R_LLM): CPM=16.75 sem | Media=17.34 (±0.009) | P50=17.29 (±0.011) | P85=18.30 (±0.014) | P95=18.92 (±0.021) | P(F<=20)=99.6%
+    validation_test.go:321: Criticidade TCC2 Base: E01=0.0% E02=100.0% E04=0.0% E05=100.0% E07=20.0% E08=80.0% E09=80.0% E10=100.0% E11=0.0%
+    validation_test.go:324: Criticidade TCC2 Riscos: E01=0.8% E02=99.2% E04=0.8% E05=99.2% E07=15.1% E08=84.9% E09=84.9% E10=100.0% E11=0.0%
+--- PASS: TestTCC2ScheduleMonteCarlo (0.01s)
+=== RUN   TestBenchmarkDispersion5Runs
+    validation_test.go:431: Rede Base (4/4) (5 runs): mediana=6.00 ms | média=5.79±0.85 ms | min=4.90 ms | max=7.00 ms
+    validation_test.go:431: Rede Sintética (200/300) (5 runs): mediana=64.75 ms | média=65.55±1.58 ms | min=64.00 ms | max=67.50 ms
+--- PASS: TestBenchmarkDispersion5Runs (0.36s)
+PASS
+ok  	poc-engine	1.582s

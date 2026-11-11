@@ -1,26 +1,13 @@
-# Implementation Plan (v3): Adequação Integral ao Parecer Crítico (TCC 1)
+# Implementation Plan v4: Execução Integral da `SPEC_CORRECAO_TCC1.md`
 
 ## Overview
-Adequar integralmente a monografia (`Docs/Main.tex` e `Docs/Referencias.bib`), o motor em Go (`Codigo/`), o dataset e gerador de figuras (`Codigo/extract_dataset.py`, `Codigo/dataset_backtesting.json`, `Codigo/generate_figures.py`) e o `README.md` às observações metodológicas, estatísticas, de segurança e de forma do parecer crítico (v1–v3), preservando intactos os sorteios homologados dos Cenários A–C′ da PoC no TCC1.
+Execução completa das Fases 0 a 9 da `SPEC_CORRECAO_TCC1.md` (consolidação dos pareceres de Claude `[CL]`, Codex `[CX]` e Argon `[AR]`), cobrindo as restrições `C1–C9`, as decisões `DEC-1` a `DEC-7` (`Docs/adr/ADR-001..007.md`), o motor em Go via TDD (`COD-01..10`), o protocolo estatístico e poder de H1b (`EST-01..06`), o dataset item-a-item e piloto de backtesting (`DAD-01..06`), segurança/STRIDE/ER (`SEG-01..06`), cronograma/estresse/contingência do TCC2 (`CRO-01..06`), auditoria bibliográfica 100% (`BIB-01..08`), reestruturação textual (`TXT-01..11`), tabelas/figuras geradas do export (`FOR-01..05`) e gates automatizados (`REL-01..04`).
 
-## Architecture & Methodological Decisions
-- **Escopo vs. Prazo (Entrega 27/11):** Mantidos intactos os sorteios de `DeriveIterationSeed(S0, k)` na PoC do TCC1 (onde CRN já vale para C vs. C′ porque o risco R1 é sorteado após todas as durações PERT-Beta), especificando *substreams* encadeadas `SplitMix64(SplitMix64(S0 ^ k) ^ id)` para alterações de estimativas (RF09) nos pacotes E05/E07 do TCC2.
-- **Kahan, MCSE e Exportação Automática (`Docs/resultados_poc.tex`):** Adicionada média $\bar{F}$ via soma compensada de Kahan pós-`wg.Wait()` e Erro Padrão de Monte Carlo (MCSE da média e dos quantis por estatísticas de ordem binomiais), declarando o MCSE como erro exclusivo de simulação (sem incerteza paramétrica).
-- **Parametrização $(t_o, t_m, t_p)$ e Riscos de Bernoulli sem Dupla Contagem:** Ajuste da PERT-Beta no subconjunto basal sem eventos adversos, casamento de quantis $Q_{10}/Q_{90}$ com truncamento superior residual reconhecido, moda HSM de Bickel & Frühwirth (2006), $n_{\text{classe}} \ge 15$ com agrupamento hierárquico e *fallback* para *bootstrap* empírico quando $\lambda=4$ não ajustar ou $t_o < 0{,}25$ d.u.
-- **Cronograma do TCC2 Pré-registrado e Rebalanceado (Trilhas A e B):** Duas trilhas equilibradas (~11,1 e ~12,2 semanas esperadas antes do fecho conjunto E12–E14) serializadas por arestas $FS$ condicionais à atribuição dos 2 autores, com escrita contínua embutida nas estimativas de E01–E11 e simuladas no `poc-engine` (`TestTCC2ScheduleMonteCarlo`).
-- **Dimensões 2, 3, 4 e 5:** Dimensão 2 estruturada em 10 regimes ($M=200$ grafos/regime) com família de Holm-Bonferroni ($m=3$ baselines); Dimensão 3 descritiva ($n_{\mathrm{ef}}=10$ janelas) com 4º baseline ($k=3$ releases anteriores); Dimensão 4 com Guarda Simétrica de Deriva e teto acumulado; Dimensão 5 separando taxa bruta do modelo (H2a, Clopper-Pearson unilateral em $n=300$), *recall* do verificador por precisão do literal citado e ablação contra extrator por palavras-chave pré-fixadas com sinônimos, distratores e 3º avaliador (H2b).
-
-## Task List
-
-### Phase 0: Quality Bar & Constraints
-- [x] **Task 0:** Criar `CONSTRAINTS.md` e atualizar `tasks/plan.md` e `tasks/todo.md`
-
-### Phase 1: Go Engine (`poc-engine`), Dataset Corrigido e Figuras PNG
-- [ ] **Task 1:** Implementar soma de Kahan pós-join, MCSE por estatísticas de ordem, exportação `Docs/resultados_poc.tex` e `TestTCC2ScheduleMonteCarlo` em `Codigo/`
-- [ ] **Task 2:** Atualizar `Codigo/extract_dataset.py` e `Codigo/dataset_backtesting.json` (duração desde 1º commit) e regenerar as 8 figuras PNG (incluindo Figura 8 com Trilhas A e B rebalanceadas)
-
-### Phase 2: Monografia (`Docs/Main.tex` e `Docs/Referencias.bib`) e `README.md`
-- [ ] **Task 3:** Atualizar `Docs/Referencias.bib` (12 novas referências verificadas) e Capítulos 1 e 2 de `Docs/Main.tex` (Folha de Aprovação, Siglas, H1a/H1b, H2a/H2b, CA1/CA2, Revisão e Matriz de Ferramentas)
-- [ ] **Task 4:** Atualizar Capítulos 3 e 4 de `Docs/Main.tex` (RNF06/RNF09, Tabela 5 com duração corrigida, $y(t_c)$, parametrização sem dupla contagem, 10 regimes na Dim. 2, Dim. 3 descritiva, Dim. 5 e Guarda Simétrica com teto acumulado)
-- [ ] **Task 5:** Atualizar Capítulos 5 e 6 de `Docs/Main.tex` e `README.md` (verificação do amostrador, MCSE, Kahan, "$H_0$ não rejeitada", simulação do cronograma do TCC2, limitações e limpeza global de linguagem)
-- [ ] **Task 6:** Executar suíte completa de verificação (`go test`, `go run .` e `check_latex.py` expandido)
+## Architecture Decisions (ADRs)
+- **ADR-001 (`DEC-1`):** H1b avaliado por TOST ($\alpha=0{,}05 \equiv$ IC de Wilson a 90% contido em $[80\%, 90\%]$) com $M=500$ grafos por regime (poder de 86,2% em $p=0{,}85$).
+- **ADR-002 (`DEC-2`):** Pares métrica $\leftrightarrow$ funcional consistentes segundo Gneiting (2011): $P_{50} \leftrightarrow \mathrm{MAE}$, $\bar{F} \leftrightarrow \mathrm{RMSE}$, $P_{85} \leftrightarrow \text{Pinball Loss}$, $\hat{F}_N \leftrightarrow \mathrm{CRPS}$.
+- **ADR-003 (`DEC-3`):** Árvore de decisão de parametrização PERT-Beta com suporte primário $[Q_{05}, Q_{95}]$ + moda HSM, variante Eq. 3.2 para $Q_{10} > 0{,}25+\delta$ e *fallback* de *bootstrap* para massa no piso.
+- **ADR-004 (`DEC-4`):** Cortes de contingência ordenados dentro dos pacotes essenciais (1 LLM essencial, `E11` tabular, `E09` 5 *releases*, `E08` 6 regimes nucleares), validados por simulação de estresse e corte.
+- **ADR-005 (`DEC-5`):** Preservação de observações minimizadas por item em `dataset_backtesting.json`, regras explícitas de inferência de arestas $FS$ e piloto rastreável `Codigo/pilot_backtesting.py`.
+- **ADR-006 (`DEC-6`):** Calendário letivo 2027/1 (08/03/2027 a 23/07/2027), 12 h/semana por autor, modelo aberto Llama-3 (8B local ou 70B via API com pesos fixados) e 2 juízes cegos ($\kappa$ de Cohen) em `E10`.
+- **ADR-007 (`DEC-7`):** Contribuição principal única centrada na arquitetura de integração governada e custódia de auditoria com chave secreta simétrica HMAC (ancoragem a cada $K=100$ eventos ou 15 min) e alternativa Ed25519.

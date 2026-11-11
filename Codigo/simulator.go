@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 	"sort"
 	"sync"
@@ -13,16 +14,20 @@ import (
 func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult, error) {
 	startTime := time.Now()
 
+	if err := ValidateNetwork(net, cfg); err != nil {
+		return nil, err
+	}
+
 	if cfg.Iterations <= 0 {
 		cfg.Iterations = 10000
 	}
 	if cfg.NumWorkers <= 0 {
 		cfg.NumWorkers = 4
 	}
-	if cfg.Lambda <= 0 {
+	if cfg.Lambda == 0 {
 		cfg.Lambda = 4.0
 	}
-	if cfg.EpsilonFloat <= 0 {
+	if cfg.EpsilonFloat == 0 {
 		cfg.EpsilonFloat = 1e-9
 	}
 
@@ -71,13 +76,13 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 		}
 	}
 
-	// Calculate deterministic CPM baseline
+	// Calculate deterministic CPM baseline using cfg.Lambda (COD-04)
 	detDurations := make(map[string]float64)
 	for _, t := range sortedTasks {
 		if t.Completed || t.Progress >= 1.0 {
 			detDurations[t.ID] = 0
 		} else {
-			exp := CalculateExpectedDuration(t.To, t.Tm, t.Tp)
+			exp := CalculateExpectedDurationWithLambda(t.To, t.Tm, t.Tp, cfg.Lambda)
 			detDurations[t.ID] = exp * (1.0 - t.Progress)
 		}
 	}
@@ -115,14 +120,9 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 		}
 	}
 
-	// 2. Allocate pre-sized arrays for thread-safe positional writes
+	// 2. Allocate pre-sized array for thread-safe positional writes and per-worker criticality counters
 	finishDates := make([]float64, cfg.Iterations)
-	criticalMatrix := make([][]uint8, compiledGraph.NumTasks)
-	for i := 0; i < compiledGraph.NumTasks; i++ {
-		if compiledGraph.IsActive[i] {
-			criticalMatrix[i] = make([]uint8, cfg.Iterations)
-		}
-	}
+	workerCritCounts := make([][]int, cfg.NumWorkers)
 
 	// 3. Divide iterations across workers
 	var wg sync.WaitGroup
@@ -138,8 +138,9 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 			continue
 		}
 
+		workerCritCounts[w] = make([]int, compiledGraph.NumTasks)
 		wg.Add(1)
-		go func(workerStart, workerEnd int) {
+		go func(workerIdx, workerStart, workerEnd int) {
 			defer wg.Done()
 
 			n := compiledGraph.NumTasks
@@ -149,6 +150,7 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 			ls := make([]float64, n)
 			lf := make([]float64, n)
 			crit := make([]bool, n)
+			localCrit := workerCritCounts[workerIdx]
 
 			for k := workerStart; k < workerEnd; k++ {
 				iterSeed := DeriveIterationSeed(cfg.Seed, k)
@@ -193,11 +195,11 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 
 				for i := 0; i < n; i++ {
 					if compiledGraph.IsActive[i] && crit[i] {
-						criticalMatrix[i][k] = 1
+						localCrit[i]++
 					}
 				}
 			}
-		}(startK, endK)
+		}(w, startK, endK)
 	}
 
 	wg.Wait()
@@ -267,14 +269,14 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 	probTarget := float64(targetCount) / float64(cfg.Iterations) * 100.0
 
 	critIndex := make(map[string]float64)
-	for i, arr := range criticalMatrix {
+	for i := 0; i < compiledGraph.NumTasks; i++ {
 		if !compiledGraph.IsActive[i] {
 			continue
 		}
 		count := 0
-		for _, c := range arr {
-			if c == 1 {
-				count++
+		for _, wc := range workerCritCounts {
+			if wc != nil {
+				count += wc[i]
 			}
 		}
 		critIndex[sortedTasks[i].ID] = float64(count) / float64(cfg.Iterations) * 100.0
@@ -295,8 +297,127 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 		ProbTarget:       probTarget,
 		CriticalityIndex: critIndex,
 		Durations:        sortedFinishes,
+		RawFinishes:      finishDates,
 		DurationMs:       float64(elapsed.Microseconds()) / 1000.0,
 		Iterations:       cfg.Iterations,
 		NumWorkers:       cfg.NumWorkers,
+	}, nil
+}
+
+// ComputeCRNDiff computes paired Common Random Numbers (CRN) differences
+// Delta F^(k) = F_variant^(k) - F_base^(k) across all k = 0..N-1 iterations (COD-07).
+func ComputeCRNDiff(resBase, resVariant *MonteCarloResult, seed uint64) (*CRNDiffResult, error) {
+	if resBase == nil || resVariant == nil {
+		return nil, fmt.Errorf("ComputeCRNDiff requires non-nil base and variant results")
+	}
+	n := len(resBase.RawFinishes)
+	if n == 0 || len(resVariant.RawFinishes) != n {
+		return nil, fmt.Errorf("ComputeCRNDiff requires matching non-empty RawFinishes slices (got %d vs %d)", n, len(resVariant.RawFinishes))
+	}
+
+	diffs := make([]float64, n)
+	var sum, c float64
+	for k := 0; k < n; k++ {
+		d := resVariant.RawFinishes[k] - resBase.RawFinishes[k]
+		diffs[k] = d
+		y := d - c
+		t := sum + y
+		c = (t - sum) - y
+		sum = t
+	}
+	deltaMean := sum / float64(n)
+
+	var varSum, varC float64
+	for k := 0; k < n; k++ {
+		dv := diffs[k] - deltaMean
+		y := (dv * dv) - varC
+		t := varSum + y
+		varC = (t - varSum) - y
+		varSum = t
+	}
+	var deltaMeanSE float64
+	if n > 1 {
+		sd := math.Sqrt(varSum / float64(n-1))
+		deltaMeanSE = sd / math.Sqrt(float64(n))
+	}
+	indepSE := math.Hypot(resBase.MeanSE, resVariant.MeanSE)
+	varRedRatio := 0.0
+	if deltaMeanSE > 0 {
+		varRedRatio = (indepSE * indepSE) / (deltaMeanSE * deltaMeanSE)
+	}
+
+	sortedDiffs := make([]float64, n)
+	copy(sortedDiffs, diffs)
+	sort.Float64s(sortedDiffs)
+
+	idxP50 := int(math.Ceil(0.50*float64(n))) - 1
+	idxP85 := int(math.Ceil(0.85*float64(n))) - 1
+	idxP95 := int(math.Ceil(0.95*float64(n))) - 1
+
+	orderStatDiffSE := func(tau float64) float64 {
+		nf := float64(n)
+		halfWidth := 1.96 * math.Sqrt(nf*tau*(1.0-tau))
+		r := int(math.Floor(nf*tau-halfWidth)) - 1
+		s := int(math.Ceil(nf*tau+halfWidth)) - 1
+		if r < 0 {
+			r = 0
+		}
+		if s >= n {
+			s = n - 1
+		}
+		return (sortedDiffs[s] - sortedDiffs[r]) / (2.0 * 1.96)
+	}
+
+	// Paired bootstrap (B = 200 resamples) for SE of marginal quantile differences (P_tau(C') - P_tau(C))
+	const B = 200
+	bootP50 := make([]float64, B)
+	bootP85 := make([]float64, B)
+	bootP95 := make([]float64, B)
+	sampBase := make([]float64, n)
+	sampVar := make([]float64, n)
+	rng := NewSplitMix64(seed ^ 0xA5A5A5A5A5A5A5A5)
+	for b := 0; b < B; b++ {
+		for k := 0; k < n; k++ {
+			idx := int(rng.NextUint64() % uint64(n))
+			sampBase[k] = resBase.RawFinishes[idx]
+			sampVar[k] = resVariant.RawFinishes[idx]
+		}
+		sort.Float64s(sampBase)
+		sort.Float64s(sampVar)
+		bootP50[b] = sampVar[idxP50] - sampBase[idxP50]
+		bootP85[b] = sampVar[idxP85] - sampBase[idxP85]
+		bootP95[b] = sampVar[idxP95] - sampBase[idxP95]
+	}
+
+	stdDevSlice := func(xs []float64) float64 {
+		m := 0.0
+		for _, v := range xs {
+			m += v
+		}
+		m /= float64(len(xs))
+		vs := 0.0
+		for _, v := range xs {
+			d := v - m
+			vs += d * d
+		}
+		return math.Sqrt(vs / float64(len(xs)-1))
+	}
+
+	return &CRNDiffResult{
+		DeltaMean:        resVariant.Mean - resBase.Mean,
+		DeltaMeanSE:      deltaMeanSE,
+		IndependentSE:    indepSE,
+		VarianceRedRatio: varRedRatio,
+		DeltaP50:         resVariant.P50 - resBase.P50,
+		DeltaP50SE:       stdDevSlice(bootP50),
+		DeltaP85:         resVariant.P85 - resBase.P85,
+		DeltaP85SE:       stdDevSlice(bootP85),
+		DeltaP95:         resVariant.P95 - resBase.P95,
+		DeltaP95SE:       stdDevSlice(bootP95),
+		PairedMeanDiff:   deltaMean,
+		PairedP50Diff:    sortedDiffs[idxP50],
+		PairedP85Diff:    sortedDiffs[idxP85],
+		PairedP95Diff:    sortedDiffs[idxP95],
+		PairedP85DiffSE:  orderStatDiffSE(0.85),
 	}, nil
 }

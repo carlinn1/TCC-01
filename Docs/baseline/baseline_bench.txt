@@ -1,0 +1,16 @@
+﻿goos: windows
+goarch: amd64
+pkg: poc-engine
+cpu: Intel(R) Core(TM) i5-8400 CPU @ 2.80GHz
+BenchmarkMonteCarloSmallNetwork-6        	     176	   5761375 ns/op	  209104 B/op	      78 allocs/op
+BenchmarkMonteCarloSmallNetwork-6        	     206	   5682443 ns/op	  209104 B/op	      78 allocs/op
+BenchmarkMonteCarloSmallNetwork-6        	     204	   5762160 ns/op	  209104 B/op	      78 allocs/op
+BenchmarkMonteCarloSmallNetwork-6        	     208	   5753440 ns/op	  209104 B/op	      78 allocs/op
+BenchmarkMonteCarloSmallNetwork-6        	     207	   5830658 ns/op	  209105 B/op	      78 allocs/op
+BenchmarkMonteCarloSynthetic200Tasks-6   	       4	 253922800 ns/op	 2514796 B/op	    2543 allocs/op
+BenchmarkMonteCarloSynthetic200Tasks-6   	       4	 256086350 ns/op	 2514916 B/op	    2543 allocs/op
+BenchmarkMonteCarloSynthetic200Tasks-6   	       4	 259280900 ns/op	 2514888 B/op	    2543 allocs/op
+BenchmarkMonteCarloSynthetic200Tasks-6   	       4	 261984250 ns/op	 2514768 B/op	    2543 allocs/op
+BenchmarkMonteCarloSynthetic200Tasks-6   	       4	 258916200 ns/op	 2514768 B/op	    2543 allocs/op
+PASS
+ok  	poc-engine	26.322s

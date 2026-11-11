@@ -1,3 +1,5 @@
+﻿> **AVISO HISTÓRICO (LEGADO):** Este documento é uma versão histórica inicial da proposta e **diverge do texto principal oficial (Docs/Main.tex)** em título, autoria e numeração de requisitos. Mantido em Docs/legado/ apenas para registro de evolução.
+
 # SPEC DE CORREÇÃO INTEGRAL DO TCC 1 (Código Go + Python + Figuras + LaTeX/BibTeX)
 
 **Repositório Alvo:** `https://github.com/carlinn1/TCC-01`  

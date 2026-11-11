@@ -1,3 +1,5 @@
+﻿> **AVISO HISTÓRICO (LEGADO):** Este documento é uma versão histórica inicial da proposta e **diverge do texto principal oficial (Docs/Main.tex)** em título, autoria e numeração de requisitos. Mantido em Docs/legado/ apenas para registro de evolução.
+
 # Proposta de Trabalho de Conclusão de Curso (TCC 1)
 
 **UNIVERSIDADE DE BRASÍLIA — UnB**  
@@ -790,3 +792,4 @@ A extração da Tabela 8 é feita pelo *script* `extract_dataset.py` (Python 3, 
 27. **VAN SLYKE, R. M.** Monte Carlo methods and the PERT problem. *Operations Research*, v. 11, n. 5, p. 839–860, 1963. DOI: <https://doi.org/10.1287/opre.11.5.839>.
 28. **VITE CONSORTIUM.** *Vite: Next Generation Frontend Tooling.* 2024. Disponível em: <https://vitejs.dev/>.
 29. **W3C.** *Server-Sent Events: W3C Recommendation.* World Wide Web Consortium, 2015. Disponível em: <https://www.w3.org/TR/eventsource/>.
+

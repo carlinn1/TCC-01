@@ -1,0 +1,28 @@
+﻿=================================================================
+  PoC Go - Validação Algorítmica do Motor CPM & Monte Carlo
+  TCC 1 - Sombra Digital Governada e IA em Projetos de Software
+=================================================================
+
+### Tabela 9 Reproduzida pela PoC em Go (N = 10.000 iterações, seed = 42)
+
+| Cenário | CPM determinístico (F) | Média (MCSE) | P50 (MCSE) | P85 (MCSE) | P95 (MCSE) | P(F <= 11) | Tempo (ms) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **A.** Início do projeto, sem riscos | 10.83 | 11.44 (±0.013) | 11.39 (±0.018) | 12.75 (±0.020) | 13.64 (±0.033) | 38.3% | 3.7 ms |
+| **B.** Início, com risco R1 em T3 ($p_r = 0{,}30$, $\Delta_r = 2$) | 10.83 | 11.89 (±0.015) | 11.79 (±0.018) | 13.43 (±0.028) | 14.55 (±0.035) | 29.4% | 4.0 ms |
+| **C.** Data de status $t_s = 5$, com R1 ativo | 11.02 | 11.58 (±0.011) | 11.47 (±0.014) | 12.77 (±0.020) | 13.55 (±0.031) | 32.2% | 2.5 ms |
+| **C′.** Como C, com R1 mitigado | 11.02 | 11.21 (±0.009) | 11.14 (±0.010) | 12.20 (±0.016) | 12.89 (±0.024) | 43.3% | 2.0 ms |
+
+### Índice de Criticidade por Tarefa (IC %)
+| Cenário | T1 | T2 | T3 | T4 |
+| :--- | :---: | :---: | :---: | :---: |
+| **A.** Início, sem riscos | 100.0% | 51.1% | 48.9% | 100.0% |
+| **B.** Início, com R1 em T3 | 100.0% | 38.7% | 61.3% | 100.0% |
+| **C.** Status $t_s = 5$, R1 ativo | — | 21.6% | 78.4% | 100.0% |
+| **C′.** Status $t_s = 5$, R1 mitigado | — | 30.7% | 69.3% | 100.0% |
+
+### Simulação de Monte Carlo do Cronograma do TCC 2 (20 semanas úteis, N = 10.000, seed = 42)
+| **Base PERT-Beta (sem riscos discretos)** | CPM=16.75 | Média=16.81 | P50=16.80 (±0.010) | P85=17.51 (±0.013) | P95=17.94 (±0.015) | P(F<=20)=100.0% |
+| **Com Riscos Discretos (R_DAG, R_LEAK, R_LLM)** | CPM=16.75 | Média=17.34 | P50=17.29 (±0.011) | P85=18.30 (±0.014) | P95=18.92 (±0.021) | P(F<=20)=99.6% |
+
+Resultados exportados para poc_results.json com sucesso.
+Macros LaTeX exportadas para ../Docs/resultados_poc.tex com sucesso.

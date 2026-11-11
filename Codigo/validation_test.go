@@ -1,18 +1,64 @@
 package main
 
 import (
-	"fmt"
 	"math"
-	"sort"
+	"strings"
 	"testing"
-	"time"
 )
 
-// TestPertBetaMomentsMatchAnalytical valida o amostrador (Marsaglia-Tsang + Beta)
-// contra as fórmulas fechadas da seção 2.2 do texto:
-//
-//	mu     = (to + 4*tm + tp) / 6
-//	sigma2 = (mu - to) * (tp - mu) / 7
+// TestRegularizedIncompleteBetaAnalytical (COD-05) verifies RegularizedIncompleteBeta(x, a, b)
+// against closed-form analytical identities with tolerance < 1e-12.
+func TestRegularizedIncompleteBetaAnalytical(t *testing.T) {
+	// 1. Uniform Beta(1, 1): I_x(1, 1) = x
+	for _, x := range []float64{0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0} {
+		got := RegularizedIncompleteBeta(x, 1.0, 1.0)
+		if math.Abs(got-x) > 1e-13 {
+			t.Errorf("I_%.2f(1,1) = %.15f, want %.15f", x, got, x)
+		}
+	}
+
+	// 2. Symmetry at x = 0.5: I_{0.5}(a, a) = 0.5
+	for _, a := range []float64{1.0, 2.0, 2.5, 3.5, 5.0} {
+		got := RegularizedIncompleteBeta(0.5, a, a)
+		if math.Abs(got-0.5) > 1e-13 {
+			t.Errorf("I_0.5(%.1f, %.1f) = %.15f, want 0.5", a, a, got)
+		}
+	}
+
+	// 3. Closed-form polynomials:
+	//    I_x(2, 2) = 3x^2 - 2x^3
+	//    I_x(2, 3) = 6x^2 - 8x^3 + 3x^4
+	//    I_x(3, 2) = 4x^3 - 3x^4
+	for _, x := range []float64{0.1, 0.2, 0.35, 0.5, 0.7, 0.85} {
+		want22 := 3*x*x - 2*x*x*x
+		got22 := RegularizedIncompleteBeta(x, 2.0, 2.0)
+		if math.Abs(got22-want22) > 1e-12 {
+			t.Errorf("I_%.2f(2,2) = %.15f, want %.15f", x, got22, want22)
+		}
+
+		want23 := 6*x*x - 8*x*x*x + 3*x*x*x*x
+		got23 := RegularizedIncompleteBeta(x, 2.0, 3.0)
+		if math.Abs(got23-want23) > 1e-12 {
+			t.Errorf("I_%.2f(2,3) = %.15f, want %.15f", x, got23, want23)
+		}
+
+		want32 := x * x * x * (4.0 - 3.0*x)
+		got32 := RegularizedIncompleteBeta(x, 3.0, 2.0)
+		if math.Abs(got32-want32) > 1e-12 {
+			t.Errorf("I_%.2f(3,2) = %.15f, want %.15f", x, got32, want32)
+		}
+
+		// Reflection identity: I_x(a, b) + I_{1-x}(b, a) = 1
+		sumSym := RegularizedIncompleteBeta(x, 2.333333333333, 3.666666666667) +
+			RegularizedIncompleteBeta(1.0-x, 3.666666666667, 2.333333333333)
+		if math.Abs(sumSym-1.0) > 1e-12 {
+			t.Errorf("reflection identity failed at x=%.2f: sum=%.15f", x, sumSym)
+		}
+	}
+}
+
+// TestPertBetaMomentsMatchAnalytical validates the Marsaglia-Tsang + Beta sampler
+// against closed-form moments mu = (to + 4*tm + tp)/6 and sigma^2 = (mu - to)*(tp - mu)/7.
 func TestPertBetaMomentsMatchAnalytical(t *testing.T) {
 	cases := []struct {
 		id         string
@@ -45,118 +91,17 @@ func TestPertBetaMomentsMatchAnalytical(t *testing.T) {
 
 		seMu := math.Sqrt(wantVar / n)
 		if math.Abs(mu-wantMu) > 5*seMu {
-			t.Errorf("%s: média amostral %.5f != analítica %.5f (5·SE = %.5f)", c.id, mu, wantMu, 5*seMu)
+			t.Errorf("%s: sample mean %.5f != analytical %.5f (5*SE = %.5f)", c.id, mu, wantMu, 5*seMu)
 		}
 		if math.Abs(variance-wantVar)/wantVar > 0.02 {
-			t.Errorf("%s: variância amostral %.5f != analítica %.5f (>2%%)", c.id, variance, wantVar)
+			t.Errorf("%s: sample variance %.5f != analytical %.5f (>2%%)", c.id, variance, wantVar)
 		}
-		t.Logf("%s  mu=%.5f (analítico %.5f)  var=%.5f (analítico %.5f)", c.id, mu, wantMu, variance, wantVar)
+		t.Logf("%s  mu=%.5f (analytical %.5f)  var=%.5f (analytical %.5f)", c.id, mu, wantMu, variance, wantVar)
 	}
 }
 
-// regularizedIncompleteBeta calcula I_x(a, b) via expansão em frações contínuas
-// de Lentz (Numerical Recipes / Abramowitz & Stegun 26.5.8), com precisão ~1e-14.
-func regularizedIncompleteBeta(x, a, b float64) float64 {
-	if x <= 0.0 {
-		return 0.0
-	}
-	if x >= 1.0 {
-		return 1.0
-	}
-	lgA, _ := math.Lgamma(a)
-	lgB, _ := math.Lgamma(b)
-	lgAB, _ := math.Lgamma(a + b)
-	lnBt := lgAB - lgA - lgB + a*math.Log(x) + b*math.Log(1.0-x)
-	bt := math.Exp(lnBt)
-
-	if x < (a+1.0)/(a+b+2.0) {
-		return bt * betaContinuedFraction(x, a, b) / a
-	}
-	return 1.0 - bt*betaContinuedFraction(1.0-x, b, a)/b
-}
-
-func betaContinuedFraction(x, a, b float64) float64 {
-	const maxIter = 200
-	const eps = 3e-14
-	const fpMin = 1e-30
-
-	qab := a + b
-	qap := a + 1.0
-	qam := a - 1.0
-	c := 1.0
-	d := 1.0 - qab*x/qap
-	if math.Abs(d) < fpMin {
-		d = fpMin
-	}
-	d = 1.0 / d
-	h := d
-
-	for m := 1; m <= maxIter; m++ {
-		mFloat := float64(m)
-		m2 := 2.0 * mFloat
-		aa := mFloat * (b - mFloat) * x / ((qam + m2) * (a + m2))
-		d = 1.0 + aa*d
-		if math.Abs(d) < fpMin {
-			d = fpMin
-		}
-		c = 1.0 + aa/c
-		if math.Abs(c) < fpMin {
-			c = fpMin
-		}
-		d = 1.0 / d
-		h *= d * c
-
-		aa = -(a + mFloat) * (qab + mFloat) * x / ((a + m2) * (qap + m2))
-		d = 1.0 + aa*d
-		if math.Abs(d) < fpMin {
-			d = fpMin
-		}
-		c = 1.0 + aa/c
-		if math.Abs(c) < fpMin {
-			c = fpMin
-		}
-		d = 1.0 / d
-		del := d * c
-		h *= del
-		if math.Abs(del-1.0) < eps {
-			break
-		}
-	}
-	return h
-}
-
-// kolmogorovPValue calcula o p-valor assintótico da estatística KS unilateral/bilateral.
-func kolmogorovPValue(d float64, n int) float64 {
-	if d <= 0 {
-		return 1.0
-	}
-	sqrtN := math.Sqrt(float64(n))
-	z := (sqrtN + 0.12 + 0.11/sqrtN) * d
-	sum := 0.0
-	for k := 1; k <= 100; k++ {
-		kf := float64(k)
-		term := math.Exp(-2.0 * kf * kf * z * z)
-		if k%2 == 1 {
-			sum += term
-		} else {
-			sum -= term
-		}
-		if term < 1e-12 {
-			break
-		}
-	}
-	p := 2.0 * sum
-	if p > 1.0 {
-		return 1.0
-	}
-	if p < 0.0 {
-		return 0.0
-	}
-	return p
-}
-
-// TestPertBetaKSGoodnessOfFit realiza o teste de aderência de Kolmogorov-Smirnov (KS)
-// contra a CDF Beta teórica para cada tarefa T1..T4 (Pendência 17).
+// TestPertBetaKSGoodnessOfFit performs the exact full-sample Kolmogorov-Smirnov (KS) test
+// over all n = 1,000,000 samples against the theoretical Beta CDF for T1..T4 (COD-05).
 func TestPertBetaKSGoodnessOfFit(t *testing.T) {
 	cases := []struct {
 		id         string
@@ -170,53 +115,105 @@ func TestPertBetaKSGoodnessOfFit(t *testing.T) {
 	}
 	const n = 1_000_000
 	const lambda = 4.0
-	dCrit := 1.35810 / math.Sqrt(float64(n)) // alpha = 0.05 -> 0.0013581
 
 	for _, c := range cases {
-		diff := c.tp - c.to
-		a := 1.0 + lambda*(c.tm-c.to)/diff
-		b := 1.0 + lambda*(c.tp-c.tm)/diff
-
-		rng := NewSplitMix64(DeriveIterationSeed(2026, c.seedOffset))
-		samples := make([]float64, n)
-		for i := 0; i < n; i++ {
-			samples[i] = rng.SampleBeta(a, b)
+		res := ComputeKSBetaFit(c.id, c.to, c.tm, c.tp, lambda, n, DeriveIterationSeed(2026, c.seedOffset))
+		if res.DnFull >= res.DCrit005 {
+			t.Errorf("%s: exact full-sample KS D_n = %.6f >= D_crit = %.6f (p = %.4f)", c.id, res.DnFull, res.DCrit005, res.PValueFull)
 		}
-		sort.Float64s(samples)
-
-		// Avalia o supremo D_n em 2000 quantis uniformemente espaçados
-		maxD := 0.0
-		step := n / 2000
-		for i := 0; i < n; i += step {
-			x := samples[i]
-			cdfTheo := regularizedIncompleteBeta(x, a, b)
-			empUpper := float64(i+1) / float64(n)
-			empLower := float64(i) / float64(n)
-			d1 := math.Abs(empUpper - cdfTheo)
-			d2 := math.Abs(cdfTheo - empLower)
-			if d1 > maxD {
-				maxD = d1
-			}
-			if d2 > maxD {
-				maxD = d2
-			}
+		if res.DnFull < res.DnGrid2000 {
+			t.Errorf("%s: full supremum %.6f cannot be smaller than 2000-point grid %.6f", c.id, res.DnFull, res.DnGrid2000)
 		}
-
-		pVal := kolmogorovPValue(maxD, n)
-		if maxD >= dCrit {
-			t.Errorf("%s: KS D_n = %.6f >= D_crit = %.6f (p = %.4f)", c.id, maxD, dCrit, pVal)
-		}
-		t.Logf("%s  KS D_n=%.5f (< D_crit=%.5f)  p-valor=%.3f", c.id, maxD, dCrit, pVal)
+		t.Logf("%s  KS full D_n=%.5f (p=%.3f) | grid2000 D_n=%.5f (p=%.3f) | D_crit=%.5f",
+			c.id, res.DnFull, res.PValueFull, res.DnGrid2000, res.PValueGrid2000, res.DCrit005)
 	}
 }
 
-// TestDegeneratePertBetaZeroVariance valida o caso degenerado to = tm = tp (Pendência 17).
+// TestPertBetaKSMultiSeed100 (COD-06) runs 100 independent seeds (n = 10,000 per seed)
+// for T1..T4 and verifies that the alpha=0.05 rejection rate lies within binomial bounds
+// and that p-values are well-calibrated around 0.50.
+func TestPertBetaKSMultiSeed100(t *testing.T) {
+	cases := []struct {
+		id         string
+		to, tm, tp float64
+		seedOffset int
+	}{
+		{"T1", 2, 3, 5, 101},
+		{"T2", 4, 5, 9, 202},
+		{"T3", 3, 5, 10, 303},
+		{"T4", 1, 2, 4, 404},
+	}
+	for _, c := range cases {
+		summary := RunKSMultiSeedSuite(c.id, c.to, c.tm, c.tp, 4.0, c.seedOffset, 100, 10000)
+		// For 100 independent tests at alpha=0.05, Binomial(100, 0.05) has 99.9% interval [0, 13]
+		if summary.Rejections005 > 12 {
+			t.Errorf("%s: excessive KS rejections across 100 seeds: %d/100 (%.1f%%)", c.id, summary.Rejections005, summary.RejectRate005)
+		}
+		if summary.MeanPValue < 0.35 || summary.MeanPValue > 0.65 {
+			t.Errorf("%s: 100-seed mean p-value %.3f outside [0.35, 0.65]", c.id, summary.MeanPValue)
+		}
+		t.Logf("%s (100 seeds x 10k): mean D_n=%.5f, max D_n=%.5f, mean p=%.3f, median p=%.3f, rejections@0.05=%d/100",
+			c.id, summary.MeanDn, summary.MaxDn, summary.MeanPValue, summary.MedianPValue, summary.Rejections005)
+	}
+}
+
+// TestSplitMix64StreamIndependence (COD-06) verifies near-zero correlation between
+// consecutive iteration sub-streams (S0 ^ k vs S0 ^ (k+1)) and across tasks within iterations.
+func TestSplitMix64StreamIndependence(t *testing.T) {
+	const numIters = 10000
+	const s0 uint64 = 42
+
+	uCur := make([]float64, numIters)
+	uNext := make([]float64, numIters)
+	task1 := make([]float64, numIters)
+	task2 := make([]float64, numIters)
+
+	for k := 0; k < numIters; k++ {
+		rngK := NewSplitMix64(DeriveIterationSeed(s0, k))
+		rngK1 := NewSplitMix64(DeriveIterationSeed(s0, k+1))
+		uCur[k] = rngK.Float64()
+		uNext[k] = rngK1.Float64()
+
+		rngTasks := NewSplitMix64(DeriveIterationSeed(s0, k))
+		task1[k] = rngTasks.SamplePERTBeta(2, 3, 5, 4.0)
+		task2[k] = rngTasks.SamplePERTBeta(4, 5, 9, 4.0)
+	}
+
+	pearson := func(xs, ys []float64) float64 {
+		n := float64(len(xs))
+		var sx, sy, sxx, syy, sxy float64
+		for i := range xs {
+			x, y := xs[i], ys[i]
+			sx += x
+			sy += y
+			sxx += x * x
+			syy += y * y
+			sxy += x * y
+		}
+		cov := sxy/n - (sx/n)*(sy/n)
+		vx := sxx/n - (sx/n)*(sx/n)
+		vy := syy/n - (sy/n)*(sy/n)
+		return cov / math.Sqrt(vx*vy)
+	}
+
+	rLag1 := pearson(uCur, uNext)
+	rTasks := pearson(task1, task2)
+	if math.Abs(rLag1) > 0.03 {
+		t.Errorf("excessive lag-1 stream correlation between k and k+1: r = %.5f", rLag1)
+	}
+	if math.Abs(rTasks) > 0.03 {
+		t.Errorf("excessive inter-task correlation between T1 and T2 draws: r = %.5f", rTasks)
+	}
+	t.Logf("Stream independence verified: lag-1 r=%.5f, inter-task r=%.5f (threshold |r| <= 0.03)", rLag1, rTasks)
+}
+
+// TestDegeneratePertBetaZeroVariance validates the degenerate case to = tm = tp.
 func TestDegeneratePertBetaZeroVariance(t *testing.T) {
 	rng := NewSplitMix64(2026)
 	for i := 0; i < 100; i++ {
 		s := rng.SamplePERTBeta(5.0, 5.0, 5.0, 4.0)
 		if math.IsNaN(s) || math.Abs(s-5.0) > 1e-12 {
-			t.Fatalf("SamplePERTBeta degenerado inválido: obtido %v, esperado 5.0", s)
+			t.Fatalf("SamplePERTBeta degenerate invalid: got %v, want 5.0", s)
 		}
 	}
 
@@ -235,18 +232,16 @@ func TestDegeneratePertBetaZeroVariance(t *testing.T) {
 	}
 	res, err := RunMonteCarlo(net, cfg)
 	if err != nil {
-		t.Fatalf("erro inesperado no caso degenerado: %v", err)
+		t.Fatalf("unexpected error in degenerate case: %v", err)
 	}
 	for _, d := range res.Durations {
 		if math.IsNaN(d) || math.Abs(d-5.0) > 1e-12 {
-			t.Fatalf("duração degenerada inválida: obtido %v, esperado 5.0", d)
+			t.Fatalf("invalid degenerate duration: got %v, want 5.0", d)
 		}
 	}
-	t.Logf("Caso degenerado (5,5,5): P50=%.5f, P85=%.5f, P95=%.5f, var=0.00000", res.P50, res.P85, res.P95)
 }
 
-// TestDeterministicCPMScenarios confere o CPM determinístico dos cenários A e C
-// contra o cálculo manual (soma de médias PERT ao longo de T1->max(T2,T3)->T4).
+// TestDeterministicCPMScenarios checks deterministic CPM of scenarios A and C against manual PERT mean sums.
 func TestDeterministicCPMScenarios(t *testing.T) {
 	cfg := MonteCarloConfig{Iterations: 100, Seed: 1, NumWorkers: 1, Lambda: 4, EpsilonFloat: 1e-9}
 
@@ -255,7 +250,7 @@ func TestDeterministicCPMScenarios(t *testing.T) {
 		t.Fatal(err)
 	}
 	if math.Abs(resA.CPMDeterministic-(19.0/6+5.5+13.0/6)) > 1e-9 {
-		t.Errorf("Cenário A: CPM = %.6f, esperado %.6f", resA.CPMDeterministic, 19.0/6+5.5+13.0/6)
+		t.Errorf("Scenario A: CPM = %.6f, want %.6f", resA.CPMDeterministic, 19.0/6+5.5+13.0/6)
 	}
 
 	netC := buildBaseNetwork()
@@ -269,11 +264,11 @@ func TestDeterministicCPMScenarios(t *testing.T) {
 	}
 	want := 5 + 0.7*5.5 + 13.0/6
 	if math.Abs(resC.CPMDeterministic-want) > 1e-9 {
-		t.Errorf("Cenário C: CPM = %.6f, esperado %.6f", resC.CPMDeterministic, want)
+		t.Errorf("Scenario C: CPM = %.6f, want %.6f", resC.CPMDeterministic, want)
 	}
 }
 
-// TestPrintReproducibilityValues imprime os valores reais para a Tabela de Reprodutibilidade (RNF08).
+// TestPrintReproducibilityValues logs real values for the Reproducibility Table (RNF08).
 func TestPrintReproducibilityValues(t *testing.T) {
 	net := buildBaseNetwork()
 	net.Risks = []Risk{{ID: "R1", TaskID: "T3", Probability: 0.30, ImpactDays: 2.0, Active: true}}
@@ -290,148 +285,92 @@ func TestPrintReproducibilityValues(t *testing.T) {
 	}
 }
 
-// TestTCC2ScheduleMonteCarlo simula o cronograma pré-registrado do TCC 2 (Seção 6.2)
-// sob alocação estática em 2 trilhas (Autor 1 e Autor 2), com e sem riscos discretos.
+// TestTCC2ScheduleMonteCarlo (COD-10) verifies the deterministic CPM duration, track sums,
+// critical path, total floats, and all 4 stochastic configurations (Base, WithRisks, Stress, StressWithCuts).
 func TestTCC2ScheduleMonteCarlo(t *testing.T) {
-	cfg := MonteCarloConfig{
-		Iterations:   10000,
-		Seed:         42,
-		NumWorkers:   8,
-		TargetDate:   20.0,
-		Lambda:       4.0,
-		EpsilonFloat: 1e-9,
-	}
-
-	baseNet := buildTCC2ScheduleNetwork(false)
-	resBase, err := RunMonteCarlo(baseNet, cfg)
+	audit, err := AuditTCC2Schedule()
 	if err != nil {
-		t.Fatalf("Erro ao simular cronograma TCC2 base: %v", err)
+		t.Fatalf("AuditTCC2Schedule failed: %v", err)
 	}
 
-	riskNet := buildTCC2ScheduleNetwork(true)
-	resRisk, err := RunMonteCarlo(riskNet, cfg)
-	if err != nil {
-		t.Fatalf("Erro ao simular cronograma TCC2 com riscos: %v", err)
+	// 1. Assert deterministic CPM duration = 16.75 weeks
+	if math.Abs(audit.CPMDuration-16.75) > 1e-6 {
+		t.Errorf("TCC2 CPMDuration = %.6f, want 16.75", audit.CPMDuration)
 	}
 
-	t.Logf("TCC2 Base (sem riscos): CPM=%.2f sem | Media=%.2f (±%.3f) | P50=%.2f (±%.3f) | P85=%.2f (±%.3f) | P95=%.2f (±%.3f) | P(F<=20)=%.1f%%",
-		resBase.CPMDeterministic, resBase.Mean, resBase.MeanSE, resBase.P50, resBase.P50SE, resBase.P85, resBase.P85SE, resBase.P95, resBase.P95SE, resBase.ProbTarget)
-	t.Logf("TCC2 Com Riscos (R_DAG, R_LEAK, R_LLM): CPM=%.2f sem | Media=%.2f (±%.3f) | P50=%.2f (±%.3f) | P85=%.2f (±%.3f) | P95=%.2f (±%.3f) | P(F<=20)=%.1f%%",
-		resRisk.CPMDeterministic, resRisk.Mean, resRisk.MeanSE, resRisk.P50, resRisk.P50SE, resRisk.P85, resRisk.P85SE, resRisk.P95, resRisk.P95SE, resRisk.ProbTarget)
-	t.Logf("Criticidade TCC2 Base: E01=%.1f%% E02=%.1f%% E04=%.1f%% E05=%.1f%% E07=%.1f%% E08=%.1f%% E09=%.1f%% E10=%.1f%% E11=%.1f%%",
-		resBase.CriticalityIndex["E01"], resBase.CriticalityIndex["E02"], resBase.CriticalityIndex["E04"], resBase.CriticalityIndex["E05"],
-		resBase.CriticalityIndex["E07"], resBase.CriticalityIndex["E08"], resBase.CriticalityIndex["E09"], resBase.CriticalityIndex["E10"], resBase.CriticalityIndex["E11"])
-	t.Logf("Criticidade TCC2 Riscos: E01=%.1f%% E02=%.1f%% E04=%.1f%% E05=%.1f%% E07=%.1f%% E08=%.1f%% E09=%.1f%% E10=%.1f%% E11=%.1f%%",
-		resRisk.CriticalityIndex["E01"], resRisk.CriticalityIndex["E02"], resRisk.CriticalityIndex["E04"], resRisk.CriticalityIndex["E05"],
-		resRisk.CriticalityIndex["E07"], resRisk.CriticalityIndex["E08"], resRisk.CriticalityIndex["E09"], resRisk.CriticalityIndex["E10"], resRisk.CriticalityIndex["E11"])
+	// 2. Assert Track A sum = 133/12 (~11.0833), Track B sum = 129/12 (10.75), Joint sum = 49/12 (~4.0833)
+	if math.Abs(audit.TrackASum-133.0/12.0) > 1e-6 {
+		t.Errorf("TrackASum = %.6f, want %.6f (11.08)", audit.TrackASum, 133.0/12.0)
+	}
+	if math.Abs(audit.TrackBSum-10.75) > 1e-6 {
+		t.Errorf("TrackBSum = %.6f, want 10.75", audit.TrackBSum)
+	}
+	if math.Abs(audit.JointSum-49.0/12.0) > 1e-6 {
+		t.Errorf("JointSum = %.6f, want %.6f (4.08)", audit.JointSum, 49.0/12.0)
+	}
+
+	// 3. Assert critical path is E02->E03->E05->E08->E09->E10->E12->E13->E14
+	wantCP := "E02->E03->E05->E08->E09->E10->E12->E13->E14"
+	gotCP := strings.Join(audit.CriticalPath, "->")
+	if gotCP != wantCP {
+		t.Errorf("CriticalPath = %s, want %s", gotCP, wantCP)
+	}
+
+	// 4. Assert total float of E11 = 19/12 (~1.5833) and E06/E07 = 0.50
+	if math.Abs(audit.TaskCPM["E11"].TF-19.0/12.0) > 1e-6 {
+		t.Errorf("TF(E11) = %.6f, want %.6f (1.58)", audit.TaskCPM["E11"].TF, 19.0/12.0)
+	}
+	if math.Abs(audit.TaskCPM["E06"].TF-0.50) > 1e-6 {
+		t.Errorf("TF(E06) = %.6f, want 0.50", audit.TaskCPM["E06"].TF)
+	}
+	if math.Abs(audit.TaskCPM["E07"].TF-0.50) > 1e-6 {
+		t.Errorf("TF(E07) = %.6f, want 0.50", audit.TaskCPM["E07"].TF)
+	}
+
+	// 5. Assert Stress scenario exceeds 20 weeks at P85, and StressWithCuts brings P85 <= 20 weeks (DEC-4)
+	if audit.Stress.P85 <= 20.0 {
+		t.Errorf("Expected Stress P85 > 20.0 weeks, got %.2f", audit.Stress.P85)
+	}
+	if audit.StressWithCuts.P85 > 20.0 {
+		t.Errorf("Expected StressWithCuts P85 <= 20.0 weeks after DEC-4 cuts, got %.2f", audit.StressWithCuts.P85)
+	}
+
+	t.Logf("TCC2 Base: CPM=%.2f | Mean=%.2f | P50=%.2f | P85=%.2f | P95=%.2f | P(F<=20)=%.1f%%",
+		audit.Base.CPMDeterministic, audit.Base.Mean, audit.Base.P50, audit.Base.P85, audit.Base.P95, audit.Base.ProbTarget)
+	t.Logf("TCC2 Risks: CPM=%.2f | Mean=%.2f | P50=%.2f | P85=%.2f | P95=%.2f | P(F<=20)=%.1f%%",
+		audit.WithRisks.CPMDeterministic, audit.WithRisks.Mean, audit.WithRisks.P50, audit.WithRisks.P85, audit.WithRisks.P95, audit.WithRisks.ProbTarget)
+	t.Logf("TCC2 Stress (+25%%): CPM=%.2f | Mean=%.2f | P50=%.2f | P85=%.2f | P95=%.2f | P(F<=20)=%.1f%%",
+		audit.Stress.CPMDeterministic, audit.Stress.Mean, audit.Stress.P50, audit.Stress.P85, audit.Stress.P95, audit.Stress.ProbTarget)
+	t.Logf("TCC2 Stress+Cuts: CPM=%.2f | Mean=%.2f | P50=%.2f | P85=%.2f | P95=%.2f | P(F<=20)=%.1f%%",
+		audit.StressWithCuts.CPMDeterministic, audit.StressWithCuts.Mean, audit.StressWithCuts.P50, audit.StressWithCuts.P85, audit.StressWithCuts.P95, audit.StressWithCuts.ProbTarget)
 }
 
-// buildSynthetic200Network constrói a rede sintética determinística (200 tarefas, 300 dependências,
-// 10 camadas de 20 tarefas, semente topológica 99) descrita na Seção de Benchmark (Pendência 17).
-func buildSynthetic200Network() ProjectNetwork {
-	rng := NewSplitMix64(99)
-	const numTiers = 10
-	const tasksPerTier = 20
-	const totalTasks = numTiers * tasksPerTier
-
-	tasks := make([]Task, 0, totalTasks)
-	for i := 0; i < totalTasks; i++ {
-		to := 1.0 + rng.Float64()*4.0
-		tm := to + 1.0 + rng.Float64()*3.0
-		tp := tm + 2.0 + rng.Float64()*6.0
-		tasks = append(tasks, Task{
-			ID: fmt.Sprintf("T%03d", i+1),
-			To: to,
-			Tm: tm,
-			Tp: tp,
-		})
-	}
-
-	deps := make([]Dependency, 0, 300)
-	// 180 arestas base (1 para cada tarefa nas camadas 1..9 vinda da camada anterior)
-	for tier := 1; tier < numTiers; tier++ {
-		for j := 0; j < tasksPerTier; j++ {
-			curIdx := tier*tasksPerTier + j
-			prevIdx := (tier-1)*tasksPerTier + j
-			deps = append(deps, Dependency{
-				From: tasks[prevIdx].ID,
-				To:   tasks[curIdx].ID,
-			})
-		}
-	}
-	// +120 arestas cruzadas distintas para atingir exatamente 300 dependências FS acíclicas
-	addedCross := 0
-	for tier := 1; tier < numTiers && addedCross < 120; tier++ {
-		for j := 0; j < tasksPerTier && addedCross < 120; j++ {
-			curIdx := tier*tasksPerTier + j
-			altOffset := (j + 3) % tasksPerTier
-			prevIdx := (tier-1)*tasksPerTier + altOffset
-			deps = append(deps, Dependency{
-				From: tasks[prevIdx].ID,
-				To:   tasks[curIdx].ID,
-			})
-			addedCross++
-		}
-	}
-
-	risks := make([]Risk, 0, 40)
-	for r := 0; r < 40; r++ {
-		tIdx := (r * 5) % totalTasks
-		risks = append(risks, Risk{
-			ID:          fmt.Sprintf("R%02d", r+1),
-			TaskID:      tasks[tIdx].ID,
-			Probability: 0.10 + rng.Float64()*0.25,
-			ImpactDays:  1.0 + rng.Float64()*3.0,
-			Active:      true,
-		})
-	}
-
-	return ProjectNetwork{
-		StatusDate:   0,
-		Tasks:        tasks,
-		Dependencies: deps,
-		Risks:        risks,
-	}
-}
-
-// TestBenchmarkDispersion5Runs mede mediana, média, desvio-padrão, mínimo e máximo
-// das 5 repetições de benchmark reportadas na Tabela de Desempenho (Pendência 17).
+// TestBenchmarkDispersion5Runs (COD-09 & BASE-02) measures 5-run dispersion across
+// 1, 2, 4, and 8 workers and enforces the RNF06 performance gate (< 500 ms median uninstrumented).
 func TestBenchmarkDispersion5Runs(t *testing.T) {
-	const runs = 5
-	baseNet := buildBaseNetwork()
-	synthNet := buildSynthetic200Network()
-
-	runStats := func(name string, net ProjectNetwork, workers int) {
-		times := make([]float64, runs)
-		var sum, sumSq float64
-		for i := 0; i < runs; i++ {
-			t0 := time.Now()
-			_, err := RunMonteCarlo(net, MonteCarloConfig{
-				Iterations:   10000,
-				Seed:         uint64(42 + i),
-				NumWorkers:   workers,
-				Lambda:       4.0,
-				EpsilonFloat: 1e-9,
-			})
-			if err != nil {
-				t.Fatal(err)
-			}
-			ms := float64(time.Since(t0).Microseconds()) / 1000.0
-			times[i] = ms
-			sum += ms
-			sumSq += ms * ms
-		}
-		sort.Float64s(times)
-		mean := sum / runs
-		variance := (sumSq - float64(runs)*mean*mean) / float64(runs-1)
-		if variance < 0 {
-			variance = 0
-		}
-		sd := math.Sqrt(variance)
-		t.Logf("%s (5 runs): mediana=%.2f ms | média=%.2f±%.2f ms | min=%.2f ms | max=%.2f ms",
-			name, times[runs/2], mean, sd, times[0], times[runs-1])
+	suite, err := RunBenchmarkSuite(5)
+	if err != nil {
+		t.Fatalf("RunBenchmarkSuite failed: %v", err)
 	}
+	budgetMs := 500.0
+	if testing.CoverMode() != "" {
+		// Under -cover, Go instruments every basic block with shared global counters
+		budgetMs = 900.0
+	}
+	t.Logf("Environment: OS=%s ARCH=%s Go=%s NumCPU=%d (cover=%q)", suite.GOOS, suite.GOARCH, suite.GoVersion, suite.NumCPU, testing.CoverMode())
+	for _, r := range suite.Results {
+		t.Logf("%s (workers=%d): median=%.2f ms | mean=%.2f±%.2f ms | [%.2f, %.2f] ms | ~%.0f it/s",
+			r.Name, r.Workers, r.MedianMs, r.MeanMs, r.StdDevMs, r.MinMs, r.MaxMs, r.ThroughputItS)
+		if r.Tasks == 200 && r.Workers >= 4 && r.MedianMs > budgetMs {
+			t.Errorf("RNF06 gate violated for %s: median %.2f ms > %.0f ms", r.Name, r.MedianMs, budgetMs)
+		}
+	}
+}
 
-	runStats("Rede Base (4/4)", baseNet, 1)
-	runStats("Rede Sintética (200/300)", synthNet, 8)
+// TestRunAllPoCValidationAndExport verifies the end-to-end JSON and LaTeX export pipeline (COD-08 & FOR-01).
+func TestRunAllPoCValidationAndExport(t *testing.T) {
+	tmp := t.TempDir()
+	if err := RunAllPoCValidationAndExportToDir(tmp, tmp, tmp, 3); err != nil {
+		t.Fatalf("RunAllPoCValidationAndExportToDir failed: %v", err)
+	}
 }

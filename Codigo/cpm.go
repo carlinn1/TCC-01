@@ -7,8 +7,11 @@ import (
 )
 
 // TopologicalSort sorts task IDs topologically using Kahn's algorithm.
-// Returns an error if the graph contains a cycle.
+// Returns an error if the graph contains invalid tasks/dependencies or a cycle.
 func TopologicalSort(tasks []Task, deps []Dependency) ([]string, error) {
+	if err := ValidateTasksAndDeps(tasks, deps); err != nil {
+		return nil, err
+	}
 	inDegree := make(map[string]int)
 	adj := make(map[string][]string)
 
@@ -18,12 +21,6 @@ func TopologicalSort(tasks []Task, deps []Dependency) ([]string, error) {
 	}
 
 	for _, d := range deps {
-		if _, ok := inDegree[d.From]; !ok {
-			return nil, fmt.Errorf("dependency from unknown task: %s", d.From)
-		}
-		if _, ok := inDegree[d.To]; !ok {
-			return nil, fmt.Errorf("dependency to unknown task: %s", d.To)
-		}
 		adj[d.From] = append(adj[d.From], d.To)
 		inDegree[d.To]++
 	}
@@ -58,9 +55,17 @@ func TopologicalSort(tasks []Task, deps []Dependency) ([]string, error) {
 	return sorted, nil
 }
 
-// CalculateExpectedDuration returns (to + 4*tm + tp) / 6
+// CalculateExpectedDuration returns (to + 4*tm + tp) / 6 (standard PERT with lambda = 4.0).
 func CalculateExpectedDuration(to, tm, tp float64) float64 {
-	return (to + 4.0*tm + tp) / 6.0
+	return CalculateExpectedDurationWithLambda(to, tm, tp, 4.0)
+}
+
+// CalculateExpectedDurationWithLambda returns (to + lambda*tm + tp) / (lambda + 2).
+func CalculateExpectedDurationWithLambda(to, tm, tp, lambda float64) float64 {
+	if lambda <= 0 {
+		lambda = 4.0
+	}
+	return (to + lambda*tm + tp) / (lambda + 2.0)
 }
 
 // CompiledGraph represents the static topology indexed by integers for allocation-free CPM.
