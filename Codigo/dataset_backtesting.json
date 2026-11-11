@@ -9,8 +9,11 @@
       "window_business_days": 7.88,
       "prs_merged_total": 11,
       "prs_merged_non_bot": 11,
+      "prs_closed_unmerged_excluded": 3,
       "prs_with_closing_keyword": 6,
+      "prs_with_commit_before_pr": 7,
       "issues_closed_completed": 10,
+      "issues_closed_not_planned_excluded": 1,
       "cycle_time_business_days": {
         "n": 11,
         "p5": 0.006782407407407407,
@@ -19,6 +22,15 @@
         "p90": 9.590590277777777,
         "p95": 10.220908564814813,
         "mean": 3.884917929292929
+      },
+      "engineering_duration_business_days": {
+        "n": 11,
+        "p5": 0.25,
+        "p10": 0.25,
+        "p50": 4.540798611111112,
+        "p90": 15.318506944444444,
+        "p95": 24.741006944444443,
+        "mean": 7.363710016835017
       },
       "top_labels": [
         [
@@ -39,8 +51,11 @@
       "window_business_days": 21.97,
       "prs_merged_total": 16,
       "prs_merged_non_bot": 13,
+      "prs_closed_unmerged_excluded": 6,
       "prs_with_closing_keyword": 6,
+      "prs_with_commit_before_pr": 12,
       "issues_closed_completed": 19,
+      "issues_closed_not_planned_excluded": 3,
       "cycle_time_business_days": {
         "n": 13,
         "p5": 0.006541666666666667,
@@ -49,6 +64,15 @@
         "p90": 4.19321990740741,
         "p95": 9.882243055555538,
         "mean": 2.072881054131054
+      },
+      "engineering_duration_business_days": {
+        "n": 13,
+        "p5": 0.25,
+        "p10": 0.25,
+        "p50": 0.25,
+        "p90": 4.1964513888888915,
+        "p95": 9.934918981481463,
+        "mean": 2.206978276353276
       },
       "top_labels": [
         [
@@ -69,8 +93,11 @@
       "window_business_days": 74.08,
       "prs_merged_total": 72,
       "prs_merged_non_bot": 62,
+      "prs_closed_unmerged_excluded": 28,
       "prs_with_closing_keyword": 32,
+      "prs_with_commit_before_pr": 45,
       "issues_closed_completed": 92,
+      "issues_closed_not_planned_excluded": 8,
       "cycle_time_business_days": {
         "n": 62,
         "p5": 0.006829861111111111,
@@ -79,7 +106,30 @@
         "p90": 28.992153935185176,
         "p95": 47.14089178240739,
         "mean": 9.445007653823177
-      }
+      },
+      "engineering_duration_business_days": {
+        "n": 62,
+        "p5": 0.25,
+        "p10": 0.25,
+        "p50": 1.105607638888889,
+        "p90": 28.99581018518517,
+        "p95": 47.418837384259234,
+        "mean": 9.5924576239546
+      },
+      "top_labels": [
+        [
+          "external",
+          49
+        ],
+        [
+          "discuss",
+          2
+        ],
+        [
+          "codespaces",
+          1
+        ]
+      ]
     }
   ]
 }

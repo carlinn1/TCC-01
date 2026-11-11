@@ -41,6 +41,11 @@ def save_rgb_png(fig, path):
         else:
             bg.paste(img.convert("RGB"))
         bg.save(path, format="PNG", optimize=True, pnginfo=PngImagePlugin.PngInfo(), dpi=(FIGURE_DPI, FIGURE_DPI))
+        # Sincroniza automaticamente com ../Docs/figuras e ../figuras
+        fname = os.path.basename(path)
+        for target_dir in ("../Docs/figuras", "../figuras"):
+            os.makedirs(target_dir, exist_ok=True)
+            bg.save(os.path.join(target_dir, fname), format="PNG", optimize=True, pnginfo=PngImagePlugin.PngInfo(), dpi=(FIGURE_DPI, FIGURE_DPI))
 
 
 def draw_box(ax, x, y, w, h, text, fc="#EBF2F9", ec=UNB_BLUE, fontsize=9, weight="normal"):
@@ -257,23 +262,23 @@ def fig07():
 
 def fig08():
     tasks = [
-        ("E01: Piloto DAG + 10 releases", 1, 3, UNB_GREEN),
-        ("E02: Docker + SQL + Âncora", 1, 3, UNB_BLUE),
-        ("E03: CRUD RF01/02 + JWT/RBAC", 3, 5, UNB_BLUE),
-        ("E04: Webhooks + Tabela 6", 4, 6, UNB_BLUE),
-        ("E05: Sim Worker + Alertas RF12", 5, 7, UNB_BLUE),
-        ("E06: AI Service + Allowlist", 7, 9, UNB_BLUE),
-        ("E07: Fail-Closed + Fila Cat. 2", 8, 10, UNB_BLUE),
-        ("E08: Dim. 2 (500 DAGs Sint.)", 7, 10, ORANGE_ACCENT),
-        ("E09: Dim. 3 (Backtesting Real)", 9, 12, ORANGE_ACCENT),
-        ("E10: Dim. 4-5 (Segurança + 300x)", 11, 13, ORANGE_ACCENT),
-        ("E11: UI React Anti-Persuasão", 11, 14, UNB_BLUE),
-        ("E12: Redação Contínua TCC2", 4, 18, UNB_GREEN),
-        ("E13: Buffer + Slides", 18, 19, UNB_BLUE),
-        ("E14: Defesa Final", 19, 20, UNB_BLUE),
-        ("D02: Sensibilidade P10/P90", 14, 15, "#6B7280"),
-        ("D03: Juízes Kappa", 15, 16, "#6B7280"),
-        ("D01: Grafo Visual UI", 15, 17, "#6B7280"),
+        ("E01 [Trilha B]: Extrator GitHub + Replay", 1, 2, UNB_GREEN),
+        ("E02 [Trilha A]: Contrato + SQL + Âncora", 1, 2, UNB_BLUE),
+        ("E03 [Trilha A]: CRUD + Paginação + RBAC", 3, 4, UNB_BLUE),
+        ("E04 [Trilha B]: Ingestão + Outbox + DLQ", 3, 4, UNB_GREEN),
+        ("E05 [Trilha A]: Motor Monte Carlo + CRN", 5, 6, UNB_BLUE),
+        ("E06 [Trilha A]: Sim Worker + Persistência", 7, 8, UNB_BLUE),
+        ("E08 [Trilha B]: Dim. 2 (10 Regimes, M=200)", 7, 8, UNB_GREEN),
+        ("E07 [Trilha A]: Propostas + Guardrails", 9, 10, UNB_BLUE),
+        ("E09 [Trilha B]: Dim. 3 (Backtesting Real)", 9, 11, UNB_GREEN),
+        ("E11 [Trilha A]: UI Web Mínima Anti-Viés", 11, 12, UNB_BLUE),
+        ("E10 [Trilha B]: Dim. 5 (300 Cenários + Abl.)", 12, 14, UNB_GREEN),
+        ("E12 [Conjunto]: Consolidação Estatística", 15, 16, ORANGE_ACCENT),
+        ("E13 [Conjunto]: Redação Final + Ameaças", 17, 18, ORANGE_ACCENT),
+        ("E14 [Conjunto]: Revisão ABNT + Defesa + Buffer", 19, 20, ORANGE_ACCENT),
+        ("D01 [Desejável]: Grafo Visual UI", 13, 14, "#6B7280"),
+        ("D02 [Desejável]: Painel de Sensibilidade", 15, 16, "#6B7280"),
+        ("D03 [Desejável]: Juízes Humanos Adicionais", 16, 17, "#6B7280"),
     ]
     fig, ax = plt.subplots(figsize=(9.5, 5.2), dpi=FIGURE_DPI)
     y_pos = np.arange(len(tasks))[::-1]
@@ -282,12 +287,12 @@ def fig08():
         ax.barh(y, end - start + 0.8, left=start - 0.4, height=0.6, color=col, alpha=0.85, edgecolor="#222222")
 
     ax.axhline(2.5, color=RED_ACCENT, ls="--", lw=1.6)
-    ax.text(1.0, 2.65, "Linha de Corte (Abaixo: Pacotes Desejáveis D01–D03)", color=RED_ACCENT, fontsize=8.5, weight="bold")
+    ax.text(0.8, 2.65, "Linha de Corte (Abaixo: D01–D03) | Monte Carlo c/ Riscos: P50=17,29 | P85=18,30 | P(F≤20)=99,6%", color=RED_ACCENT, fontsize=8.0, weight="bold")
     ax.set_yticks(y_pos)
     ax.set_yticklabels([t[0] for t in tasks], fontsize=8)
     ax.set_xlim(0.5, 20.5)
     ax.set_xticks(range(1, 21))
-    ax.set_xlabel("Semanas do Cronograma do TCC 2")
+    ax.set_xlabel("Semanas Úteis do Cronograma do TCC 2 (Trilha A: Azul | Trilha B: Verde | Conjunto: Laranja)")
     ax.grid(True, axis="x", ls="--", alpha=0.35)
     fig.tight_layout()
     save_rgb_png(fig, "figuras/fig08_gantt.png")
