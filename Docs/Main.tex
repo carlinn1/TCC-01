@@ -6,12 +6,11 @@
 % sao carregados automaticamente; caso contrario, o documento renderiza
 % diagramas vetoriais nativos em TikZ (zero placeholders "[Inserir...]").
 % =====================================================================
-\documentclass[12pt,openany,oneside,a4paper,brazilian,sumario=tradicional]{abntex2}
+\documentclass[12pt,openany,oneside,a4paper,english,brazilian,sumario=tradicional]{abntex2}
 
 \usepackage{lmodern}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage[expansion=false]{microtype}
 \usepackage{indentfirst}
 \usepackage{xcolor}
 \usepackage{graphicx}
@@ -19,8 +18,6 @@
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{array}
-\usepackage{multirow}
-\usepackage{listings}
 \usepackage{enumitem}
 \IfFileExists{figuras/fig01_dag_exemplo.png}{}{%
   \usepackage{tikz}%
@@ -30,6 +27,9 @@
 \usepackage[alf]{abntex2cite}
 \usepackage{eso-pic}
 \usepackage{hyperref}
+
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
 
 \definecolor{unbblue}{HTML}{1D4B7C}
 \definecolor{unbgreen}{HTML}{008C4F}
@@ -87,9 +87,13 @@
 
 % ------------------------------------------------------------ CAPA
 \begin{capa}
-  \IfFileExists{capa_fundo.png}{%
-    \AddToShipoutPictureBG*{\AtPageLowerLeft{\includegraphics[width=\paperwidth,height=\paperheight]{capa_fundo.png}}}%
-  }{}
+  \IfFileExists{capa_fundo.jpg}{%
+    \AddToShipoutPictureBG*{\AtPageLowerLeft{\includegraphics[width=\paperwidth,height=\paperheight]{capa_fundo.jpg}}}%
+  }{%
+    \IfFileExists{capa_fundo.png}{%
+      \AddToShipoutPictureBG*{\AtPageLowerLeft{\includegraphics[width=\paperwidth,height=\paperheight]{capa_fundo.png}}}%
+    }{}%
+  }
   \centering
   \vspace*{7.2cm}
   {\color{unbblue}\bfseries Universidade de Brasília \textendash{} UnB\par
@@ -272,7 +276,7 @@ Projetar, formalizar e verificar a viabilidade da arquitetura de referência de 
   \item Mapear as seis atividades da DSRM \cite{peffers2007} ao ciclo da pesquisa e especificar requisitos funcionais (RF01 a RF12) e não funcionais (RNF01 a RNF09) com rastreabilidade completa aos pacotes de trabalho;
   \item Especificar a arquitetura de referência em três processos isolados, a máquina de estados \textit{fail-closed}, o contrato exato da \textit{allowlist} enviada ao LLM, as defesas contra persuasão do aprovador humano e a trilha de auditoria resistente a adulterações com ancoragem externa;
   \item Formalizar e implementar a Prova de Conceito (\texttt{poc-engine}) em Go, validando o amostrador PERT-Beta por momentos analíticos e pelo teste de aderência de Kolmogorov-Smirnov (incluindo o caso degenerado $t_o=t_p$), a reprodutibilidade estrita entre 1, 4 e 16 \textit{workers} e a dispersão de desempenho em 5 repetições;
-  \item Caracterizar empiricamente janelas de \textit{backtesting} do repositório GitHub CLI (\texttt{cli/cli}) via \textit{script} auditável, analisando ameaças à validade de construto e reestruturando o cronograma de 20 semanas do TCC2 para mitigar os riscos de dados e de construção do DAG já nas semanas 1 a 3.
+  \item Caracterizar empiricamente janelas de coleta retrospectiva (\textit{back\-testing}) do repositório GitHub CLI (\texttt{cli/cli}) via \textit{script} auditável, analisando ameaças à validade de construto e reestruturando o cronograma de 20 semanas do TCC2 para mitigar os riscos de dados e de construção do DAG já nas semanas 1 a 3.
 \end{enumerate}
 
 \section{Organização do Documento}
@@ -309,7 +313,7 @@ A Tabela~\ref{tab:referenciais} relaciona os referenciais normativos do Project 
 \begin{table}[htbp]
 \caption{Referenciais de gerenciamento de cronograma e sua tradução arquitetural.}\label{tab:referenciais}
 \footnotesize
-\begin{tabularx}{\textwidth}{p{3.4cm}X X}
+\begin{tabularx}{\textwidth}{L{3.4cm} Y Y}
 \toprule
 \textbf{Referencial} & \textbf{Elemento relevante} & \textbf{Tradução no artefato}\\
 \midrule
@@ -389,7 +393,7 @@ com desigualdade estrita sempre que os ramos tiverem suportes sobrepostos com va
 
 A Simulação de Monte Carlo resolve esse problema por integração estocástica em $N$ realizações independentes (adotando-se $N=10.000$). Em cada iteração $k \in \{1,\dots,N\}$, para cada tarefa não concluída $i \in V$:
 \begin{enumerate}
-  \item Sorteia-se $Y_{i,k} = G_{1,k}/(G_{1,k}+G_{2,k})$, onde $G_{1,k}\sim\mathrm{Gamma}(\alpha_i,1)$ e $G_{2,k}\sim\mathrm{Gamma}(\beta_i,1)$ são geradas pelo método exato de rejeição de \citeonline{marsaglia2000};
+  \item Sorteia-se $Y_{i,k} = G_{1,k}/(G_{1,k}+G_{2,k})$, com variáveis $G_{1,k}\sim\mathrm{Gamma}(\alpha_i,1)$ e $G_{2,k}\sim\mathrm{Gamma}(\beta_i,1)$ geradas pelo método exato de rejeição de \citeonline{marsaglia2000};
   \item Calcula-se a duração base remanescente ponderada pelo progresso $c_i \in [0,1]$: $d_{i,k}^{\mathrm{base}} = (1-c_i)\,[t_{o,i} + (t_{p,i}-t_{o,i})Y_{i,k}]$;
   \item Somam-se as perturbações de riscos discretos $r \in \mathcal{R}_i$ modelados como ensaios de Bernoulli $B_{r,k}\sim\mathrm{Bernoulli}(p_r)$ com impacto remanescente $(1-c_i)\Delta_r$:
   \begin{equation}
@@ -462,7 +466,7 @@ A Tabela~\ref{tab:relacionados} sintetiza os estudos que fundamentam o estado da
 \begin{table}[htbp]
 \caption{Trabalhos relacionados: análise comparativa de abordagens e lacunas.}\label{tab:relacionados}
 \scriptsize
-\begin{tabularx}{\textwidth}{p{2.5cm} p{2.5cm} p{2.3cm} p{1.5cm} X}
+\begin{tabularx}{\textwidth}{L{2.5cm} L{2.5cm} L{2.3cm} L{1.5cm} Y}
 \toprule
 \textbf{Trabalho} & \textbf{Foco} & \textbf{Abordagem} & \textbf{IA} & \textbf{Limitações observadas}\\
 \midrule
@@ -489,7 +493,7 @@ A Tabela~\ref{tab:ferramentas} compara soluções comerciais amplamente utilizad
 \begin{table}[htbp]
 \caption{Matriz comparativa entre ferramentas existentes no mercado (estado em out. 2026) e o artefato proposto.}\label{tab:ferramentas}
 \scriptsize
-\begin{tabularx}{\textwidth}{p{2.5cm} X X X X X X}
+\begin{tabularx}{\textwidth}{L{2.5cm} Y Y Y Y Y Y}
 \toprule
 \textbf{Ferramenta} & \textbf{Sinc. Git/CI} & \textbf{CPM e Folgas} & \textbf{Monte Carlo} & \textbf{\textit{What-if}} & \textbf{IA e Governança} & \textbf{Auditoria}\\
 \midrule
@@ -517,9 +521,9 @@ Este capítulo descreve o método científico adotado para especificar, verifica
 Para assegurar rastreabilidade metodológica entre o problema prático e as entregas do TCC1 e do TCC2, o trabalho estrutura-se explicitamente ao longo das seis atividades canônicas propostas por \citeonline{peffers2007}, sintetizadas na Tabela~\ref{tab:dsrm}.
 
 \begin{table}[htbp]
-\caption{Mapeamento das seis atividades da DSRM \cite{peffers2007} no ciclo da pesquisa (TCC1 e TCC2).}\label{tab:dsrm}
+\caption{Mapeamento das seis atividades da DSRM no ciclo da pesquisa (TCC1 e TCC2).}\label{tab:dsrm}
 \scriptsize
-\begin{tabularx}{\textwidth}{p{2.8cm} p{1.6cm} X X}
+\begin{tabularx}{\textwidth}{L{2.8cm} L{1.6cm} Y Y}
 \toprule
 \textbf{Atividade DSRM} & \textbf{Etapa} & \textbf{Realização na pesquisa} & \textbf{Seções / Entregáveis}\\
 \midrule
@@ -541,7 +545,7 @@ A elicitação de requisitos decorre diretamente das questões de pesquisa RQ1 a
 \begin{table}[htbp]
 \caption{Requisitos Funcionais do sistema (RF01 a RF12).}\label{tab:rf}
 \scriptsize
-\begin{tabularx}{\textwidth}{p{1cm} p{3.9cm} X p{1.1cm}}
+\begin{tabularx}{\textwidth}{L{1cm} L{3.9cm} Y L{1.1cm}}
 \toprule
 \textbf{ID} & \textbf{Requisito} & \textbf{Descrição detalhada} & \textbf{Prior.}\\
 \midrule
@@ -567,7 +571,7 @@ De forma complementar, a Tabela~\ref{tab:rnf} especifica os nove Requisitos Não
 \begin{table}[htbp]
 \caption{Requisitos Não Funcionais do sistema (RNF01 a RNF09).}\label{tab:rnf}
 \scriptsize
-\begin{tabularx}{\textwidth}{p{1.2cm} p{4.1cm} X}
+\begin{tabularx}{\textwidth}{L{1.2cm} L{4.1cm} Y}
 \toprule
 \textbf{ID} & \textbf{Requisito} & \textbf{Critério objetivo de aceitação e método de verificação}\\
 \midrule
@@ -593,7 +597,7 @@ Para investigar a aplicabilidade do modelo sobre dados reais de engenharia de so
 
 \begin{itemize}
   \item \textbf{Janela de \textit{release}:} intervalo temporal entre a publicação da \textit{release} imediatamente anterior e a da \textit{release}-alvo (v2.39.2 em 27/11/2023; v2.40.0 em 07/12/2023; v2.41.0 em 08/01/2024; v2.46.0 em 20/03/2024);
-  \item \textbf{Filtragem de itens e motivos de fechamento:} são extraídos os PRs mesclados (\texttt{merged\_at != null}) na janela, descartando contas do tipo \textit{Bot} (\texttt{Dependabot}, \texttt{github-actions}), e as \textit{issues} encerradas especificamente com razão \texttt{state\_reason = completed} (excluindo-se fechamentos por desistência ou duplicidade, \texttt{not\_planned});
+  \item \textbf{Filtragem de itens e motivos de fechamento:} são extraídos os PRs mesclados (\texttt{merged\_at != null}) na janela, descartando contas automáticas (\texttt{Dependabot}, \texttt{github-actions}), e as \textit{issues} encerradas especificamente com razão \texttt{state\_reason = completed} (excluindo-se fechamentos por desistência ou duplicidade, \texttt{not\_planned});
   \item \textbf{Tempo de revisão de PR (\textit{PR review cycle time}):} na extração exploratória da Tabela~\ref{tab:backtesting}, mediu-se o intervalo entre \texttt{created\_at} e \texttt{merged\_at} do PR em dias úteis fracionários;
   \item \textbf{Vínculo PR--\textit{issue}:} identificado por expressões regulares sobre palavras-chave de fechamento (\texttt{closes}, \texttt{fixes}, \texttt{resolves}) seguidas do identificador numérico da \textit{issue}.
 \end{itemize}
@@ -605,7 +609,7 @@ A Tabela~\ref{tab:backtesting} sintetiza as métricas obtidas para três recorte
 \begin{table}[htbp]
 \caption{Caracterização quantitativa de janelas de \textit{release} do GitHub CLI (\texttt{cli/cli}) para \textit{backtesting}.}\label{tab:backtesting}
 \footnotesize
-\begin{tabularx}{\textwidth}{p{4.3cm} X X X}
+\begin{tabularx}{\textwidth}{L{4.3cm} Y Y Y}
 \toprule
 \textbf{Métrica observada} & \textbf{Caso 1: v2.40.0} & \textbf{Caso 2: v2.41.0} & \textbf{Ampliada: v2.40.0 $\rightarrow$ v2.46.0}\\
 \midrule
@@ -644,7 +648,10 @@ Para garantir que a avaliação da hipótese H1 seja estatisticamente justa e li
     \end{equation}
     \item \textbf{\textit{Continuous Ranked Probability Score} (CRPS):} avalia a calibração e a nitidez (\textit{sharpness}) de toda a CDF preditiva $\hat{F}_N$ em relação ao término real $y$:
     \begin{equation}
-    \mathrm{CRPS}(\hat{F}_N, y) = \int_{-\infty}^{\infty} \big(\hat{F}_N(t) - \mathbb{I}(t \ge y)\big)^2\,dt = \frac{1}{N}\sum_{k=1}^N |F_k - y| - \frac{1}{2N^2}\sum_{k=1}^N\sum_{j=1}^N |F_k - F_j|.
+    \begin{aligned}
+    \mathrm{CRPS}(\hat{F}_N, y) &= \int_{-\infty}^{\infty} \big(\hat{F}_N(t) - \mathbb{I}(t \ge y)\big)^2\,dt \\
+    &= \frac{1}{N}\sum_{k=1}^N |F_k - y| - \frac{1}{2N^2}\sum_{k=1}^N\sum_{j=1}^N |F_k - F_j|.
+    \end{aligned}
     \end{equation}
   \end{enumerate}
 \end{itemize}
@@ -658,7 +665,7 @@ A Tabela~\ref{tab:protocolo} consolida as cinco dimensões do protocolo experime
 \begin{table}[htbp]
 \caption{Protocolo consolidado de avaliação experimental (DSRM, 5 dimensões).}\label{tab:protocolo}
 \scriptsize
-\begin{tabularx}{\textwidth}{p{2.3cm} p{1.4cm} X X p{0.8cm}}
+\begin{tabularx}{\textwidth}{L{2.3cm} L{1.4cm} Y Y p{0.8cm}}
 \toprule
 \textbf{Dimensão} & \textbf{Fase} & \textbf{Método experimental} & \textbf{Métricas e critérios de aceite} & \textbf{RQ}\\
 \midrule
@@ -757,7 +764,7 @@ Para manter a Sombra Digital sincronizada sem distorções semânticas (RQ1), o 
 \begin{table}[htbp]
 \caption{Mapeamento formal de eventos GitHub/CI para o estado e progresso ($c_i$) das tarefas.}\label{tab:eventos}
 \scriptsize
-\begin{tabularx}{\textwidth}{p{4.3cm} p{2.9cm} X}
+\begin{tabularx}{\textwidth}{L{4.3cm} L{2.9cm} Y}
 \toprule
 \textbf{Evento e condição recebida} & \textbf{Novo estado} & \textbf{Regra de progresso ($c_i$) e efeito no modelo}\\
 \midrule
@@ -793,7 +800,7 @@ Para conciliar a privacidade e minimização de dados (RNF02) com a existência 
 \begin{table}[htbp]
 \caption{Especificação formal da \textit{allowlist} enviada ao \textit{AI Agent Service} e campos bloqueados (RNF02).}\label{tab:allowlist}
 \scriptsize
-\begin{tabularx}{\textwidth}{p{3.4cm} p{2.3cm} X}
+\begin{tabularx}{\textwidth}{L{3.4cm} L{2.3cm} Y}
 \toprule
 \textbf{Campo / Categoria} & \textbf{Política} & \textbf{Regra de sanitização e papel no modelo}\\
 \midrule
@@ -817,7 +824,7 @@ Toda resposta oriunda do \textit{AI Agent Service} é processada pelo validador 
 \begin{table}[htbp]
 \caption{Catálogo estático de ações da IA e regras determinísticas de governança no servidor (\textit{fail-closed}).}\label{tab:governanca}
 \scriptsize
-\begin{tabularx}{\textwidth}{p{4.1cm} p{2.1cm} p{3.1cm} X}
+\begin{tabularx}{\textwidth}{L{4.1cm} L{2.1cm} L{3.1cm} Y}
 \toprule
 \textbf{Ação (\texttt{action\_type})} & \textbf{Categoria} & \textbf{Decisão no servidor} & \textbf{Mecanismo de contenção e auditoria}\\
 \midrule
@@ -1064,7 +1071,7 @@ Para garantir que nenhum requisito funcional (RF01 a RF12) ou não funcional (RN
 \begin{table}[htbp]
 \caption{Matriz de rastreabilidade entre Requisitos (RF/RNF), Pacotes de Trabalho do TCC2 e Dimensões de Avaliação.}\label{tab:rastreabilidade}
 \scriptsize
-\begin{tabularx}{\textwidth}{p{2.3cm} p{2.4cm} X}
+\begin{tabularx}{\textwidth}{L{2.3cm} L{2.4cm} Y}
 \toprule
 \textbf{Requisitos} & \textbf{Pacotes do TCC2} & \textbf{Entregável técnico e verificação associada}\\
 \midrule
@@ -1094,7 +1101,7 @@ Na Tabela~\ref{tab:cronograma}, todas as médias esperadas satisfazem exatamente
 \begin{table}[htbp]
 \caption{Cronograma detalhado do TCC2 (20 semanas) com estimativas O/M/P, esperança PERT e linha de corte.}\label{tab:cronograma}
 \scriptsize
-\begin{tabularx}{\textwidth}{c p{4.2cm} c c c c c X}
+\begin{tabularx}{\textwidth}{c L{4.2cm} c c c c c Y}
 \toprule
 \textbf{ID} & \textbf{Pacote de trabalho} & \textbf{Escopo} & \textbf{O/M/P} & \textbf{Esp.} & \textbf{Semanas} & \textbf{Prec.} & \textbf{Entregável verificável}\\
 \midrule
@@ -1163,7 +1170,7 @@ A Tabela~\ref{tab:riscos} sintetiza os riscos técnicos e metodológicos mapeado
 \begin{table}[htbp]
 \caption{Matriz de riscos da pesquisa e estratégias de mitigação no TCC2.}\label{tab:riscos}
 \scriptsize
-\begin{tabularx}{\textwidth}{p{3.8cm} c c X}
+\begin{tabularx}{\textwidth}{L{3.8cm} c c Y}
 \toprule
 \textbf{Risco identificado} & \textbf{Impacto} & \textbf{Prob.} & \textbf{Mitigação e plano de contingência}\\
 \midrule
@@ -1225,11 +1232,11 @@ Para assegurar reprodutibilidade integral dos resultados reportados nas Tabelas~
     \item \texttt{Codigo/}: pacote Go 1.22 do motor \texttt{poc-engine} (\texttt{go.mod}, \texttt{model.go}, \texttt{random.go}, \texttt{cpm.go}, \texttt{simulator.go}, \texttt{main.go}, \texttt{engine\_test.go}, \texttt{validation\_test.go}) e \textit{scripts} auxiliares;
     \item \texttt{Codigo/extract\_dataset.py}: \textit{script} em Python 3.11+ (biblioteca padrão \texttt{urllib.request}, \texttt{json}, \texttt{datetime}, \texttt{re}, \texttt{argparse}) que consulta a API REST do GitHub (\texttt{repos/cli/cli}), filtra autores do tipo \texttt{Bot}, separa fechamentos \texttt{state\_reason = completed} de \texttt{not\_planned} e PRs fechados sem \textit{merge}, disponibiliza coleta do carimbo \texttt{first\_commit\_at}, \texttt{created\_at} e \texttt{merged\_at}, e exporta o arquivo determinístico;
     \item \texttt{Codigo/dataset\_backtesting.json}: instantâneo completo dos dados extraídos em 23/10/2026 documentado no \texttt{README.md};
-    \item \texttt{Codigo/generate\_figures.py} e \texttt{Docs/figuras/}: gerador reprodutível e imagens estáticas em 300 DPI das Figuras 1 a 8 da monografia (\texttt{Docs/Main.tex} e \texttt{Docs/referencias.bib});
+    \item \texttt{Codigo/generate\_figures.py} e \texttt{Docs/figuras/}: gerador reprodutível e imagens PNG RGB opacas em 200 DPI (resolução efetiva superior a 315 DPI na página A4) das Figuras 1 a 8 da monografia (\texttt{Docs/Main.tex} e \texttt{Docs/Referencias.bib});
   \end{itemize}
   \item \textbf{Comandos exatos de reprodução:}
   \begin{enumerate}
-    \item Geração estática das 8 figuras PNG (300 DPI):
+    \item Geração estática das 8 figuras PNG (200 DPI RGB):
     \texttt{python3 Codigo/generate\_figures.py}
     \item Validação funcional, analítica, teste KS, caso degenerado e reprodutibilidade concorrente:
     \texttt{cd Codigo \&\& go test -v ./...}

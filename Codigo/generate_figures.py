@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Gera todas as 8 figuras do TCC 1 em alta resolução (300 DPI) na pasta ./figuras/
-com os nomes exatos referenciados no main.tex:
+Gera todas as 8 figuras do TCC 1 em PNG RGB opaco (200 DPI; > 315 DPI efetivos em A4)
+na pasta ./figuras/ com os nomes exatos referenciados no main.tex:
   - fig01_dag_exemplo.png
   - fig02_pert_beta.png
   - fig03_niveis_gemeo_digital.png
@@ -16,6 +16,7 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch
+from PIL import Image, PngImagePlugin
 
 os.makedirs("figuras", exist_ok=True)
 UNB_BLUE = "#1D4B7C"
@@ -25,6 +26,21 @@ ORANGE_ACCENT = "#D97706"
 
 plt.rcParams["font.sans-serif"] = "DejaVu Sans"
 plt.rcParams["axes.edgecolor"] = "#333333"
+FIGURE_DPI = 200
+
+
+def save_rgb_png(fig, path):
+    """Salva figura como PNG RGB opaco (8-bit, sem canal alfa) para incorporacao rapida em pdflatex."""
+    fig.savefig(path, dpi=FIGURE_DPI, facecolor="white")
+    plt.close(fig)
+    with Image.open(path) as img:
+        bg = Image.new("RGB", img.size, (255, 255, 255))
+        if img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info):
+            rgba = img.convert("RGBA")
+            bg.paste(rgba, mask=rgba.split()[3])
+        else:
+            bg.paste(img.convert("RGB"))
+        bg.save(path, format="PNG", optimize=True, pnginfo=PngImagePlugin.PngInfo(), dpi=(FIGURE_DPI, FIGURE_DPI))
 
 
 def draw_box(ax, x, y, w, h, text, fc="#EBF2F9", ec=UNB_BLUE, fontsize=9, weight="normal"):
@@ -37,7 +53,7 @@ def draw_box(ax, x, y, w, h, text, fc="#EBF2F9", ec=UNB_BLUE, fontsize=9, weight
 
 
 def fig01():
-    fig, ax = plt.subplots(figsize=(8, 4.2), dpi=300)
+    fig, ax = plt.subplots(figsize=(8, 4.2), dpi=FIGURE_DPI)
     ax.set_xlim(0, 10)
     ax.set_ylim(0, 5)
     ax.axis("off")
@@ -54,8 +70,7 @@ def fig01():
     ax.annotate("", xy=(7.05, 2.3), xytext=(6.25, 1.2), arrowprops=arrow_kw)
 
     fig.tight_layout()
-    fig.savefig("figuras/fig01_dag_exemplo.png", dpi=300)
-    plt.close(fig)
+    save_rgb_png(fig, "figuras/fig01_dag_exemplo.png")
 
 
 def beta_pdf(x, to, tm, tp, lam=4.0):
@@ -69,7 +84,7 @@ def beta_pdf(x, to, tm, tp, lam=4.0):
 
 
 def fig02():
-    fig, ax = plt.subplots(figsize=(8, 4.2), dpi=300)
+    fig, ax = plt.subplots(figsize=(8, 4.2), dpi=FIGURE_DPI)
     x = np.linspace(0.5, 10.5, 1000)
     tasks = [
         ("T1 (2, 3, 5)", 2, 3, 5, UNB_BLUE),
@@ -87,12 +102,11 @@ def fig02():
     ax.grid(True, linestyle="--", alpha=0.35)
     ax.legend(frameon=True)
     fig.tight_layout()
-    fig.savefig("figuras/fig02_pert_beta.png", dpi=300)
-    plt.close(fig)
+    save_rgb_png(fig, "figuras/fig02_pert_beta.png")
 
 
 def fig03():
-    fig, ax = plt.subplots(figsize=(9, 4.0), dpi=300)
+    fig, ax = plt.subplots(figsize=(9, 4.0), dpi=FIGURE_DPI)
     ax.set_xlim(0, 12)
     ax.set_ylim(0, 4.5)
     ax.axis("off")
@@ -112,12 +126,11 @@ def fig03():
         ax.text(x0 + 0.8, 1.95, f2, fontsize=7.5, va="center", ha="right", color=RED_ACCENT)
 
     fig.tight_layout()
-    fig.savefig("figuras/fig03_niveis_gemeo_digital.png", dpi=300)
-    plt.close(fig)
+    save_rgb_png(fig, "figuras/fig03_niveis_gemeo_digital.png")
 
 
 def fig04():
-    fig, ax = plt.subplots(figsize=(9, 3.8), dpi=300)
+    fig, ax = plt.subplots(figsize=(9, 3.8), dpi=FIGURE_DPI)
     ax.set_xlim(0, 12)
     ax.set_ylim(0, 4.2)
     ax.axis("off")
@@ -132,12 +145,11 @@ def fig04():
     ax.annotate("", xy=(9.8, 1.25), xytext=(9.8, 1.75), arrowprops=dict(arrowstyle="->", color=UNB_GREEN, lw=2))
 
     fig.tight_layout()
-    fig.savefig("figuras/fig04_hash_chain.png", dpi=300)
-    plt.close(fig)
+    save_rgb_png(fig, "figuras/fig04_hash_chain.png")
 
 
 def fig05():
-    fig, ax = plt.subplots(figsize=(9.5, 4.5), dpi=300)
+    fig, ax = plt.subplots(figsize=(9.5, 4.5), dpi=FIGURE_DPI)
     ax.set_xlim(0, 13)
     ax.set_ylim(0, 5.2)
     ax.axis("off")
@@ -161,12 +173,11 @@ def fig05():
     ax.annotate("", xy=(10.45, 2.05), xytext=(10.45, 2.75), arrowprops=dict(arrowstyle="<->", color="#4B5563", lw=1.8))
 
     fig.tight_layout()
-    fig.savefig("figuras/fig05_arquitetura.png", dpi=300)
-    plt.close(fig)
+    save_rgb_png(fig, "figuras/fig05_arquitetura.png")
 
 
 def fig06():
-    fig, ax = plt.subplots(figsize=(9.5, 4.5), dpi=300)
+    fig, ax = plt.subplots(figsize=(9.5, 4.5), dpi=FIGURE_DPI)
     ax.set_xlim(0, 12.5)
     ax.set_ylim(0, 5.2)
     ax.axis("off")
@@ -198,8 +209,7 @@ def fig06():
         ax.text((x1 + x2) / 2, y + 0.1, lbl, ha="center", fontsize=7.8, color=col, weight="bold")
 
     fig.tight_layout()
-    fig.savefig("figuras/fig06_sequencia.png", dpi=300)
-    plt.close(fig)
+    save_rgb_png(fig, "figuras/fig06_sequencia.png")
 
 
 def fig07():
@@ -222,7 +232,7 @@ def fig07():
     f_b = np.sort(t1 + np.maximum(t2, t3 + r1) + t4)
     cdf = np.arange(1, n + 1) / n
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.5, 4.0), dpi=300)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.5, 4.0), dpi=FIGURE_DPI)
     ax1.hist(f_a, bins=40, density=True, alpha=0.55, color=UNB_BLUE, label="Cenário A (Sem risco)")
     ax1.hist(f_b, bins=40, density=True, alpha=0.45, color=RED_ACCENT, label="Cenário B (Com R1)")
     ax1.axvline(10.8333, color=UNB_GREEN, ls="--", lw=1.8, label="CPM = 10,83 d.u.")
@@ -242,8 +252,7 @@ def fig07():
     ax2.legend(fontsize=8, loc="lower right")
 
     fig.tight_layout()
-    fig.savefig("figuras/fig07_histograma_cdf_poc.png", dpi=300)
-    plt.close(fig)
+    save_rgb_png(fig, "figuras/fig07_histograma_cdf_poc.png")
 
 
 def fig08():
@@ -266,7 +275,7 @@ def fig08():
         ("D03: Juízes Kappa", 15, 16, "#6B7280"),
         ("D01: Grafo Visual UI", 15, 17, "#6B7280"),
     ]
-    fig, ax = plt.subplots(figsize=(9.5, 5.2), dpi=300)
+    fig, ax = plt.subplots(figsize=(9.5, 5.2), dpi=FIGURE_DPI)
     y_pos = np.arange(len(tasks))[::-1]
     for idx, (label, start, end, col) in enumerate(tasks):
         y = y_pos[idx]
@@ -281,8 +290,7 @@ def fig08():
     ax.set_xlabel("Semanas do Cronograma do TCC 2")
     ax.grid(True, axis="x", ls="--", alpha=0.35)
     fig.tight_layout()
-    fig.savefig("figuras/fig08_gantt.png", dpi=300)
-    plt.close(fig)
+    save_rgb_png(fig, "figuras/fig08_gantt.png")
 
 
 if __name__ == "__main__":
