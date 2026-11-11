@@ -66,9 +66,14 @@ type MonteCarloConfig struct {
 // MonteCarloResult holds the aggregated statistical distribution of project outcomes.
 type MonteCarloResult struct {
 	CPMDeterministic float64            `json:"cpm_deterministic"`
+	Mean             float64            `json:"mean"`
+	MeanSE           float64            `json:"mean_se"`
 	P50              float64            `json:"p50"`
+	P50SE            float64            `json:"p50_se"`
 	P85              float64            `json:"p85"`
+	P85SE            float64            `json:"p85_se"`
 	P95              float64            `json:"p95"`
+	P95SE            float64            `json:"p95_se"`
 	ProbTarget       float64            `json:"prob_target"`
 	CriticalityIndex map[string]float64 `json:"criticality_index"`
 	Durations        []float64          `json:"-"`

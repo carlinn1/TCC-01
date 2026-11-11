@@ -202,7 +202,30 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 
 	wg.Wait()
 
-	// 4. Compute statistics
+	// 4. Compute statistics in canonical index order (k = 0..N-1) with Kahan compensated summation
+	var kahanSum, kahanC float64
+	for k := 0; k < cfg.Iterations; k++ {
+		y := finishDates[k] - kahanC
+		t := kahanSum + y
+		kahanC = (t - kahanSum) - y
+		kahanSum = t
+	}
+	mean := kahanSum / float64(cfg.Iterations)
+
+	var varSum, varC float64
+	for k := 0; k < cfg.Iterations; k++ {
+		diff := finishDates[k] - mean
+		y := (diff * diff) - varC
+		t := varSum + y
+		varC = (t - varSum) - y
+		varSum = t
+	}
+	var meanSE float64
+	if cfg.Iterations > 1 {
+		sd := math.Sqrt(varSum / float64(cfg.Iterations-1))
+		meanSE = sd / math.Sqrt(float64(cfg.Iterations))
+	}
+
 	sortedFinishes := make([]float64, cfg.Iterations)
 	copy(sortedFinishes, finishDates)
 	sort.Float64s(sortedFinishes)
@@ -214,6 +237,24 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 	p50 := sortedFinishes[idxP50]
 	p85 := sortedFinishes[idxP85]
 	p95 := sortedFinishes[idxP95]
+
+	// Distribution-free Monte Carlo Standard Error (MCSE) for quantiles via binomial order statistics
+	orderStatSE := func(tau float64) float64 {
+		nf := float64(cfg.Iterations)
+		halfWidth := 1.96 * math.Sqrt(nf*tau*(1.0-tau))
+		r := int(math.Floor(nf*tau-halfWidth)) - 1
+		s := int(math.Ceil(nf*tau+halfWidth)) - 1
+		if r < 0 {
+			r = 0
+		}
+		if s >= cfg.Iterations {
+			s = cfg.Iterations - 1
+		}
+		return (sortedFinishes[s] - sortedFinishes[r]) / (2.0 * 1.96)
+	}
+	p50SE := orderStatSE(0.50)
+	p85SE := orderStatSE(0.85)
+	p95SE := orderStatSE(0.95)
 
 	targetCount := 0
 	if cfg.TargetDate > 0 {
@@ -243,9 +284,14 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 
 	return &MonteCarloResult{
 		CPMDeterministic: detCPM.FinishDate,
+		Mean:             mean,
+		MeanSE:           meanSE,
 		P50:              p50,
+		P50SE:            p50SE,
 		P85:              p85,
+		P85SE:            p85SE,
 		P95:              p95,
+		P95SE:            p95SE,
 		ProbTarget:       probTarget,
 		CriticalityIndex: critIndex,
 		Durations:        sortedFinishes,

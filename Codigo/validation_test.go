@@ -285,9 +285,45 @@ func TestPrintReproducibilityValues(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		t.Logf("workers=%2d  P50=%.6f  P85=%.6f  P95=%.6f  P(F<=11)=%.4f%%  IC(T3)=%.4f%%",
-			w, r.P50, r.P85, r.P95, r.ProbTarget, r.CriticalityIndex["T3"])
+		t.Logf("workers=%2d  Mean=%.6f  P50=%.6f  P85=%.6f  P95=%.6f  P(F<=11)=%.4f%%  IC(T3)=%.4f%%",
+			w, r.Mean, r.P50, r.P85, r.P95, r.ProbTarget, r.CriticalityIndex["T3"])
 	}
+}
+
+// TestTCC2ScheduleMonteCarlo simula o cronograma pré-registrado do TCC 2 (Seção 6.2)
+// sob alocação estática em 2 trilhas (Autor 1 e Autor 2), com e sem riscos discretos.
+func TestTCC2ScheduleMonteCarlo(t *testing.T) {
+	cfg := MonteCarloConfig{
+		Iterations:   10000,
+		Seed:         42,
+		NumWorkers:   8,
+		TargetDate:   20.0,
+		Lambda:       4.0,
+		EpsilonFloat: 1e-9,
+	}
+
+	baseNet := buildTCC2ScheduleNetwork(false)
+	resBase, err := RunMonteCarlo(baseNet, cfg)
+	if err != nil {
+		t.Fatalf("Erro ao simular cronograma TCC2 base: %v", err)
+	}
+
+	riskNet := buildTCC2ScheduleNetwork(true)
+	resRisk, err := RunMonteCarlo(riskNet, cfg)
+	if err != nil {
+		t.Fatalf("Erro ao simular cronograma TCC2 com riscos: %v", err)
+	}
+
+	t.Logf("TCC2 Base (sem riscos): CPM=%.2f sem | Media=%.2f (±%.3f) | P50=%.2f (±%.3f) | P85=%.2f (±%.3f) | P95=%.2f (±%.3f) | P(F<=20)=%.1f%%",
+		resBase.CPMDeterministic, resBase.Mean, resBase.MeanSE, resBase.P50, resBase.P50SE, resBase.P85, resBase.P85SE, resBase.P95, resBase.P95SE, resBase.ProbTarget)
+	t.Logf("TCC2 Com Riscos (R_DAG, R_LEAK, R_LLM): CPM=%.2f sem | Media=%.2f (±%.3f) | P50=%.2f (±%.3f) | P85=%.2f (±%.3f) | P95=%.2f (±%.3f) | P(F<=20)=%.1f%%",
+		resRisk.CPMDeterministic, resRisk.Mean, resRisk.MeanSE, resRisk.P50, resRisk.P50SE, resRisk.P85, resRisk.P85SE, resRisk.P95, resRisk.P95SE, resRisk.ProbTarget)
+	t.Logf("Criticidade TCC2 Base: E01=%.1f%% E02=%.1f%% E04=%.1f%% E05=%.1f%% E07=%.1f%% E08=%.1f%% E09=%.1f%% E10=%.1f%% E11=%.1f%%",
+		resBase.CriticalityIndex["E01"], resBase.CriticalityIndex["E02"], resBase.CriticalityIndex["E04"], resBase.CriticalityIndex["E05"],
+		resBase.CriticalityIndex["E07"], resBase.CriticalityIndex["E08"], resBase.CriticalityIndex["E09"], resBase.CriticalityIndex["E10"], resBase.CriticalityIndex["E11"])
+	t.Logf("Criticidade TCC2 Riscos: E01=%.1f%% E02=%.1f%% E04=%.1f%% E05=%.1f%% E07=%.1f%% E08=%.1f%% E09=%.1f%% E10=%.1f%% E11=%.1f%%",
+		resRisk.CriticalityIndex["E01"], resRisk.CriticalityIndex["E02"], resRisk.CriticalityIndex["E04"], resRisk.CriticalityIndex["E05"],
+		resRisk.CriticalityIndex["E07"], resRisk.CriticalityIndex["E08"], resRisk.CriticalityIndex["E09"], resRisk.CriticalityIndex["E10"], resRisk.CriticalityIndex["E11"])
 }
 
 // buildSynthetic200Network constrói a rede sintética determinística (200 tarefas, 300 dependências,

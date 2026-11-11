@@ -91,6 +91,9 @@ func TestReproducibilityAcrossWorkers(t *testing.T) {
 		cur := results[i]
 		w := workerCounts[i]
 
+		if ref.Mean != cur.Mean {
+			t.Errorf("Mismatch in Mean between 1 worker (%.12f) and %d workers (%.12f)", ref.Mean, w, cur.Mean)
+		}
 		if ref.P50 != cur.P50 {
 			t.Errorf("Mismatch in P50 between 1 worker (%f) and %d workers (%f)", ref.P50, w, cur.P50)
 		}
