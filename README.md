@@ -4,11 +4,11 @@
 
 **Arquitetura de Referência com Simulação de Monte Carlo (PERT-Beta + Bernoulli), Método do Caminho Crítico e Governança Determinística *Fail-Closed***
 
-[![Go Version](https://img.shields.io/badge/Go-1.22%2B-00ADD8?style=flat-square&logo=go&logoColor=white)](Codigo/go.mod)
-[![Python Version](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=flat-square&logo=python&logoColor=white)](Codigo/extract_dataset.py)
-[![LaTeX](https://img.shields.io/badge/Monografia-abnTeX2%20%7C%20Overleaf-008080?style=flat-square&logo=overleaf&logoColor=white)](Docs/Main.tex)
-[![Tests](https://img.shields.io/badge/PoC%20Tests-PASS%20(94.2%25%20cov)-008C4F?style=flat-square)](#como-executar-a-poc-e-os-testes)
-[![UnB FCTE](https://img.shields.io/badge/UnB%20%7C%20FCTE-TCC%201%20(2026)-1D4B7C?style=flat-square)](Docs/Main.tex)
+[![Go Version](https://img.shields.io/badge/Go-1.22%2B-00ADD8?style=flat-square&logo=go&logoColor=white)](Codigo/poc-engine/go.mod)
+[![Python Version](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=flat-square&logo=python&logoColor=white)](Codigo/scripts/extract_dataset.py)
+[![LaTeX](https://img.shields.io/badge/Monografia-abnTeX2%20%7C%20Overleaf-008080?style=flat-square&logo=overleaf&logoColor=white)](Docs/monografia/Main.tex)
+[![Tests](https://img.shields.io/badge/PoC%20Tests-PASS%20(93.7%25%20cov)-008C4F?style=flat-square)](#como-executar-a-poc-e-os-testes)
+[![UnB FCTE](https://img.shields.io/badge/UnB%20%7C%20FCTE-TCC%201%20(2026)-1D4B7C?style=flat-square)](Docs/monografia/Main.tex)
 
 [Visão Geral](#visão-geral) •
 [Arquitetura](#arquitetura-de-referência) •
@@ -32,7 +32,7 @@
 
 Projetos de software em ciclos iterativos ou híbridos sofrem com desvios de prazo causados pela desconexão entre eventos reais de engenharia (PRs, *issues*, falhas de CI) e modelos formais de precedência ($FS$), agravados pelo **viés de convergência de caminhos** ($E[\max(X,Y)] \ge \max(E[X], E[Y])$). Paralelamente, conectar LLMs diretamente a repositórios sem isolamento expõe o projeto a **Injeção Indireta de Prompt (OWASP LLM01)**, **Divulgação de Dados Sensíveis (LLM02:2025)**, **Tratamento Inseguro de Saída (LLM05:2025)**, **Agência Excessiva (LLM06:2025)** e **Consumo Ilimitado (LLM10:2025)**, além de divergências numéricas em sínteses estocásticas.
 
-Este repositório reúne a especificação arquitetural, a monografia completa em LaTeX ([`Docs/Main.tex`](Docs/Main.tex)), os *scripts* auditáveis de dados/figuras e a **Prova de Conceito (`poc-engine`)** em **Go 1.22** de uma **Sombra Digital Governada de Processo** (taxonomia de Kritzinger):
+Este repositório reúne a especificação arquitetural, a monografia completa em LaTeX ([`Docs/monografia/Main.tex`](Docs/monografia/Main.tex)), os *scripts* auditáveis de dados/figuras e a **Prova de Conceito (`poc-engine`)** em **Go 1.22** de uma **Sombra Digital Governada de Processo** (taxonomia de Kritzinger):
 
 - **Sincronização automatizada (Físico $\rightarrow$ Virtual):** ingestão idempotente de *webhooks* GitHub/CI com validação HMAC-SHA256, *debounce* configurável (30 s), regra de parametrização empírica em 3 níveis ($Q_{05}/\hat{m}_{\mathrm{HSM}}/Q_{95}$, casamento $Q_{10}/Q_{90}$ e *fallback* de *bootstrap*) e progresso híbrido (incluindo tratamento explícito de `not_planned` e PRs abandonados).
 - **Motor Estocástico Determinístico (`poc-engine`):** ordenação topológica $\mathcal{O}(\lvert V\rvert+\lvert E\rvert)$, CPM exato e Simulação de Monte Carlo concorrente (PERT-Beta via Marsaglia-Tsang + riscos discretos de Bernoulli) com subfluxos independentes por par $(\text{iteração } k, \text{entidade})$ para comparação pareada via Números Aleatórios Comuns (CRN, redução de variância de `6,1x`), soma compensada de Kahan e cálculo de erro-padrão de Monte Carlo (MCSE).
@@ -42,7 +42,7 @@ Este repositório reúne a especificação arquitetural, a monografia completa e
 
 ## Arquitetura de Referência
 
-![Arquitetura de referência em três processos e isolamento de redes](Docs/figuras/fig05_arquitetura.png)
+![Arquitetura de referência em três processos e isolamento de redes](Docs/monografia/figuras/fig05_arquitetura.png)
 
 <details>
 <summary><strong>Ver fluxo completo Evento → Simulação → IA → Governança → Auditoria</strong></summary>
@@ -70,9 +70,9 @@ flowchart LR
 
 ## Prova de Conceito (`poc-engine`)
 
-O núcleo estocástico implementado em [`Codigo/`](Codigo/) valida as propriedades matemáticas e de desempenho da arquitetura usando apenas a biblioteca padrão do Go 1.22 (`module poc-engine`).
+O núcleo estocástico implementado em [`Codigo/poc-engine/`](Codigo/poc-engine/) valida as propriedades matemáticas e de desempenho da arquitetura usando apenas a biblioteca padrão do Go 1.22 (`module poc-engine`).
 
-![Histograma e CDF empírica dos Cenários A e B na PoC em Go](Docs/figuras/fig07_histograma_cdf_poc.png)
+![Histograma e CDF empírica dos Cenários A e B na PoC em Go](Docs/monografia/figuras/fig07_histograma_cdf_poc.png)
 
 ### Principais Resultados Verificados
 
@@ -116,17 +116,18 @@ O núcleo estocástico implementado em [`Codigo/`](Codigo/) valida as propriedad
 ## Como Executar a PoC e os Testes
 
 ### Pré-requisitos
-- **Go 1.22+** (zero dependências externas no pacote `poc-engine`)
+- **Go 1.22+** (zero dependências externas no módulo `poc-engine` em `Codigo/poc-engine/`)
 - **Python 3.11+** (`extract_dataset.py`, `power_h1b.py`, `pilot_backtesting.py`, `check_numbers.py` e `check_latex.py` usam apenas biblioteca padrão; `generate_figures.py` usa `numpy`, `matplotlib` e `pillow`)
 
 ### Comandos
 
 ```bash
-# 1. Executar a simulação dos Cenários A–C' e do Cronograma TCC 2 (exporta poc_results.json, Docs/resultados_poc.tex e Docs/tabelas/*.tex)
-cd Codigo
+# 1. Executar a simulação dos Cenários A–C' e do Cronograma TCC 2
+#    (exporta Codigo/data/poc_results.json, Docs/monografia/resultados_poc.tex e Docs/monografia/tabelas/*.tex)
+cd Codigo/poc-engine
 go run .
 
-# 2. Rodar toda a suíte de validação com cobertura (94,2% de cobertura de instruções)
+# 2. Rodar toda a suíte de validação com cobertura (93,7% de cobertura de instruções)
 go test -v -count=1 -cover ./...
 
 # 3. Rodar os benchmarks de desempenho e alocações em 5 repetições (RNF06)
@@ -134,43 +135,42 @@ go test -bench=Benchmark -benchmem -count=5
 ```
 
 ```bash
-# 4. Executar o estudo de poder estatístico TOST (H1b), verificar dataset local, rodar o piloto da Dimensão 3 e regenerar figuras PNG
-cd Codigo
-python power_h1b.py
-python extract_dataset.py --verify-local
-python pilot_backtesting.py
-python generate_figures.py
+# 4. A partir da raiz do repositório: executar estudo TOST (H1b), verificar dataset local, piloto D3 e regenerar figuras PNG
+python Codigo/scripts/power_h1b.py
+python Codigo/scripts/extract_dataset.py --verify-local
+python Codigo/scripts/pilot_backtesting.py
+python Codigo/scripts/generate_figures.py
 
 # 5. Executar auditoria automatizada de sincronia numérica e integridade LaTeX/BibTeX
-cd ..
-python Codigo/check_numbers.py
-python Codigo/check_latex.py
+python Codigo/checks/check_numbers.py
+python Codigo/checks/check_latex.py
 ```
 
 | Módulo / Script | Função Principal | Observação |
 | :--- | :--- | :--- |
-| [`Codigo/model.go`](Codigo/model.go) | `Task`, `Dependency`, `Risk`, `ValidateNetwork`, `CRNDiffResult` | Contratos tipados e validação defensiva de grafos e parâmetros |
-| [`Codigo/random.go`](Codigo/random.go) | `SplitMix64`, `SampleGamma`, `SamplePERTBeta`, `ComputeKSBetaFit`, `RunKSMultiSeedSuite` | Amostragem Marsaglia-Tsang, CDF Beta (Lentz) e teste KS ($10^6$ + 100 seeds) |
-| [`Codigo/cpm.go`](Codigo/cpm.go) | `TopologicalSort`, `CompileGraph`, `FastCPM`, `CalculateExpectedDurationWithLambda` | Ordenação $\mathcal{O}(\lvert V\rvert+\lvert E\rvert)$ e CPM parametrizado por $\lambda$ |
-| [`Codigo/simulator.go`](Codigo/simulator.go) | `RunMonteCarlo`, `ComputeCRNDiff` | Orquestrador concorrente livre de *false sharing* e avaliador pareado CRN |
-| [`Codigo/validation_test.go`](Codigo/validation_test.go) | `TestPertBetaKSMultiSeed100`, `TestSplitMix64StreamIndependence`, `TestTCC2ScheduleMonteCarlo` | Suíte completa de validação com `94,2%` de cobertura |
-| [`Codigo/extract_dataset.py`](Codigo/extract_dataset.py) | Extração de janelas de *release* via API GitHub + vetores itemizados | Inclui sensibilidade ao piso `{0,10; 0,25; 0,50}` d.u. e `--verify-local` |
-| [`Codigo/pilot_backtesting.py`](Codigo/pilot_backtesting.py) | Piloto executável da Dimensão 3 (regra em 3 níveis + replay causal) | Exporta `pilot_backtesting_results.json` e `tab_piloto_backtesting.tex` |
-| [`Codigo/power_h1b.py`](Codigo/power_h1b.py) | Estudo de poder estatístico binomial exato para H1b (TOST 90%) | Demonstra poder de `86,2%` para $M=500$ vs `0,0%` para $M=200$ (IC 95%) |
-| [`Codigo/check_numbers.py`](Codigo/check_numbers.py) | Verificador automatizado de consistência numérica JSON $\leftrightarrow$ LaTeX | Impede *drift* manual de números entre `poc-engine` e a monografia |
-| [`Codigo/check_latex.py`](Codigo/check_latex.py) | Verificador estrutural de LaTeX, citações BibTeX e logs de compilação | Garante zero referências indefinidas, zero entradas órfãs e zero erros |
+| [`Codigo/poc-engine/model.go`](Codigo/poc-engine/model.go) | `Task`, `Dependency`, `Risk`, `ValidateNetwork`, `CRNDiffResult` | Contratos tipados e validação defensiva de grafos e parâmetros |
+| [`Codigo/poc-engine/random.go`](Codigo/poc-engine/random.go) | `SplitMix64`, `SampleGamma`, `SamplePERTBeta`, `ComputeKSBetaFit`, `RunKSMultiSeedSuite` | Amostragem Marsaglia-Tsang, CDF Beta (Lentz) e teste KS ($10^6$ + 100 seeds) |
+| [`Codigo/poc-engine/cpm.go`](Codigo/poc-engine/cpm.go) | `TopologicalSort`, `CompileGraph`, `FastCPM`, `CalculateExpectedDurationWithLambda` | Ordenação $\mathcal{O}(\lvert V\rvert+\lvert E\rvert)$ e CPM parametrizado por $\lambda$ |
+| [`Codigo/poc-engine/simulator.go`](Codigo/poc-engine/simulator.go) | `RunMonteCarlo`, `ComputeCRNDiff` | Orquestrador concorrente livre de *false sharing* e avaliador pareado CRN |
+| [`Codigo/poc-engine/validation_test.go`](Codigo/poc-engine/validation_test.go) | `TestPertBetaKSMultiSeed100`, `TestSplitMix64StreamIndependence`, `TestTCC2ScheduleMonteCarlo` | Suíte completa de validação com `93,7%` de cobertura |
+| [`Codigo/scripts/extract_dataset.py`](Codigo/scripts/extract_dataset.py) | Extração de janelas de *release* via API GitHub + vetores itemizados | Inclui sensibilidade ao piso `{0,10; 0,25; 0,50}` d.u. e `--verify-local` |
+| [`Codigo/scripts/pilot_backtesting.py`](Codigo/scripts/pilot_backtesting.py) | Piloto executável da Dimensão 3 (regra em 3 níveis + replay causal) | Exporta `Codigo/data/pilot_backtesting_results.json` e `Docs/monografia/tabelas/tab_piloto_backtesting.tex` |
+| [`Codigo/scripts/power_h1b.py`](Codigo/scripts/power_h1b.py) | Estudo de poder estatístico binomial exato para H1b (TOST 90%) | Demonstra poder de `86,2%` para $M=500$ vs `0,0%` para $M=200$ (IC 95%) |
+| [`Codigo/checks/check_numbers.py`](Codigo/checks/check_numbers.py) | Verificador automatizado de consistência numérica JSON $\leftrightarrow$ LaTeX | Impede *drift* manual de números entre `poc-engine` e a monografia |
+| [`Codigo/checks/check_latex.py`](Codigo/checks/check_latex.py) | Verificador estrutural de LaTeX, citações BibTeX, isolamento Overleaf e logs | Garante zero referências indefinidas, zero entradas órfãs e zero erros |
 
 ---
 
 ## Compilação da Monografia (Overleaf / LaTeX)
 
-A monografia completa no padrão **abnTeX2** encontra-se em [`Docs/Main.tex`](Docs/Main.tex) com bibliografia em [`Docs/Referencias.bib`](Docs/Referencias.bib) (cópia em minúsculo na raiz em [`referencias.bib`](referencias.bib)).
+Todo o pacote LaTeX compilável foi isolado exclusivamente na pasta [`Docs/monografia/`](Docs/monografia/), sem arquivos `.md` de governança ou cópias duplicadas misturadas:
 
 > [!TIP]
-> **Para compilar sem *timeout* no plano gratuito do Overleaf (limite de 10 s):**
-> 1. Envie [`Docs/Main.tex`](Docs/Main.tex) como `main.tex`, [`Docs/Referencias.bib`](Docs/Referencias.bib) como `referencias.bib`, [`Docs/resultados_poc.tex`](Docs/resultados_poc.tex) e [`Docs/capa_fundo.png`](Docs/capa_fundo.png) na raiz do projeto Overleaf.
-> 2. Envie a pasta [`Docs/tabelas/`](Docs/tabelas/) (contendo os 7 fragmentos `.tex` gerados automaticamente) e as 8 imagens de [`Docs/figuras/`](Docs/figuras/) para as subpastas `tabelas/` e `figuras/` no Overleaf — as imagens já estão otimizadas em **PNG 8-bit RGB opaco sem canal alfa**, permitindo cópia direta rápida no `pdflatex` e pulando o carregamento do TikZ.
-> 3. Caso atualize o código `.tex`, limpe o cache (*Logs and output files* $\rightarrow$ lixeira *Clear cached files*) antes de recompilar.
+> **Upload direto no Overleaf sem *timeout* (plano gratuito de 10 s):**
+> 1. Envie **apenas o conteúdo de [`Docs/monografia/`](Docs/monografia/)** para a raiz do projeto Overleaf (`Main.tex`, `Referencias.bib`, `resultados_poc.tex`, `capa_fundo.png`, `tabelas/` e `figuras/`). Não envie `Docs/adr/`, `Docs/baseline/` nem `Docs/historico/`.
+> 2. Defina `Main.tex` como documento principal em *Menu $\rightarrow$ Main document* (ou mantenha apenas um `.tex` raiz; evite enviar `main.tex` e `Main.tex` simultaneamente).
+> 3. As 8 imagens de [`Docs/monografia/figuras/`](Docs/monografia/figuras/) já estão otimizadas em **PNG 8-bit RGB opaco sem canal alfa (200 DPI)**, permitindo cópia direta rápida no `pdflatex` e pulando o carregamento do TikZ.
+> 4. Caso atualize o código `.tex`, limpe o cache (*Logs and output files* $\rightarrow$ lixeira *Clear cached files*) antes de recompilar.
 
 ---
 
@@ -179,35 +179,40 @@ A monografia completa no padrão **abnTeX2** encontra-se em [`Docs/Main.tex`](Do
 ```text
 TCC-01/
 ├── Codigo/
-│   ├── go.mod                           # Módulo poc-engine (Go 1.22+, zero deps externas)
-│   ├── model.go                         # Estruturas da rede DAG, validação e CRN
-│   ├── random.go                        # SplitMix64, Gamma, PERT-Beta e KS (10^6 + 100 seeds)
-│   ├── cpm.go                           # Ordenação topológica (Kahn) e FastCPM zero-alloc
-│   ├── simulator.go                     # Motor concorrente de Monte Carlo e ComputeCRNDiff
-│   ├── main.go                          # Runner + exportador automático JSON e tabelas LaTeX
-│   ├── engine_test.go                   # Testes unitários, validação de entrada, CRN e RNF08
-│   ├── validation_test.go               # Momentos, KS multi-seed, TCC2 estresse/cortes e benchmarks
-│   ├── power_h1b.py                     # Cálculo binomial exato de poder estatístico TOST (H1b)
-│   ├── extract_dataset.py               # Coleta reprodutível via API do GitHub (cli/cli)
-│   ├── dataset_backtesting.json         # Snapshot itemizado e pseudonimizado de v2.39.2 a v2.46.0
-│   ├── pilot_backtesting.py             # Piloto executável da regra em 3 níveis (Dimensão 3)
-│   ├── generate_figures.py              # Gerador estático das 8 figuras PNG (RGB 200 DPI)
-│   ├── check_numbers.py                 # Verificador de sincronia numérica JSON <-> LaTeX
-│   └── check_latex.py                   # Verificador de integridade LaTeX e BibTeX
+│   ├── poc-engine/                      # Módulo Go independente (zero dependências externas)
+│   │   ├── go.mod
+│   │   ├── model.go                     # Estruturas da rede DAG, validação e CRN
+│   │   ├── random.go                    # SplitMix64, Gamma, PERT-Beta e KS (10^6 + 100 seeds)
+│   │   ├── cpm.go                       # Ordenação topológica (Kahn) e FastCPM zero-alloc
+│   │   ├── simulator.go                 # Motor concorrente de Monte Carlo e ComputeCRNDiff
+│   │   ├── main.go                      # Runner + exportador para data/ e Docs/monografia/
+│   │   ├── engine_test.go               # Testes unitários, validação de entrada, CRN e RNF08
+│   │   └── validation_test.go           # Momentos, KS multi-seed, TCC2 estresse/cortes e benchmarks
+│   ├── scripts/                         # Pipelines reprodutíveis em Python 3.11+
+│   │   ├── power_h1b.py                 # Cálculo binomial exato de poder estatístico TOST (H1b)
+│   │   ├── extract_dataset.py           # Coleta reprodutível via API do GitHub (cli/cli)
+│   │   ├── pilot_backtesting.py         # Piloto executável da regra em 3 níveis (Dimensão 3)
+│   │   └── generate_figures.py          # Gerador estático das 8 figuras PNG (RGB 200 DPI)
+│   ├── checks/                          # Portas de auditoria automatizada (CI / local)
+│   │   ├── check_numbers.py             # Verificador de sincronia numérica JSON <-> LaTeX
+│   │   └── check_latex.py               # Verificador de integridade LaTeX, BibTeX e Overleaf
+│   └── data/                            # Datasets pseudonimizados e resultados experimentais (JSON)
+│       ├── dataset_backtesting.json     # Snapshot itemizado e pseudonimizado (v2.39.2 a v2.46.0)
+│       ├── pilot_backtesting_results.json
+│       ├── power_h1b_results.json
+│       └── poc_results.json             # Exportado localmente por go run . (gitignored)
 ├── Docs/
-│   ├── Main.tex                         # Monografia completa do TCC 1 (abnTeX2, Cap. 1-6 + Apêndices)
-│   ├── Referencias.bib                  # 50 referências auditadas compatíveis com abntex2cite
-│   ├── resultados_poc.tex               # Macros LaTeX geradas automaticamente por Codigo/main.go
-│   ├── tabelas/                         # 7 fragmentos LaTeX gerados por main.go e pilot_backtesting.py
-│   ├── figuras/                         # Cópias das 8 figuras PNG usadas pelo Main.tex
+│   ├── monografia/                      # Pacote LaTeX 100% isolado e pronto para o Overleaf
+│   │   ├── Main.tex                     # Monografia completa do TCC 1 (abnTeX2, Cap. 1-6 + Apêndices)
+│   │   ├── Referencias.bib              # 50 referências auditadas compatíveis com abntex2cite
+│   │   ├── capa_fundo.png               # Imagem de fundo da capa
+│   │   ├── resultados_poc.tex           # Macros LaTeX geradas automaticamente por poc-engine
+│   │   ├── tabelas/                     # 7 fragmentos LaTeX gerados (única fonte de verdade)
+│   │   └── figuras/                     # 8 figuras PNG RGB opacas (única fonte de verdade)
 │   ├── adr/                             # 7 Architecture Decision Records (ADR-001 a ADR-007)
-│   ├── bib_audit.md                     # Relatório de auditoria primária das 50 referências .bib
-│   ├── baseline/                        # Logs de baseline pré-correções
-│   └── legado/                          # Rascunhos históricos arquivados
-├── tabelas/                             # Espelho dos fragmentos LaTeX na raiz
-├── figuras/                             # Espelho das 8 figuras PNG geradas na raiz
+│   ├── baseline/                        # Logs de baseline pré-correções (tag pre-correcoes)
+│   ├── historico/                       # Especificação de correção, planos (tasks) e rascunhos legados
+│   └── bib_audit.md                     # Relatório de auditoria primária das 50 referências .bib
 ├── CONSTRAINTS.md                       # Contrato de qualidade (C1–C9) e invariantes verificáveis
-├── SPEC_CORRECAO_TCC1.md                # Especificação consolidada dos pareceres (CL, CX, AR)
-├── tasks/                               # Plano de execução (plan.md) e rastreabilidade (todo.md)
 └── README.md                            # Documentação principal do projeto
 ```

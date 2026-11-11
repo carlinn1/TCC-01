@@ -22,7 +22,7 @@
 # Go binaries, coverage, and runtime outputs
 *.exe
 *.test
-Codigo/poc_results.json
+Codigo/data/poc_results.json
 
 # Python cache and virtual environments
 __pycache__/

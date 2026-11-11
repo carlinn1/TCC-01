@@ -19,5 +19,5 @@ Remove-se do texto a expressão *"extensão metodológica proposta"* para a Eq. 
 
 ## Consequences
 - Garante que o algoritmo de parametrização nunca falhe numericamente diante de censura à esquerda no piso de $0{,}25$ d.u.
-- Comprovado por teste automatizado em `Codigo/pilot_backtesting.py`.
+- Comprovado por teste automatizado em `Codigo/scripts/pilot_backtesting.py`.
 
