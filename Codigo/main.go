@@ -794,28 +794,36 @@ func exportLatexMacrosAndTables(
 		// 1. tab_ks.tex
 		var ksRows strings.Builder
 		ksRows.WriteString("% Gerado automaticamente por Codigo/main.go\n")
+		ksRows.WriteString("\\providecommand{\\tabRowsKS}{%\n")
 		for i, k := range ksSingle {
 			m := ksMulti[i]
-			ksRows.WriteString(fmt.Sprintf("%s $(%.0f,\\,%.0f,\\,%.0f)$ & $%s$ / $%s$ & $%s$ / $%s$ & $%s$ & $%s$ & %d/100 ($%s$\\%%) \\\\\n",
+			end := "\\\\\n"
+			if i == len(ksSingle)-1 {
+				end = "\\\\%\n"
+			}
+			ksRows.WriteString(fmt.Sprintf("%s $(%.0f,\\,%.0f,\\,%.0f)$ & $%s$ / $%s$ & $%s$ / $%s$ & $%s$ & $%s$ & %d/100 ($%s$\\%%) %s",
 				k.TaskID, k.To, k.Tm, k.Tp,
 				fmtBR(k.MuTheo, 3), fmtBR(k.MuSample, 3),
 				fmtBR(k.VarTheo, 3), fmtBR(k.VarSample, 3),
 				fmtBR(k.DnFull, 5), fmtBR(k.PValueFull, 3),
-				m.Rejections005, fmtBR(m.RejectRate005, 0),
+				m.Rejections005, fmtBR(m.RejectRate005, 0), end,
 			))
 		}
+		ksRows.WriteString("}\n")
 		if err := os.WriteFile(filepath.Join(dir, "tab_ks.tex"), []byte(ksRows.String()), 0644); err != nil {
 			return err
 		}
 
 		// 2. tab_poc_cenarios.tex
 		scenRows := fmt.Sprintf(`%% Gerado automaticamente por Codigo/main.go
-\textbf{A.} Início, sem riscos & $%s$ & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s\%%$ \\
-\textbf{B.} Início, com R1 em T3 ($p_r=0{,}30, \Delta_r=2$) & $%s$ & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s\%%$ \\
-\textbf{C.} Status $t_s=5$, R1 ativo & $%s$ & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s\%%$ \\
-\textbf{C$'$.} Como C, com R1 mitigado & $%s$ & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s\%%$ \\
+\providecommand{\tabRowsPocCenarios}{%%
+\textbf{A.} Início, sem riscos & $%s$ & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & $%s\%%$ \\
+\textbf{B.} Início, com R1 em T3 ($p_r=0{,}30$; $\Delta_r=2$) & $%s$ & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & $%s\%%$ \\
+\textbf{C.} Status $t_s=5$, R1 ativo & $%s$ & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & $%s\%%$ \\
+\textbf{C$'$.} Como C, com R1 mitigado & $%s$ & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & $%s\%%$ \\
 \midrule
-\textbf{Diferença pareada CRN ($\text{C}' - \text{C}$)} & $0{,}00$ & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $+%s$ p.p. \\
+\textbf{Diferença pareada CRN ($\text{C}' - \text{C}$)} & $0{,}00$ & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & $+%s$ p.p. \\%%
+}
 `,
 			fmtBR(resA.CPMDeterministic, 2), fmtBR(resA.Mean, 2), fmtBR(resA.MeanSE, 3), fmtBR(resA.P50, 2), fmtBR(resA.P50SE, 3), fmtBR(resA.P85, 2), fmtBR(resA.P85SE, 3), fmtBR(resA.P95, 2), fmtBR(resA.P95SE, 3), fmtBR(resA.ProbTarget, 1),
 			fmtBR(resB.CPMDeterministic, 2), fmtBR(resB.Mean, 2), fmtBR(resB.MeanSE, 3), fmtBR(resB.P50, 2), fmtBR(resB.P50SE, 3), fmtBR(resB.P85, 2), fmtBR(resB.P85SE, 3), fmtBR(resB.P95, 2), fmtBR(resB.P95SE, 3), fmtBR(resB.ProbTarget, 1),
@@ -829,10 +837,12 @@ func exportLatexMacrosAndTables(
 
 		// 3. tab_poc_ic.tex
 		icRows := fmt.Sprintf(`%% Gerado automaticamente por Codigo/main.go
+\providecommand{\tabRowsPocIC}{%%
 \textbf{A.} Início, sem riscos & $%s\%%$ & $%s\%%$ & $%s\%%$ & $%s\%%$ \\
 \textbf{B.} Início, com R1 em T3 & $%s\%%$ & $%s\%%$ & $%s\%%$ & $%s\%%$ \\
 \textbf{C.} Status $t_s = 5$, R1 ativo & --- & $%s\%%$ & $%s\%%$ & $%s\%%$ \\
-\textbf{C$'$.} Status $t_s = 5$, R1 mitigado & --- & $%s\%%$ & $%s\%%$ & $%s\%%$ \\
+\textbf{C$'$.} Status $t_s = 5$, R1 mitigado & --- & $%s\%%$ & $%s\%%$ & $%s\%%$ \\%%
+}
 `,
 			fmtBR(resA.CriticalityIndex["T1"], 1), fmtBR(resA.CriticalityIndex["T2"], 1), fmtBR(resA.CriticalityIndex["T3"], 1), fmtBR(resA.CriticalityIndex["T4"], 1),
 			fmtBR(resB.CriticalityIndex["T1"], 1), fmtBR(resB.CriticalityIndex["T2"], 1), fmtBR(resB.CriticalityIndex["T3"], 1), fmtBR(resB.CriticalityIndex["T4"], 1),
@@ -845,10 +855,12 @@ func exportLatexMacrosAndTables(
 
 		// 4. tab_reprodutibilidade.tex
 		reproRows := fmt.Sprintf(`%% Gerado automaticamente por Codigo/main.go
+\providecommand{\tabRowsRepro}{%%
 1 \textit{worker} (sequencial) & $%s$ & $%s$ & $%s$ & $%s$ & $%s\%%$ & $%s\%%$ \\
 4 \textit{workers} (paralelo) & $%s$ & $%s$ & $%s$ & $%s$ & $%s\%%$ & $%s\%%$ \\
 16 \textit{workers} (alta concorrência) & $%s$ & $%s$ & $%s$ & $%s$ & $%s\%%$ & $%s\%%$ \\
-\textbf{Divergência máxima ($\Delta_{\max}$)} & \textbf{0,000000} & \textbf{0,000000} & \textbf{0,000000} & \textbf{0,000000} & \textbf{0,0000\%%} & \textbf{0,0000\%%} \\
+\textbf{Divergência máxima ($\Delta_{\max}$)} & \textbf{0,000000} & \textbf{0,000000} & \textbf{0,000000} & \textbf{0,000000} & \textbf{0,0000\%%} & \textbf{0,0000\%%} \\%%
+}
 `,
 			fmtBR(reproW1.Mean, 6), fmtBR(reproW1.P50, 6), fmtBR(reproW1.P85, 6), fmtBR(reproW1.P95, 6), fmtBR(reproW1.ProbTarget, 4), fmtBR(reproW1.CriticalityIndex["T3"], 4),
 			fmtBR(reproW1.Mean, 6), fmtBR(reproW1.P50, 6), fmtBR(reproW1.P85, 6), fmtBR(reproW1.P95, 6), fmtBR(reproW1.ProbTarget, 4), fmtBR(reproW1.CriticalityIndex["T3"], 4),
@@ -861,23 +873,31 @@ func exportLatexMacrosAndTables(
 		// 5. tab_benchmarks.tex
 		var benchRows strings.Builder
 		benchRows.WriteString("% Gerado automaticamente por Codigo/main.go\n")
-		for _, br := range benchSuite.Results {
-			benchRows.WriteString(fmt.Sprintf("%s & %d / %d / %d & %d & $%s$ & $%s \\pm %s$ & $[%s;\\,%s]$ & $\\approx %.0f$ \\\\\n",
+		benchRows.WriteString("\\providecommand{\\tabRowsBenchmarks}{%\n")
+		for i, br := range benchSuite.Results {
+			end := "\\\\\n"
+			if i == len(benchSuite.Results)-1 {
+				end = "\\\\%\n"
+			}
+			benchRows.WriteString(fmt.Sprintf("%s & %d/%d/%d & %d & $%s$ & $%s \\pm %s$ & $[%s;\\,%s]$ & $\\approx %.0f$ %s",
 				br.Name, br.Tasks, br.Deps, br.Risks, br.Workers,
 				fmtBR(br.MedianMs, 2), fmtBR(br.MeanMs, 2), fmtBR(br.StdDevMs, 2),
-				fmtBR(br.MinMs, 2), fmtBR(br.MaxMs, 2), br.ThroughputItS,
+				fmtBR(br.MinMs, 2), fmtBR(br.MaxMs, 2), br.ThroughputItS, end,
 			))
 		}
+		benchRows.WriteString("}\n")
 		if err := os.WriteFile(filepath.Join(dir, "tab_benchmarks.tex"), []byte(benchRows.String()), 0644); err != nil {
 			return err
 		}
 
 		// 6. tab_tcc2_mc.tex
 		tcc2Rows := fmt.Sprintf(`%% Gerado automaticamente por Codigo/main.go
-\textbf{Base PERT-Beta (sem riscos discretos)} & $%s$ & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s\%%$ \\
-\textbf{Com Riscos Discretos ($\text{R}_{\text{DAG}}, \text{R}_{\text{LEAK}}, \text{R}_{\text{LLM}}$)} & $%s$ & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s\%%$ \\
-\textbf{Estresse ($+25\%%$ em O/M/P + riscos ativos)} & $%s$ & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s\%%$ \\
-\textbf{Estresse + Cortes Pré-Registrados (E08--E11)} & $%s$ & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s$ ($\pm %s$) & $%s\%%$ \\
+\providecommand{\tabRowsTccDoisMC}{%%
+\textbf{Base PERT-Beta (sem riscos discretos)} & $%s$ & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & $%s\%%$ \\
+\textbf{Com Riscos Discretos ($\text{R}_{\text{DAG}}$, $\text{R}_{\text{LEAK}}$, $\text{R}_{\text{LLM}}$)} & $%s$ & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & $%s\%%$ \\
+\textbf{Estresse ($+25\%%$ em O/M/P + riscos ativos)} & $%s$ & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & $%s\%%$ \\
+\textbf{Estresse + Cortes Pré-Registrados (E08--E11)} & $%s$ & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & $%s\%%$ \\%%
+}
 `,
 			fmtBR(tcc2Base.CPMDeterministic, 2), fmtBR(tcc2Base.Mean, 2), fmtBR(tcc2Base.MeanSE, 3), fmtBR(tcc2Base.P50, 2), fmtBR(tcc2Base.P50SE, 3), fmtBR(tcc2Base.P85, 2), fmtBR(tcc2Base.P85SE, 3), fmtBR(tcc2Base.P95, 2), fmtBR(tcc2Base.P95SE, 3), fmtBR(tcc2Base.ProbTarget, 1),
 			fmtBR(tcc2Risks.CPMDeterministic, 2), fmtBR(tcc2Risks.Mean, 2), fmtBR(tcc2Risks.MeanSE, 3), fmtBR(tcc2Risks.P50, 2), fmtBR(tcc2Risks.P50SE, 3), fmtBR(tcc2Risks.P85, 2), fmtBR(tcc2Risks.P85SE, 3), fmtBR(tcc2Risks.P95, 2), fmtBR(tcc2Risks.P95SE, 3), fmtBR(tcc2Risks.ProbTarget, 1),

@@ -72,17 +72,29 @@ def main() -> None:
     # 2. Verifica existencia e sintaxe de todos os \input{...} e \includegraphics{...}
     for m in re.finditer(r"\\input\{([^}]+)\}", main_clean):
         rel = m.group(1)
+        # Regra anti-Misplaced-\noalign (TeX Live 2021+): nunca usar \input{tabelas/...} dentro de tabular/tabularx
+        before_input = main_clean[: m.start()]
+        open_tab = len(re.findall(r"\\begin\{tabularx?\}", before_input))
+        close_tab = len(re.findall(r"\\end\{tabularx?\}", before_input))
+        if open_tab > close_tab:
+            errors.append(
+                f"Docs/Main.tex: \\input{{{rel}}} aparece dentro de ambiente tabular/tabularx (causa Misplaced \\noalign em TeX Live 2026)"
+            )
         target = os.path.join(docs_dir, rel)
         if not os.path.exists(target):
             errors.append(f"Arquivo \\input{{{rel}}} nao encontrado em {target}")
         else:
             with open(target, "r", encoding="utf-8") as tf:
                 t_raw = tf.read()
-            # Verifica se alguma linha de dados da tabela gerada possui % nao escapado apos &
+            check_balanced_environments(strip_latex_comments(t_raw), f"Docs/{rel}", errors)
+            # Verifica se alguma linha de dados da tabela gerada possui % nao escapado antes do fim de linha
             for lno, tline in enumerate(t_raw.splitlines(), start=1):
-                if tline.lstrip().startswith("%"):
+                stripped = tline.lstrip()
+                if stripped.startswith("%"):
                     continue
-                if re.search(r"(?<!\\)%", tline):
+                # Remove comentario intencional apenas imediatamente apos abertura '{%' ou quebra de linha '\\%'
+                cleaned_line = re.sub(r"(?:\{|\\\\)%$", "", tline)
+                if re.search(r"(?<!\\)%", cleaned_line):
                     errors.append(f"Docs/{rel}:{lno}: caractere '%' nao escapado em linha de tabela/macro: {tline}")
 
     for m in re.finditer(r"\\includegraphics(?:\[[^\]]*\])?\{([^}]+)\}", main_clean):

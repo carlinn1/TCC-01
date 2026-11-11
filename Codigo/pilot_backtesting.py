@@ -256,10 +256,14 @@ def main():
     # Exporta fragmento LaTeX da tabela de parametrizacao e piloto
     for tab_dir in [os.path.join(base_dir, "..", "Docs", "tabelas"), os.path.join(base_dir, "..", "tabelas")]:
         os.makedirs(tab_dir, exist_ok=True)
-        tex_lines = ["% Gerado automaticamente por Codigo/pilot_backtesting.py\n"]
-        for wp, rep in zip(window_params, [replay_v240, replay_v241, replay_v246]):
+        tex_lines = [
+            "% Gerado automaticamente por Codigo/pilot_backtesting.py\n",
+            "\\providecommand{\\tabRowsPilotoBacktesting}{%\n",
+        ]
+        pairs = list(zip(window_params, [replay_v240, replay_v241, replay_v246]))
+        for idx, (wp, rep) in enumerate(pairs):
             rule_lbl = (
-                "Primária ($Q_{05}/\\hat{m}_{\\text{HSM}}/Q_{95}$)"
+                "Primária ($Q_{05}/\\hat{m}_{\\mathrm{HSM}}/Q_{95}$)"
                 if "primaria" in wp["selected_rule"]
                 else "Fallback (Bootstrap Empírico)"
             )
@@ -269,6 +273,7 @@ def main():
                 else "Reamostragem ($n=" + str(wp["n"]) + "$)"
             )
             mf = rep["model_forecast"]
+            row_end = "\\\\%\n" if idx == len(pairs) - 1 else "\\\\\n"
             tex_lines.append(
                 f"{wp['target']} & {wp['floor_count']}/{wp['n']} ($"
                 + fmt_br(wp["floor_fraction_pct"], 1)
@@ -276,8 +281,9 @@ def main():
                 + fmt_br(rep["y_real_bd"])
                 + f"$ & ${fmt_br(mf['p50'])}$ / ${fmt_br(mf['p85'])}$ & $"
                 + fmt_br(mf["ae_p50"])
-                + f"$ / ${fmt_br(mf['crps'])}$ \\\\\n"
+                + f"$ / ${fmt_br(mf['crps'])}$ {row_end}"
             )
+        tex_lines.append("}\n")
         with open(os.path.join(tab_dir, "tab_piloto_backtesting.tex"), "w", encoding="utf-8") as f:
             f.writelines(tex_lines)
 
