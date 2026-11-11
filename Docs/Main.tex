@@ -1,0 +1,1245 @@
+% =====================================================================
+% TCC 1 - Engenharia de Software - UnB/FCTE
+% Template: abnTeX2
+% Compilar: pdflatex main && bibtex main && pdflatex main && pdflatex main
+% Nota sobre Figuras: se os arquivos PNG estiverem em ./figuras/, eles
+% sao carregados automaticamente; caso contrario, o documento renderiza
+% diagramas vetoriais nativos em TikZ (zero placeholders "[Inserir...]").
+% =====================================================================
+\documentclass[12pt,openany,oneside,a4paper,brazilian,sumario=tradicional]{abntex2}
+
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[expansion=false]{microtype}
+\usepackage{indentfirst}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage{enumitem}
+\IfFileExists{figuras/fig01_dag_exemplo.png}{}{%
+  \usepackage{tikz}%
+  \usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc}%
+}
+\usepackage[brazilian,hyperpageref]{backref}
+\usepackage[alf]{abntex2cite}
+\usepackage{eso-pic}
+\usepackage{hyperref}
+
+\definecolor{unbblue}{HTML}{1D4B7C}
+\definecolor{unbgreen}{HTML}{008C4F}
+\hypersetup{colorlinks=true,linkcolor=unbblue,citecolor=unbblue,urlcolor=unbblue}
+
+\renewcommand{\backrefpagesname}{Citado na(s) página(s):}
+\renewcommand*{\backref}[1]{}
+\renewcommand*{\backrefalt}[4]{%
+  \ifcase #1 Nenhuma citação no texto.%
+  \or Citado na página #2.%
+  \else Citado #1 vezes nas páginas #2.\fi}
+
+% Macro de figura com fallback vetorial em TikZ (elimina placeholders vazios)
+\newcommand{\figura}[5]{%
+  \begin{figure}[htbp]
+    \caption{#2}\label{#3}
+    \centering
+    \IfFileExists{figuras/#1}%
+      {\includegraphics[width=#4\textwidth]{figuras/#1}}%
+      {#5}%
+    \par\vspace{2mm}\small Fonte: Elaborado pelos autores (2026).
+  \end{figure}%
+}
+
+\newcommand{\fonteautores}{\par\vspace{1mm}{\small Fonte: Elaborado pelos autores (2026).}}
+\newcommand{\IC}{\mathrm{IC}}
+
+% Metadados da Banca e Data de Defesa (configuraveis)
+\newcommand{\datadefesa}{27 de novembro de 2026}
+\newcommand{\membrointernoum}{Prof. Dr. Sérgio Antônio Andrade de Freitas}
+\newcommand{\membrointernodois}{Prof. Dr. George Marsicano Corrêa}
+
+% Reduz espacos em branco causados por flutuantes (figuras e tabelas)
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.9}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.8}
+
+\titulo{Sombra Digital Governada e Inteligência Artificial para Apoio à Decisão em Projetos de Software: Arquitetura de Referência com Simulação de Monte Carlo e Governança Humana}
+\autor{Carlos Henrique de Souza Bispo, Paulo Henrique Virgilio Cerqueira}
+\local{Brasília, DF}
+\data{2026}
+\orientador{Prof. Dr. Ricardo Matos Chaim}
+\instituicao{Universidade de Brasília - UnB\par Faculdade de Ciências e Tecnologias em Engenharia - FCTE}
+\tipotrabalho{Trabalho de Conclusão de Curso}
+\preambulo{Monografia submetida ao curso de graduação em Engenharia de Software da Universidade de Brasília, como requisito parcial para obtenção do Título de Bacharel em Engenharia de Software.}
+
+\setlength{\parindent}{1.3cm}
+\setlength{\parskip}{0.2cm}
+
+\begin{document}
+\selectlanguage{brazilian}
+\shorthandoff{"}
+\frenchspacing
+
+% ------------------------------------------------------------ CAPA
+\begin{capa}
+  \IfFileExists{capa_fundo.png}{%
+    \AddToShipoutPictureBG*{\AtPageLowerLeft{\includegraphics[width=\paperwidth,height=\paperheight]{capa_fundo.png}}}%
+  }{}
+  \centering
+  \vspace*{7.2cm}
+  {\color{unbblue}\bfseries Universidade de Brasília \textendash{} UnB\par
+  Faculdade de Ciências e Tecnologias em Engenharia \textendash{} FCTE\par
+  Engenharia de \textit{Software}\par}
+  \vspace*{1.6cm}
+  {\sffamily\bfseries\large Sombra Digital Governada e Inteligência Artificial para Apoio à Decisão em Projetos de Software: Arquitetura de Referência com Simulação de Monte Carlo e Governança Humana\par}
+  \vspace*{1.4cm}
+  {\bfseries Autores: Carlos Henrique de Souza Bispo, Paulo Henrique Virgilio Cerqueira\par
+  \vspace{0.4cm}
+  Orientador: Prof. Dr. Ricardo Matos Chaim\par}
+  \vspace{0.8cm}
+  Brasília, DF\par 2026
+\end{capa}
+
+% ------------------------------------------------------------ FOLHA DE ROSTO
+\begin{center}
+  {\bfseries Carlos Henrique de Souza Bispo, Paulo Henrique Virgilio Cerqueira}\par
+  \vspace{3cm}
+  {\bfseries\large Sombra Digital Governada e Inteligência Artificial para Apoio à Decisão em Projetos de Software: Arquitetura de Referência com Simulação de Monte Carlo e Governança Humana}\par
+  \vspace{2cm}
+  \begin{flushright}
+  \begin{minipage}{0.55\textwidth}
+  \small Monografia submetida ao curso de graduação em Engenharia de Software da Universidade de Brasília, como requisito parcial para obtenção do Título de Bacharel em Engenharia de Software.
+  \end{minipage}
+  \end{flushright}
+  \vspace{2cm}
+  Universidade de Brasília - UnB\par
+  Faculdade de Ciências e Tecnologias em Engenharia - FCTE\par
+  \vspace{0.5cm}
+  Orientador: Prof. Dr. Ricardo Matos Chaim\par
+  \vfill
+  Brasília, DF\par 2026
+\end{center}
+\clearpage
+
+% ------------------------------------------------------------ FOLHA DE APROVAÇÃO
+\begin{center}
+  {\bfseries Carlos Henrique de Souza Bispo, Paulo Henrique Virgilio Cerqueira}\par
+  \vspace{1cm}
+  {\bfseries Sombra Digital Governada e Inteligência Artificial para Apoio à Decisão em Projetos de Software: Arquitetura de Referência com Simulação de Monte Carlo e Governança Humana}\par
+  \vspace{1cm}
+  \begin{flushright}
+  \begin{minipage}{0.55\textwidth}
+  \small Monografia submetida ao curso de graduação em Engenharia de Software da Universidade de Brasília, como requisito parcial para obtenção do Título de Bacharel em Engenharia de Software.
+  \end{minipage}
+  \end{flushright}
+  \vspace{1cm}
+  Trabalho aprovado. Brasília, DF, \datadefesa:\par
+  \vspace{1.8cm}
+  \rule{9cm}{0.4pt}\par Prof. Dr. Ricardo Matos Chaim\par Orientador (UnB/FCTE)\par
+  \vspace{1.2cm}
+  \rule{9cm}{0.4pt}\par \membrointernoum\par Membro Examinador Interno (UnB/FCTE)\par
+  \vspace{1.2cm}
+  \rule{9cm}{0.4pt}\par \membrointernodois\par Membro Examinador Interno (UnB/FCTE)\par
+  \vfill
+  Brasília, DF\par 2026
+\end{center}
+\clearpage
+
+% ------------------------------------------------------------ RESUMO
+\begin{resumo}
+Projetos de software em ciclos iterativos ou híbridos enfrentam incerteza crônica de prazos, causada por dependências técnicas entre componentes, estimativas humanas sujeitas a vieses cognitivos e impedimentos operacionais. As ferramentas atuais registram tarefas de forma passiva, e a ausência de ligação em tempo real entre eventos de engenharia e modelos formais de rede impede a detecção precoce de desvios no caminho crítico. Ao mesmo tempo, o uso não governado de Modelos de Linguagem de Larga Escala (LLMs) em sistemas corporativos expõe vulnerabilidades como injeção indireta de comandos, divulgação de informações sensíveis e agência excessiva, além de alucinações numéricas em cálculos estocásticos. Este trabalho especifica a arquitetura de referência de um sistema de apoio à decisão concebido, segundo a taxonomia de Kritzinger, como uma Sombra Digital de processo com atuação governada sobre o modelo virtual, constituindo um degrau arquitetural seguro rumo a Gêmeos Digitais de processo. A solução articula captura automatizada de eventos de repositórios e integração contínua (GitHub/CI), cálculo determinístico do caminho crítico (CPM), Simulação de Monte Carlo (distribuição PERT-Beta acoplada a riscos discretos de Bernoulli) e recomendações interpretativas geradas por um LLM isolado que recebe apenas metadados sanitizados (\textit{allowlist}). A governança baseia-se em classificação binária de impacto no servidor com negação por padrão (\textit{fail-closed}), retenção de ações críticas para aprovação humana com exibição segregada do impacto simulado e trilha de auditoria encadeada por SHA-256 resistente a adulterações (\textit{tamper-evident}) com ancoragem externa. A viabilidade do motor estocástico foi verificada por uma Prova de Conceito (PoC) reprodutível em Go: o amostrador PERT-Beta foi validado analiticamente e por teste de Kolmogorov-Smirnov (incluindo o caso degenerado $t_o=t_p$), o CPM contra o cálculo manual, a execução com 1, 4 e 16 \textit{workers} produziu resultados idênticos, e 10.000 iterações levaram mediana de 5,8 ms em uma rede de 4 tarefas e 259,6 ms em uma rede sintética de 200 tarefas e 300 dependências em um único núcleo de CPU. O trabalho também caracteriza janelas de \textit{release} do repositório GitHub CLI (\texttt{cli/cli}) para \textit{backtesting}, evidenciando os desafios de validade de construto e densidade de dados, e apresenta o cronograma do TCC2 em 20 semanas com matriz de rastreabilidade de requisitos, estimativas de três pontos e antecipação do piloto do grafo de dependências para as semanas 1 a 3.
+
+\textbf{Palavras-chave}: Sombra Digital de Processo, Gêmeo Digital, Simulação de Monte Carlo, Método do Caminho Crítico, Governança de Inteligência Artificial, Engenharia de Software.
+\end{resumo}
+
+\begin{resumo}[Abstract]
+\begin{otherlanguage*}{english}
+Software projects in iterative or hybrid lifecycles suffer from chronic schedule uncertainty caused by intricate technical dependencies, human estimation biases, and operational impediments. Contemporary tools record work items passively, and the lack of real-time coupling between engineering events and formal network models hinders early detection of critical path shifts. Meanwhile, ungoverned adoption of Large Language Models (LLMs) in enterprise systems exposes vulnerabilities such as indirect prompt injection, sensitive information disclosure, and excessive agency, besides numerical hallucinations in stochastic calculations. This work specifies the reference architecture of a decision-support system designed, under Kritzinger's taxonomy, as a process Digital Shadow with governed in-model actuation, serving as a safe architectural stepping stone toward process Digital Twins. The architecture integrates automated event capture from version control and continuous integration (GitHub/CI), deterministic Critical Path Method (CPM), Monte Carlo Simulation (PERT-Beta distribution coupled with Bernoulli discrete risks), and explanatory recommendations produced by an isolated LLM agent restricted to a sanitized metadata allowlist. Governance relies on server-side binary impact classification with default denial (\textit{fail-closed}), human approval of restricted actions with segregated simulated impact preview, and tamper-evident SHA-256 hash-chained audit logging with external anchoring. Algorithmic feasibility was verified through a reproducible Go Proof of Concept (PoC): the PERT-Beta sampler was validated analytically and via Kolmogorov-Smirnov goodness-of-fit testing (including the degenerate case $t_o=t_p$), the CPM matched hand calculation, runs with 1, 4, and 16 workers produced identical results, and 10,000 iterations took a median of 5.8 ms on a 4-task network and 259.6 ms on a synthetic 200-task/300-dependency network on a single CPU core. The work also characterizes GitHub CLI (\texttt{cli/cli}) release windows for backtesting, highlighting construct validity and data density challenges, and presents the 20-week TCC2 schedule with a requirements traceability matrix, three-point estimates, and an early DAG pilot in weeks 1 to 3.
+
+\textbf{Keywords}: Process Digital Shadow, Digital Twin, Monte Carlo Simulation, Critical Path Method, AI Governance, Software Engineering.
+\end{otherlanguage*}
+\end{resumo}
+
+% ------------------------------------------------------------ LISTAS
+\pdfbookmark[0]{\listfigurename}{lof}
+\listoffigures*
+\cleardoublepage
+\pdfbookmark[0]{\listtablename}{lot}
+\listoftables*
+\cleardoublepage
+
+\begin{siglas}
+  \item[ACID] Atomicidade, Consistência, Isolamento e Durabilidade
+  \item[API] \textit{Application Programming Interface}
+  \item[CDF] \textit{Cumulative Distribution Function} (Função de Distribuição Acumulada)
+  \item[CI/CD] \textit{Continuous Integration / Continuous Delivery}
+  \item[CPM] \textit{Critical Path Method} (Método do Caminho Crítico)
+  \item[CRPS] \textit{Continuous Ranked Probability Score}
+  \item[CRUD] \textit{Create, Read, Update, Delete}
+  \item[DAG] \textit{Directed Acyclic Graph} (Grafo Acíclico Dirigido)
+  \item[DSRM] \textit{Design Science Research Methodology}
+  \item[FS] \textit{Finish-to-Start} (Término-a-Início)
+  \item[HMAC] \textit{Hash-based Message Authentication Code}
+  \item[IC] Índice de Criticidade
+  \item[JWT] \textit{JSON Web Token}
+  \item[KS] Kolmogorov-Smirnov
+  \item[LLM] \textit{Large Language Model} (Modelo de Linguagem de Larga Escala)
+  \item[MAE] \textit{Mean Absolute Error} (Erro Médio Absoluto)
+  \item[MVP] \textit{Minimum Viable Product}
+  \item[OWASP] \textit{Open Web Application Security Project}
+  \item[PERT] \textit{Program Evaluation and Review Technique}
+  \item[PII] \textit{Personally Identifiable Information}
+  \item[PMBOK] \textit{Project Management Body of Knowledge}
+  \item[PMI] \textit{Project Management Institute}
+  \item[PoC] \textit{Proof of Concept} (Prova de Conceito)
+  \item[PR] \textit{Pull Request}
+  \item[PRNG] \textit{Pseudo-Random Number Generator}
+  \item[RBAC] \textit{Role-Based Access Control}
+  \item[RCPSP] \textit{Resource-Constrained Project Scheduling Problem}
+  \item[RF] Requisito Funcional
+  \item[RNF] Requisito Não Funcional
+  \item[RQ] \textit{Research Question} (Questão de Pesquisa)
+  \item[SHA] \textit{Secure Hash Algorithm}
+  \item[SPA] \textit{Single Page Application}
+  \item[SSE] \textit{Server-Sent Events}
+  \item[TF] \textit{Total Float} (Folga Total)
+  \item[WBS] \textit{Work Breakdown Structure} (Estrutura Analítica do Projeto)
+  \item[WORM] \textit{Write Once, Read Many}
+\end{siglas}
+
+\pdfbookmark[0]{\contentsname}{toc}
+\tableofcontents*
+\cleardoublepage
+
+\textual
+
+% =====================================================================
+\chapter{Introdução}\label{cap:introducao}
+% =====================================================================
+
+\section{Contextualização e Importância do Trabalho}\label{sec:contexto}
+
+O cumprimento de prazos em projetos de software permanece um desafio crônico da Engenharia de Software. O relatório \textit{CHAOS Report}, compilado sobre mais de 50.000 projetos, indica que apenas 31\% dos projetos são entregues com sucesso pleno (prazo, custo e escopo), 50\% são desafiados e 19\% fracassam \cite{standish2020}. Embora esses números sofram críticas metodológicas quanto à definição de sucesso e à amostragem \cite{eveleens2010}, servem como indicador macroeconômico de contexto. De forma convergente, o estudo \textit{Pulse of the Profession} aponta que, em média, 11,4\% do capital investido em projetos corporativos é desperdiçado por baixo desempenho de execução \cite{pmi2020}.
+
+No desenvolvimento iterativo, ágil ou híbrido, as equipes operam cotidianamente sobre fluxos contínuos de cartões e \textit{sprints}. No nível tático, porém — como na coordenação de \textit{releases} trimestrais, marcos contratuais e épicos de integração entre múltiplas equipes —, existem dependências técnicas rígidas do tipo Término-a-Início ($FS$) entre componentes, tais como migrações de esquemas de banco de dados, serviços de \textit{backend}, barramentos de mensageria e interfaces clientes. As estimativas humanas de esforço e duração sofrem sistematicamente da falácia do planejamento, viés cognitivo pelo qual profissionais subestimam prazos e riscos mesmo quando dispõem de histórico de projetos anteriores \cite{brooks1995,kahneman1979,jorgensen2004}. Quando os eventos operacionais do ecossistema de codificação (abertura e mesclagem de \textit{pull requests}, fechamento de \textit{issues}, falhas de integração contínua) ocorrem desconectados de uma rede analítica formal, gestores detectam desvios no caminho crítico apenas nas fases finais da entrega.
+
+Ferramentas difundidas na indústria, como Jira Software e Azure DevOps, priorizam quadros kanban e relatórios retrospectivos. Quando oferecem cronogramas de precedência, apoiam-se em cálculos determinísticos que ignoram tanto a assimetria das durações quanto o viés de convergência de caminhos (\textit{merge event bias}), fenômeno estatístico pelo qual o instante de término de caminhos paralelos é governado pelo máximo de variáveis aleatórias, satisfazendo $E[\max(X,Y)] \ge \max(E[X],E[Y])$ \cite{vanslyke1963,maccrimmon1964}.
+
+Paralelamente, a rápida difusão de Inteligência Artificial Generativa motivou a incorporação de Modelos de Linguagem de Larga Escala (LLMs) à gestão de projetos. Todavia, LLMs são intrinsecamente inadequados para aritmética exata em grafos e amostragem de Monte Carlo, produzindo alucinações numéricas quando instados a estimar percentis diretamente. Mais grave ainda, conceder agência operacional direta a agentes LLM que processam metadados vindos de repositórios Git expõe a organização a ataques de injeção indireta de comandos (\textit{Indirect Prompt Injection}), nos quais instruções maliciosas embutidas em títulos de \textit{issues} ou resumos de \textit{pull requests} sequestram o fluxo de controle do agente ou induzem gestores humanos ao erro \cite{greshake2023,owasp2023,owasp2025,debenedetti2024}.
+
+Na literatura de representação virtual de sistemas, \citeonline{kritzinger2018} distinguem três níveis de maturidade conforme o grau de automação do fluxo de dados: \textit{Modelo Digital} (fluxos manuais), \textit{Sombra Digital} (fluxo automatizado no sentido físico $\rightarrow$ virtual e intervenção manual no sentido virtual $\rightarrow$ físico) e \textit{Gêmeo Digital} (fluxo bidirecional totalmente automatizado). Embora o termo ``Gêmeo Digital de Processo'' seja frequentemente utilizado como visão norteadora na Engenharia de Software \cite{guinea2024}, em sistemas sociotécnicos com agentes de IA a atuação automática não supervisionada sobre o cronograma oficial viola o princípio de segurança contra agência excessiva (LLM06 na edição 2025 do OWASP). Por rigor taxonômico, este trabalho intitula e formaliza seu artefato como uma \textbf{Sombra Digital Governada}, na qual a captura de eventos Git/CI é automatizada e a retroalimentação sobre a linha de base exige validação determinística no servidor e aprovação humana explícita.
+
+\section{Pergunta de Pesquisa e Hipóteses}
+
+A partir do problema caracterizado, esta pesquisa investiga a seguinte pergunta central:
+
+\begin{citacao}
+Como conceber e validar uma arquitetura de referência de software que mantenha uma Sombra Digital Governada e sincronizada de um projeto, integrando simulação estocástica de cronograma com assistência interpretativa de IA generativa, de modo a assegurar previsões probabilísticas calibradas, governança determinística \textit{fail-closed} e contenção comprovada contra ações não autorizadas?
+\end{citacao}
+
+Para operacionalizar a investigação segundo a \textit{Design Science Research Methodology} (DSRM) \cite{peffers2007}, formulam-se quatro questões específicas de pesquisa:
+
+\begin{itemize}
+  \item \textbf{RQ1 (Modelagem e Sincronização):} quais entidades, propriedades estruturais e regras de transição de eventos Git/CI (incluindo casos de cancelamento como \texttt{not\_planned} e \textit{pull requests} abandonados) são necessárias para manter uma Sombra Digital Governada de processo voltada ao acompanhamento tático de escopo, cronograma e riscos?
+  \item \textbf{RQ2 (Simulação, Desempenho e Isolamento):} como estruturar o cálculo do CPM e a Simulação de Monte Carlo acoplada a riscos discretos (PERT-Beta + Bernoulli) para garantir aderência estatística exata, execução concorrente sub-segundo, isolamento de cenários hipotéticos e reprodutibilidade numérica estrita?
+  \item \textbf{RQ3 (Governança, Segurança e Explicabilidade da IA):} quais mecanismos arquiteturais garantem que agentes baseados em LLMs operem estritamente sobre uma \textit{allowlist} sanitizada, sem rota de rede para o banco de dados, contidos por classificação binária \textit{fail-closed} no servidor, proteção contra persuasão do aprovador e trilha de auditoria resistente a adulterações (\textit{tamper-evident})?
+  \item \textbf{RQ4 (Qualidade e Calibração da Previsão):} em que medida a Simulação de Monte Carlo em rede de precedências (PERT-Beta + Bernoulli) apresenta menor erro pontual (avaliado pela mediana $P_{50}$ e pela média $E[F]$) e melhor calibração probabilística (avaliada no compromisso $P_{85}$ via cobertura empírica, \textit{Pinball Loss} e CRPS) quando comparada ao CPM determinístico, à projeção linear e ao Monte Carlo por vazão histórica \cite{vacanti2015}, tanto sob premissas nominais quanto sob violação distributiva?
+\end{itemize}
+
+As hipóteses científicas a serem submetidas a teste empírico no TCC2 são:
+
+\begin{itemize}
+  \item \textbf{H1 (Calibração e Acurácia Probabilística):} (a) os preditores centrais da simulação em rede ($P_{50}$ e $E[F]$) apresentam menor Erro Médio Absoluto (MAE) e Erro Mediano Absoluto (MdAE) de término do que o CPM determinístico e a extrapolação linear por vazão média; e (b) a distribuição preditiva completa e o quantil tático $P_{85}$ atingem menor perda quantílica (\textit{Pinball Loss}), menor CRPS e cobertura empírica mais próxima da nominal do que a Simulação de Monte Carlo agnóstica a dependências baseada apenas em vazão \cite{vacanti2015} em redes com caminhos paralelos convergentes (RQ4).
+  \item \textbf{H2 (Contenção Arquitetural contra Injeção Indireta):} mesmo quando os campos textuais permitidos na \textit{allowlist} (títulos sanitizados de tarefas e resumos de \textit{issues}/PRs) contêm \textit{payloads} adversariais de injeção indireta de comandos, a arquitetura registra zero mutações não autorizadas no estado oficial do banco de dados, retendo 100\% das ações de Categoria 2 e rejeitando em modo \textit{fail-closed} qualquer comando fora do catálogo (RQ3).
+  \item \textbf{H3 (Rastreabilidade Numérica e Integridade de Auditoria):} toda recomendação aprovada na validação de saída referencia de forma exata os indicadores matemáticos da \textit{allowlist} ($P_{50}$, $P_{85}$, $P_{95}$, $\IC_i$) com taxa de alucinação numérica estatisticamente limitada abaixo de 1,0\% (verificada automaticamente em 300 execuções), e qualquer adulteração direta em registros da tabela \texttt{audit\_logs} é detectada em 100\% dos casos pela verificação da cadeia SHA-256 contra a âncora externa (RQ1 e RQ3).
+\end{itemize}
+
+\section{Objetivos}
+
+\subsection{Objetivo Geral}
+
+Projetar, formalizar e verificar a viabilidade da arquitetura de referência de um sistema de apoio à decisão para gerenciamento tático de projetos de software, fundamentado no conceito de Sombra Digital Governada de processo, Simulação de Monte Carlo concorrente em grafos de precedência e governança determinística de IA, comprovando a viabilidade algorítmica e estatística do motor por Prova de Conceito reprodutível em Go e estabelecendo o protocolo experimental rigoroso para o TCC2.
+
+\subsection{Objetivos Específicos}
+
+\begin{enumerate}
+  \item Fundamentar teórica e comparativamente a proposta, sistematizando o PMBOK 7, o \textit{Practice Standard for Scheduling}, a taxonomia de maturidade de Kritzinger (Modelo, Sombra e Gêmeo Digital), a análise estocástica de redes e o catálogo OWASP Top 10 para LLMs (edições 2023 e 2025), posicionando o artefato frente à literatura e às ferramentas de mercado de 2026;
+  \item Mapear as seis atividades da DSRM \cite{peffers2007} ao ciclo da pesquisa e especificar requisitos funcionais (RF01 a RF12) e não funcionais (RNF01 a RNF09) com rastreabilidade completa aos pacotes de trabalho;
+  \item Especificar a arquitetura de referência em três processos isolados, a máquina de estados \textit{fail-closed}, o contrato exato da \textit{allowlist} enviada ao LLM, as defesas contra persuasão do aprovador humano e a trilha de auditoria resistente a adulterações com ancoragem externa;
+  \item Formalizar e implementar a Prova de Conceito (\texttt{poc-engine}) em Go, validando o amostrador PERT-Beta por momentos analíticos e pelo teste de aderência de Kolmogorov-Smirnov (incluindo o caso degenerado $t_o=t_p$), a reprodutibilidade estrita entre 1, 4 e 16 \textit{workers} e a dispersão de desempenho em 5 repetições;
+  \item Caracterizar empiricamente janelas de \textit{backtesting} do repositório GitHub CLI (\texttt{cli/cli}) via \textit{script} auditável, analisando ameaças à validade de construto e reestruturando o cronograma de 20 semanas do TCC2 para mitigar os riscos de dados e de construção do DAG já nas semanas 1 a 3.
+\end{enumerate}
+
+\section{Organização do Documento}
+
+O restante desta monografia está estruturado em cinco capítulos adicionais:
+\begin{itemize}
+  \item O \textbf{Capítulo~\ref{cap:revisao} (Revisão Bibliográfica)} fundamenta o Método do Caminho Crítico, a distribuição PERT-Beta, a Simulação de Monte Carlo sob viés de convergência, os níveis de maturidade de Sombras e Gêmeos Digitais, a segurança de agentes LLM (OWASP 2023 e 2025), os trabalhos relacionados e a matriz comparativa de ferramentas atualizada para 2026;
+  \item O \textbf{Capítulo~\ref{cap:metodologia} (Metodologia)} explicita as seis etapas da DSRM, define e discute os Requisitos Funcionais e Não Funcionais, apresenta a caracterização empírica das janelas de \textit{backtesting} do GitHub CLI, detalha o protocolo experimental em cinco dimensões (com métricas justas de erro pontual e calibração probabilística) e analisa as Ameaças à Validade;
+  \item O \textbf{Capítulo~\ref{cap:arquitetura} (Arquitetura de Referência e Governança de IA)} especifica a pilha tecnológica, o isolamento de redes Docker, o mapeamento completo de eventos GitHub/CI, a especificação da \textit{allowlist}, o modelo de ameaças (incluindo persuasão do aprovador e contenção de rascunhos), o catálogo de governança \textit{fail-closed} e a auditoria encadeada com ancoragem externa;
+  \item O \textbf{Capítulo~\ref{cap:poc} (Prova de Conceito e Resultados Preliminares)} apresenta a verificação do motor em Go, os resultados nos cenários A, B, C e C$'$, a validação analítica e por teste de Kolmogorov-Smirnov, o tratamento do caso degenerado $t_o=t_p$, a topologia da rede sintética de 200 tarefas e as estatísticas de dispersão dos \textit{benchmarks};
+  \item O \textbf{Capítulo~\ref{cap:cronograma} (Cronograma do TCC2 e Considerações Finais)} apresenta a matriz de rastreabilidade RF/RNF $\rightarrow$ pacotes, o cronograma de 20 semanas com piloto do DAG antecipado para as semanas 1–3 e escrita contínua, a matriz de riscos, as limitações declaradas e as considerações finais do TCC1.
+\end{itemize}
+
+% =====================================================================
+\chapter{Revisão Bibliográfica}\label{cap:revisao}
+% =====================================================================
+
+\section{Gerenciamento de Cronograma e Método do Caminho Crítico}
+
+O Método do Caminho Crítico (CPM), formulado por \citeonline{kelley1959}, modela um projeto como um Grafo Acíclico Dirigido (DAG) $G=(V,E)$, no qual os vértices $V=\{1,\dots,n\}$ representam atividades e as arestas dirigidas $(u,v)\in E$ expressam relações de precedência lógica do tipo Término-a-Início ($FS$): a atividade sucessora $v$ somente pode iniciar após a conclusão integral de todas as suas predecessoras $u \in \mathrm{Pred}(v)$.
+
+Dada uma duração determinística $d_i \ge 0$ para cada atividade $i \in V$ e uma data de início ou de status $t_s \ge 0$, o algoritmo realiza duas varreduras sobre a ordenação topológica do grafo. No passo direto (\textit{forward pass}), determinam-se o início mais cedo ($ES_i$) e o término mais cedo ($EF_i$):
+\begin{equation}
+ES_i=\begin{cases}t_s,&\text{se }\mathrm{Pred}(i)=\emptyset\\ \max_{u\in \mathrm{Pred}(i)}EF_u,&\text{caso contrário}\end{cases}\qquad EF_i=ES_i+d_i,
+\end{equation}
+sendo a duração determinística total do projeto dada por $T_{\mathrm{CPM}}=\max_{i\in V}EF_i$. No passo inverso (\textit{backward pass}), calculam-se o término mais tardio ($LF_i$) e o início mais tardio ($LS_i$) sem atrasar o marco final:
+\begin{equation}
+LF_i=\begin{cases}T_{\mathrm{CPM}},&\text{se }\mathrm{Succ}(i)=\emptyset\\ \min_{v\in\mathrm{Succ}(i)}LS_v,&\text{caso contrário}\end{cases}\qquad LS_i=LF_i-d_i.
+\end{equation}
+A margem de flexibilidade de cada atividade é expressa pela Folga Total (\textit{Total Float}), definida como $TF_i=LF_i-EF_i=LS_i-ES_i$. Uma atividade pertence ao caminho crítico se e somente se $TF_i=0$; em aritmética de ponto flutuante IEEE 754 (\texttt{float64}), adota-se o critério numérico $|TF_i| \le \varepsilon$ com tolerância $\varepsilon=10^{-9}$.
+
+A Tabela~\ref{tab:referenciais} relaciona os referenciais normativos do Project Management Institute (PMI) às decisões de modelagem adotadas neste trabalho, enquanto a Figura~\ref{fig:dag} ilustra a rede de quatro atividades em diamante utilizada como caso de validação analítica ao longo da monografia.
+
+\begin{table}[htbp]
+\caption{Referenciais de gerenciamento de cronograma e sua tradução arquitetural.}\label{tab:referenciais}
+\footnotesize
+\begin{tabularx}{\textwidth}{p{3.4cm}X X}
+\toprule
+\textbf{Referencial} & \textbf{Elemento relevante} & \textbf{Tradução no artefato}\\
+\midrule
+\textit{PMBOK Guide}, 7. ed. \cite{pmbok7} & Domínios de planejamento, incerteza e mensuração & Rede de atividades com três pontos; riscos como eventos discretos; indicadores $P_{50}$, $P_{85}$ e IC\\
+\textit{Practice Standard for Scheduling}, 3. ed. \cite{pmischeduling} & Modelo de cronograma, caminho crítico e análise de risco & CPM acíclico com folga total; Monte Carlo sobre o modelo; cenários \textit{what-if}\\
+Ambos & Rastreabilidade e controle da linha de base & \texttt{state\_version}, \texttt{simulation\_scenarios} e auditoria encadeada\\
+\bottomrule
+\end{tabularx}
+\fonteautores
+\end{table}
+
+\figura{fig01_dag_exemplo.png}{Rede de atividades do exemplo de validação (DAG), com estimativas de três pontos $(t_o/t_m/t_p)$ e duração esperada $\mu$.}{fig:dag}{0.8}{%
+\begin{tikzpicture}[>=Latex, node distance=1.4cm and 2.4cm, every node/.style={font=\scriptsize}]
+  \tikzstyle{task}=[rectangle, rounded corners=3pt, draw=unbblue, thick, fill=unbblue!8, minimum width=3.1cm, minimum height=1.1cm, align=center]
+  \node[task] (t1) {\textbf{T1: Modelagem}\\$(2 / 3 / 5)$ d.u.\\$\mu_1 = 3{,}17 \mid \sigma_1^2 = 0{,}31$};
+  \node[task, above right=0.5cm and 2.0cm of t1] (t2) {\textbf{T2: APIs}\\$(4 / 5 / 9)$ d.u.\\$\mu_2 = 5{,}50 \mid \sigma_2^2 = 0{,}75$};
+  \node[task, below right=0.5cm and 2.0cm of t1] (t3) {\textbf{T3: Mensageria}\\$(3 / 5 / 10)$ d.u.\\$\mu_3 = 5{,}50 \mid \sigma_3^2 = 1{,}61$};
+  \node[task, below right=0.5cm and 2.0cm of t2] (t4) {\textbf{T4: Front-end}\\$(1 / 2 / 4)$ d.u.\\$\mu_4 = 2{,}17 \mid \sigma_4^2 = 0{,}31$};
+  \draw[->, thick, unbblue] (t1) -- node[above left]{$FS$} (t2);
+  \draw[->, thick, unbblue] (t1) -- node[below left]{$FS$} (t3);
+  \draw[->, thick, unbblue] (t2) -- node[above right]{$FS$} (t4);
+  \draw[->, thick, unbblue] (t3) -- node[below right]{$FS$} (t4);
+\end{tikzpicture}%
+}
+
+\section{Estimativa de Três Pontos e Distribuição PERT-Beta}\label{sec:pert}
+
+Na Engenharia de Software, durações de tarefas exibem forte assimetria positiva (cauda longa à direita) em razão de descobertas técnicas imprevistas e retrabalho de revisão. A técnica PERT clássica \cite{malcolm1959} parametriza a incerteza de cada atividade por três estimativas: otimista ($t_o$), mais provável ($t_m$) e pessimista ($t_p$), com $t_o \le t_m \le t_p$. A esperança matemática sob ponderação PERT é dada por:
+\begin{equation}\label{eq:pert_mean}
+\mu_i=\frac{t_{o,i}+\lambda\,t_{m,i}+t_{p,i}}{\lambda+2},
+\end{equation}
+adotando-se classicamente $\lambda=4$, o que resulta em $\mu_i=(t_{o,i}+4t_{m,i}+t_{p,i})/6$.
+
+Conforme demonstrado por \citeonline{maccrimmon1964}, a aproximação histórica da variância PERT por $\sigma^2 \approx ((t_p-t_o)/6)^2$ introduz erros sistemáticos severos quando a moda $t_m$ se afasta do ponto médio do intervalo. Para eliminar essa distorção, este trabalho parametriza diretamente a distribuição Beta contínua reescalada para o suporte compacto $[t_{o,i}, t_{p,i}]$. Para o caso não degenerado ($t_{p,i} - t_{o,i} > 0$), os parâmetros de forma $\alpha_i$ e $\beta_i$ são definidos por:
+\begin{equation}\label{eq:pert_alpha_beta}
+\alpha_i=1+\lambda\frac{t_{m,i}-t_{o,i}}{t_{p,i}-t_{o,i}},\qquad
+\beta_i=1+\lambda\frac{t_{p,i}-t_{m,i}}{t_{p,i}-t_{o,i}},
+\end{equation}
+cuja soma é invariante ($\alpha_i+\beta_i=\lambda+2=6$ para $\lambda=4$). A variância analítica exata da variável reescalada $X_i = t_{o,i} + (t_{p,i}-t_{o,i})Y_i$, com $Y_i \sim \mathrm{Beta}(\alpha_i,\beta_i)$, é expressa por:
+\begin{equation}\label{eq:pert_var}
+\sigma_i^2=\frac{(\mu_i-t_{o,i})(t_{p,i}-\mu_i)}{\lambda+3} = \frac{(t_{p,i}-t_{o,i})^2\,\alpha_i\beta_i}{(\alpha_i+\beta_i)^2(\alpha_i+\beta_i+1)}.
+\end{equation}
+No caso limite degenerado em que $t_{o,i} = t_{m,i} = t_{p,i}$, define-se a distribuição como uma massa pontual determinística de Dirac em $t_{o,i}$, com $\mu_i = t_{o,i}$ e $\sigma_i^2 = 0$, evitando divisão por zero na Equação~\ref{eq:pert_alpha_beta}. A Figura~\ref{fig:pert} ilustra os perfis de densidade PERT-Beta das tarefas T1 a T4.
+
+\figura{fig02_pert_beta.png}{Densidades PERT-Beta ($\lambda=4$) das tarefas T1 a T4; linhas verticais tracejadas indicam a moda $t_m$.}{fig:pert}{0.85}{%
+\begin{tikzpicture}[x=0.95cm,y=2.8cm, font=\scriptsize]
+  \draw[->, thick] (0,0) -- (11,0) node[right]{Duração (dias úteis)};
+  \draw[->, thick] (0,0) -- (0,1.25) node[above]{Densidade relativa};
+  \foreach \x in {1,2,3,4,5,6,7,8,9,10} \draw (\x,0.03) -- (\x,-0.03) node[below]{\x};
+  % T4 (1,2,4)
+  \draw[thick, unbgreen] plot[smooth] coordinates {(1,0) (1.5,0.65) (2,1.05) (2.8,0.55) (4,0)};
+  \draw[dashed, unbgreen] (2,0) -- (2,1.05);
+  % T1 (2,3,5)
+  \draw[thick, unbblue] plot[smooth] coordinates {(2,0) (2.5,0.65) (3,1.05) (3.8,0.55) (5,0)};
+  \draw[dashed, unbblue] (3,0) -- (3,1.05);
+  % T2 (4,5,9)
+  \draw[thick, orange!85!black] plot[smooth] coordinates {(4,0) (4.5,0.55) (5,0.82) (6.5,0.40) (9,0)};
+  \draw[dashed, orange!85!black] (5,0) -- (5,0.82);
+  % T3 (3,5,10)
+  \draw[thick, red!75!black] plot[smooth] coordinates {(3,0) (4.0,0.38) (5,0.58) (7.2,0.28) (10,0)};
+  \draw[dashed, red!75!black] (5,0) -- (5,0.58);
+  % Legenda
+  \node[anchor=north east, draw=gray!50, fill=white, align=left] at (10.8,1.2) {
+    {\color{unbgreen}\textbf{---}} T4 $(1,2,4)$ \quad {\color{unbblue}\textbf{---}} T1 $(2,3,5)$\\
+    {\color{orange!85!black}\textbf{---}} T2 $(4,5,9)$ \quad {\color{red!75!black}\textbf{---}} T3 $(3,5,10)$
+  };
+\end{tikzpicture}%
+}
+
+\section{Simulação de Monte Carlo e Viés de Convergência de Caminhos}\label{sec:montecarlo}
+
+A aplicação do CPM sobre durações médias $\mu_i$ subestima sistematicamente o prazo final de redes com caminhos paralelos \cite{vanslyke1963,hulett2000}. Em qualquer nó de convergência (\textit{join node}) com predecessoras paralelas $X_1,\dots,X_m$, o início da tarefa sucessora é governado pela estatística de ordem máxima $M = \max(X_1,\dots,X_m)$. Pela desigualdade de Jensen aplicada à função convexa máximo, tem-se:
+\begin{equation}
+E[\max(X_1,\dots,X_m)] \ge \max(E[X_1],\dots,E[X_m]),
+\end{equation}
+com desigualdade estrita sempre que os ramos tiverem suportes sobrepostos com variância positiva.
+
+A Simulação de Monte Carlo resolve esse problema por integração estocástica em $N$ realizações independentes (adotando-se $N=10.000$). Em cada iteração $k \in \{1,\dots,N\}$, para cada tarefa não concluída $i \in V$:
+\begin{enumerate}
+  \item Sorteia-se $Y_{i,k} = G_{1,k}/(G_{1,k}+G_{2,k})$, onde $G_{1,k}\sim\mathrm{Gamma}(\alpha_i,1)$ e $G_{2,k}\sim\mathrm{Gamma}(\beta_i,1)$ são geradas pelo método exato de rejeição de \citeonline{marsaglia2000};
+  \item Calcula-se a duração base remanescente ponderada pelo progresso $c_i \in [0,1]$: $d_{i,k}^{\mathrm{base}} = (1-c_i)\,[t_{o,i} + (t_{p,i}-t_{o,i})Y_{i,k}]$;
+  \item Somam-se as perturbações de riscos discretos $r \in \mathcal{R}_i$ modelados como ensaios de Bernoulli $B_{r,k}\sim\mathrm{Bernoulli}(p_r)$ com impacto remanescente $(1-c_i)\Delta_r$:
+  \begin{equation}
+  d_{i,k} = (1-c_i)\left[t_{o,i} + (t_{p,i}-t_{o,i})Y_{i,k} + \sum_{r\in\mathcal{R}_i} B_{r,k}\,\Delta_r\right];
+  \end{equation}
+  \item Executa-se o CPM sobre $\{d_{i,k}\}_{i\in V}$ a partir da data de status $t_s$, obtendo-se o término $F_k$ e as folgas $TF_{i,k}$.
+\end{enumerate}
+
+Da função de distribuição empírica $\hat{F}_N(t) = \frac{1}{N}\sum_{k=1}^N \mathbb{I}(F_k \le t)$ extraem-se a mediana $P_{50}$, o percentil de compromisso tático $P_{85}$, o percentil conservador $P_{95}$, a média amostral $\bar{F}$ e o Índice de Criticidade ($\IC_i$):
+\begin{equation}
+\IC_i=\frac{1}{N}\sum_{k=1}^{N}\mathbb{I}\left(|TF_{i,k}| \le \varepsilon\right)\times 100\%,
+\end{equation}
+que mede a probabilidade empírica de a atividade $i$ pertencer ao caminho crítico.
+
+\section{Sombras Digitais, Gêmeos Digitais e Níveis de Maturidade}\label{sec:gemeos}
+
+Originado na indústria aeroespacial e formalizado na manufatura pela norma ISO 23247-1 \cite{iso23247}, o paradigma de espelhamento digital foi categorizado por \citeonline{kritzinger2018} segundo o grau de automação do fluxo de dados entre o objeto físico (ou processo real) e sua contraparte virtual (Figura~\ref{fig:niveis}):
+
+\begin{enumerate}
+  \item \textbf{Modelo Digital (\textit{Digital Model}):} tanto a alimentação de dados do mundo real para o modelo quanto a aplicação de decisões do modelo no mundo real ocorrem de forma manual;
+  \item \textbf{Sombra Digital (\textit{Digital Shadow}):} existe um fluxo de dados unidirecional automatizado do objeto real para o modelo virtual (sincronização contínua de estado), mas qualquer alteração de volta sobre o processo real exige decisão e ação humana;
+  \item \textbf{Gêmeo Digital (\textit{Digital Twin}):} os fluxos de dados são bidirecionais e totalmente automatizados, permitindo que o modelo virtual altere parâmetros do sistema real sem intervenção humana contínua.
+\end{enumerate}
+
+\figura{fig03_niveis_gemeo_digital.png}{Níveis de integração e maturidade segundo \citeonline{kritzinger2018} e posicionamento do artefato como Sombra Digital Governada.}{fig:niveis}{0.85}{%
+\begin{tikzpicture}[>=Latex, font=\scriptsize, every node/.style={align=center}]
+  \tikzstyle{box}=[rectangle, rounded corners=3pt, draw=unbblue, thick, fill=white, minimum width=2.5cm, minimum height=0.9cm]
+  % 1. Modelo Digital
+  \node[font=\bfseries\scriptsize, unbblue] at (0, 1.5) {1. Modelo Digital};
+  \node[box] (f1) at (0, 0.7) {Processo Real};
+  \node[box] (v1) at (0, -0.7) {Modelo Virtual};
+  \draw[->, dashed, thick] (f1.east) to[bend left=25] node[right, font=\tiny]{Manual} (v1.east);
+  \draw[->, dashed, thick] (v1.west) to[bend left=25] node[left, font=\tiny]{Manual} (f1.west);
+  % 2. Sombra Digital Governada
+  \draw[rounded corners=5pt, draw=unbgreen, very thick, fill=unbgreen!6] (3.3,-1.45) rectangle (8.1,1.85);
+  \node[font=\bfseries\scriptsize, unbgreen!80!black] at (5.7, 1.5) {2. Sombra Digital Governada (Este Trabalho)};
+  \node[box] (f2) at (5.7, 0.7) {Repositório Git/CI};
+  \node[box] (v2) at (5.7, -0.7) {Estado + Simulação + IA};
+  \draw[->, very thick, unbblue] (f2.east) to[bend left=25] node[right, font=\tiny]{Auto (\textit{Webhooks})} (v2.east);
+  \draw[->, dashed, thick, red!75!black] (v2.west) to[bend left=25] node[left, font=\tiny]{Fila + Aprovação\\Humana} (f2.west);
+  % 3. Gemeo Digital
+  \node[font=\bfseries\scriptsize, unbblue] at (11.2, 1.5) {3. Gêmeo Digital Pleno};
+  \node[box] (f3) at (11.2, 0.7) {Processo Real};
+  \node[box] (v3) at (11.2, -0.7) {Modelo Virtual};
+  \draw[->, very thick, unbblue] (f3.east) to[bend left=25] node[right, font=\tiny]{Auto} (v3.east);
+  \draw[->, very thick, unbblue] (v3.west) to[bend left=25] node[left, font=\tiny]{Auto} (f3.west);
+\end{tikzpicture}%
+}
+
+Na Engenharia de Software, o objeto monitorado é um processo sociotécnico composto por desenvolvedores, repositórios de código, \textit{pipelines} de CI/CD e artefatos de planejamento \cite{guinea2024,lehner2025}. Embora parte da literatura empregue o termo guarda-chuva ``Gêmeo Digital de Processo'' para qualquer representação sincronizada, adotar atuação reversa totalmente automatizada (nível 3 de Kritzinger) quando há um agente LLM no laço decisório representaria uma vulnerabilidade crítica de governança, pois uma alucinação ou um ataque de injeção poderia reescrever prazos contratuais, dependências ou tarefas no repositório sem supervisão.
+
+Por essa razão, este trabalho adota o enquadramento rigoroso de \textbf{Sombra Digital Governada de Processo}: a ingestão de eventos do GitHub/CI para o modelo virtual é 100\% automatizada e idempotente, a IA pode acionar autonomamente apenas simulações transitórias em memória e rascunhos isolados (Categoria 1), e toda mutação sobre a linha de base ou sobre o grafo oficial requer aprovação humana explícita apoiada por simulação de impacto (Categoria 2).
+
+\section{Vulnerabilidades e Governança de Agentes Baseados em LLM}\label{sec:owasp}
+
+A integração de agentes baseados em LLMs a sistemas corporativos introduz vetores de ataque específicos, sistematizados pelo projeto OWASP Top 10 for LLM Applications em sua versão 1.1 \cite{owasp2023} e atualizados na edição 2025 \cite{owasp2025}. A fim de evitar ambiguidades taxonômicas entre as duas edições, este trabalho harmoniza explicitamente a numeração de ambas para os três riscos centrais tratados pela arquitetura:
+
+\begin{itemize}
+  \item \textbf{Injeção de Prompt (\texttt{LLM01} em 2023 e 2025):} ocorre de forma indireta quando o LLM processa textos provenientes de fontes externas não confiáveis — tais como títulos de \textit{issues} ou resumos de \textit{pull requests} criados por terceiros — contendo instruções adversariais ocultas que tentam subverter o \textit{prompt} de sistema \cite{greshake2023,debenedetti2024};
+  \item \textbf{Divulgação de Informações Sensíveis (\texttt{LLM06} na v1.1 de 2023; reclassificada como \texttt{LLM02} na edição 2025):} exposição indevida de dados pessoais (PII), segredos, credenciais ou propriedade intelectual enviados sem filtragem ao provedor externo do modelo de linguagem;
+  \item \textbf{Agência Excessiva (\texttt{LLM08} na v1.1 de 2023; reclassificada como \texttt{LLM06} na edição 2025):} concessão de permissões excessivas, ferramentas irrestritas ou acesso direto de escrita ao banco de dados para um componente probabilístico, permitindo que falhas de raciocínio ou comandos injetados desencadeiem ações destrutivas.
+\end{itemize}
+
+Além da execução direta de comandos, sistemas com aprovação humana (\textit{human-in-the-loop}) estão sujeitos à ameaça de \textbf{persuasão cognitiva do aprovador}: um texto adversarial injetado pode induzir o LLM a redigir uma justificativa aparentemente técnica e plausível para convencer o gerente humano a aprovar uma alteração danosa no cronograma. A Seção~\ref{sec:ameacas_ia} detalha as defesas arquiteturais projetadas contra esses quatro vetores.
+
+\section{Trabalhos Relacionados}
+
+A Tabela~\ref{tab:relacionados} sintetiza os estudos que fundamentam o estado da arte nos quatro eixos da pesquisa: Sombras/Gêmeos Digitais na Engenharia de Software, simulação estocástica de cronogramas (baseada em rede PERT-Beta e baseada em vazão Kanban) e segurança de agentes LLM.
+
+\begin{table}[htbp]
+\caption{Trabalhos relacionados: análise comparativa de abordagens e lacunas.}\label{tab:relacionados}
+\scriptsize
+\begin{tabularx}{\textwidth}{p{2.5cm} p{2.5cm} p{2.3cm} p{1.5cm} X}
+\toprule
+\textbf{Trabalho} & \textbf{Foco} & \textbf{Abordagem} & \textbf{IA} & \textbf{Limitações observadas}\\
+\midrule
+\citeonline{guinea2024} & Revisão sistemática de gêmeos digitais em Eng. Software & Qualitativa/conceitual & Não & Não propõe arquitetura executável nem motor estocástico validado\\
+\citeonline{lehner2025} & Mapeamento de MDE aplicado a gêmeos digitais & Mapeamento (66 de 189 estudos) & Não & Foco em sistemas ciberfísicos; não modela cronogramas de software\\
+\citeonline{hulett2000} & Risco quantitativo em cronogramas & Monte Carlo \textit{vs.} PERT & Não & Sem sincronização contínua por eventos Git/CI nem camada de IA\\
+\citeonline{vanslyke1963} & Monte Carlo em redes PERT & Simulação de caminhos paralelos & Não & Processamento em lote estático; sem progresso parcial nem governança\\
+\citeonline{vacanti2015} & Previsão de fluxo em sistemas Kanban & Monte Carlo por vazão histórica & Não & Ignora topologia de dependências $FS$ e riscos discretos por tarefa\\
+\citeonline{jorgensen2004} & Estimativas de esforço em software & Revisão de estudos empíricos & Não & Diagnóstico de vieses humanos; não oferece motor de simulação\\
+\citeonline{greshake2023} & Injeção indireta de \textit{prompt} & Análise empírica de ataques & Agentes LLM & Demonstra a superfície de ataque; não formaliza motor determinístico isolado\\
+\citeonline{debenedetti2024} & \textit{Benchmark} AgentDojo (NeurIPS 2024) & Avaliação de ataques e defesas & Agentes LLM & Ambiente genérico de ferramentas; não trata governança de cronogramas\\
+\textbf{Este trabalho} & Sombra Digital Governada para cronogramas & CPM + Monte Carlo (PERT-Beta + Bernoulli) & LLM isolado (\textit{fail-closed}) & Planejamento tático com dependências $FS$; capacidade de recursos infinita no MVP\\
+\bottomrule
+\end{tabularx}
+\fonteautores
+\end{table}
+
+Observa-se na Tabela~\ref{tab:relacionados} uma divisão clara na literatura: estudos de Pesquisa Operacional \cite{vanslyke1963,hulett2000} modelam a topologia da rede e o viés de convergência, mas operam desconectados dos repositórios de código; métodos ágeis probabilísticos \cite{magennis2011,vacanti2015} amostram a vazão (\textit{throughput}) histórica de itens concluídos, porém tratam os itens como intercambiáveis e ignoram dependências técnicas $FS$ críticas em épicos de integração; já os estudos de segurança em IA \cite{greshake2023,debenedetti2024} evidenciam a fragilidade de agentes autônomos, justificando o isolamento arquitetural proposto.
+
+\section{Matriz Comparativa de Ferramentas Existentes}
+
+A Tabela~\ref{tab:ferramentas} compara soluções comerciais amplamente utilizadas em 2026 com o artefato proposto neste trabalho. Para garantir transparência e precisão quanto ao estágio atual do projeto (conclusão do TCC1), a linha referente a este trabalho separa explicitamente as capacidades já \textbf{Validadas em PoC (TCC1)} daquelas \textbf{Projetadas para implementação integradora no TCC2}.
+
+\begin{table}[htbp]
+\caption{Matriz comparativa entre ferramentas existentes no mercado (estado em out. 2026) e o artefato proposto.}\label{tab:ferramentas}
+\scriptsize
+\begin{tabularx}{\textwidth}{p{2.5cm} X X X X X X}
+\toprule
+\textbf{Ferramenta} & \textbf{Sinc. Git/CI} & \textbf{CPM e Folgas} & \textbf{Monte Carlo} & \textbf{\textit{What-if}} & \textbf{IA e Governança} & \textbf{Auditoria}\\
+\midrule
+Jira Cloud Plans + Atlassian Rovo$^1$ & Alta (nativa/apps) & Parcial (Gantt determinístico) & Não nativo (exige \textit{plugins} pagos) & Limitado (planos visuais) & Agente Rovo (sem \textit{fail-closed} sob grafo estocástico) & Log relacional administrativo\\
+Azure DevOps + GitHub Copilot$^2$ & Alta (nativa) & Limitado (\textit{Delivery Plans} sem $TF_i$) & Não nativo & Não & Copilot assistivo (sem isolamento de rede dedicado) & Log padrão de auditoria\\
+LiquidPlanner$^3$ & Baixa (via conectores) & Sim & Sim (intervalos por tarefa) & Parcial & Sem agente LLM governado & Log padrão relacional\\
+ActionableAgile / Nave$^4$ & Média (importa estados) & Não (agnóstico a DAG $FS$) & Sim (apenas por vazão histórica) & Sim (ajuste de vazão) & Sem agente LLM governado & Histórico da plataforma host\\
+Primavera P6 / MS Project + Copilot$^5$ & Nula ou via integração customizada & Sim (completo) & Sim (módulos de risco externos) & Sim & Copilot conversacional (sem fila de impacto $\Delta P_{85}$) & Log relacional corporativo\\
+\textbf{Artefato proposto} & \textbf{Projetado (TCC2):} \textit{webhooks} HMAC idempotentes & \textbf{Validado em PoC (TCC1):} CPM exato e $TF_i$ & \textbf{Validado em PoC (TCC1):} PERT-Beta + Bernoulli & \textbf{Validado em PoC / Persistência no TCC2} & \textbf{Projetado (TCC2):} LLM em sub-rede isolada + \textit{fail-closed} & \textbf{Projetado (TCC2):} SHA-256 \textit{tamper-evident} + âncora\\
+\bottomrule
+\end{tabularx}
+\par\vspace{1mm}{\tiny Fontes consultadas em 20 out. 2026: $^1$Documentação Atlassian Jira Plans \& Rovo AI (\url{https://www.atlassian.com/software/jira}); $^2$Microsoft Azure Boards \& GitHub Copilot Docs (\url{https://learn.microsoft.com/azure/devops/boards/}); $^3$LiquidPlanner Predictive Scheduling Documentation (\url{https://www.liquidplanner.com/}); $^4$ActionableAgile Analytics User Guide (\url{https://www.55degrees.se/products/actionableagile}); $^5$Oracle Primavera P6 EPPM \& Microsoft Project Copilot Documentation (\url{https://www.oracle.com/construction-engineering/primavera-p6/}).}
+\end{table}
+
+Conforme sintetizado na Tabela~\ref{tab:ferramentas}, ferramentas como Jira e Azure DevOps incorporaram assistentes baseados em LLMs até 2026 (Atlassian Rovo e GitHub Copilot), mas permanecem desprovidas de simulação de Monte Carlo nativa acoplada ao grafo de dependências e não oferecem retenção de mutações condicionada à visualização prévia de deslocamentos de percentis ($\Delta P_{50}, \Delta P_{85}$) calculados por um motor estocástico determinístico.
+
+% =====================================================================
+\chapter{Metodologia}\label{cap:metodologia}
+% =====================================================================
+
+Este capítulo descreve o método científico adotado para especificar, verificar em Prova de Conceito e planejar a avaliação empírica da arquitetura proposta. A pesquisa classifica-se como aplicada, de objetivos explicativos e prescritivos, abordagem quantitativa e conduzida sob a \textit{Design Science Research Methodology} (DSRM) \cite{peffers2007}.
+
+\section{Enquadramento nas Seis Atividades da DSRM}\label{sec:dsrm}
+
+Para assegurar rastreabilidade metodológica entre o problema prático e as entregas do TCC1 e do TCC2, o trabalho estrutura-se explicitamente ao longo das seis atividades canônicas propostas por \citeonline{peffers2007}, sintetizadas na Tabela~\ref{tab:dsrm}.
+
+\begin{table}[htbp]
+\caption{Mapeamento das seis atividades da DSRM \cite{peffers2007} no ciclo da pesquisa (TCC1 e TCC2).}\label{tab:dsrm}
+\scriptsize
+\begin{tabularx}{\textwidth}{p{2.8cm} p{1.6cm} X X}
+\toprule
+\textbf{Atividade DSRM} & \textbf{Etapa} & \textbf{Realização na pesquisa} & \textbf{Seções / Entregáveis}\\
+\midrule
+1. Identificação do problema e motivação & TCC1 (Concluída) & Caracterização da desconexão entre eventos Git/CI e modelos formais de rede, do viés de convergência em caminhos paralelos e das vulnerabilidades de LLMs não governados (OWASP LLM01, LLM02 e LLM06) & Cap.~\ref{cap:introducao} e Cap.~\ref{cap:revisao}\\
+2. Definição dos objetivos da solução & TCC1 (Concluída) & Formulação de RQ1 a RQ4, das hipóteses H1 a H3 e dos requisitos verificáveis RF01--RF12 e RNF01--RNF09 & Seção~\ref{sec:requisitos} (Tabelas~\ref{tab:rf} e \ref{tab:rnf})\\
+3. Projeto e desenvolvimento (\textit{Design \& Development}) & TCC1 (Arquitetura + Motor PoC) e TCC2 (MVP) & Especificação da arquitetura de referência da Sombra Digital Governada, implementação completa do motor estocástico em Go (\texttt{poc-engine}) no TCC1 e integração dos microsserviços no TCC2 & Cap.~\ref{cap:arquitetura} e Cap.~\ref{cap:poc}\\
+4. Demonstração & TCC1 (PoC) e TCC2 (Sistema) & Execução do motor nos cenários A, B, C e C$'$, extração real do repositório \texttt{cli/cli} no TCC1 e demonstração ponta a ponta do fluxo Evento $\rightarrow$ Simulação $\rightarrow$ IA $\rightarrow$ Fila no TCC2 & Seções~\ref{sec:backtesting} e \ref{sec:poc_cenarios}\\
+5. Avaliação (\textit{Evaluation}) & TCC1 (Dim. 1) e TCC2 (Dim. 2--5) & Verificação analítica, teste KS, reprodutibilidade multi-\textit{worker} e \textit{benchmark} no TCC1 (Dimensão 1); calibração sintética não circular, \textit{backtesting}, segurança adversarial e consistência da IA no TCC2 (Dimensões 2 a 5) & Seção~\ref{sec:protocolo} (Tabela~\ref{tab:protocolo}) e Cap.~\ref{cap:poc}\\
+6. Comunicação & TCC1 e TCC2 & Monografia de TCC1, repositório público versionado com \textit{hash} de \textit{commit}, \textit{scripts} de extração e defesa pública final no TCC2 & Apêndices~\ref{apd:mvp} e \ref{apd:extracao}\\
+\bottomrule
+\end{tabularx}
+\fonteautores
+\end{table}
+
+\section{Requisitos do Sistema}\label{sec:requisitos}
+
+A elicitação de requisitos decorre diretamente das questões de pesquisa RQ1 a RQ4 e dos controles de segurança discutidos na Seção~\ref{sec:owasp}. Os Requisitos Funcionais (RF01 a RF12), detalhados na Tabela~\ref{tab:rf}, abrangem o ciclo completo da Sombra Digital Governada: cadastro estrutural de projetos, papéis, Estrutura Analítica do Projeto (WBS), tarefas com estimativas de três pontos e riscos discretos (RF01 e RF02); ingestão idempotente de eventos GitHub/CI e controle monotônico de versão de estado com \textit{debounce} (RF03 e RF04); execução do CPM e da Simulação de Monte Carlo (RF05 e RF06); recomendação interpretativa por IA isolada submetida a classificação binária determinística no servidor e fila de aprovação com pré-visualização de impacto (RF07, RF08 e RF09); trilha de auditoria encadeada (RF10); interface web mínima reativa (RF11); e emissão de alertas determinísticos independentes da IA (RF12).
+
+\begin{table}[htbp]
+\caption{Requisitos Funcionais do sistema (RF01 a RF12).}\label{tab:rf}
+\scriptsize
+\begin{tabularx}{\textwidth}{p{1cm} p{3.9cm} X p{1.1cm}}
+\toprule
+\textbf{ID} & \textbf{Requisito} & \textbf{Descrição detalhada} & \textbf{Prior.}\\
+\midrule
+RF01 & Cadastrar projetos e membros & CRUD de projetos, marcos (\textit{releases}) e membros com controle de papéis (Gerente, Membro) & Alta\\
+RF02 & Cadastrar WBS, tarefas e riscos & CRUD de pacotes WBS, tarefas com $(t_o,t_m,t_p)$, dependências $FS$ acíclicas e riscos discretos com $(p_r, \Delta_r)$ & Alta\\
+RF03 & Ingestão idempotente de eventos & Recepção de eventos manuais e \textit{webhooks} GitHub validados por assinatura HMAC-SHA256 e chave de entrega & Alta\\
+RF04 & Manter estado versionado & Contador monotônico \texttt{state\_version} separado da linha de base oficial, com janela de \textit{debounce} de 30 s & Alta\\
+RF05 & Calcular caminho crítico & Execução determinística do CPM ($ES_i, EF_i, LS_i, LF_i, TF_i$) a partir da data de status $t_s$ & Alta\\
+RF06 & Executar Simulação de Monte Carlo & Amostragem concorrente PERT-Beta + Bernoulli com persistência de cenários hipotéticos em \texttt{JSONB} & Alta\\
+RF07 & Agente de IA para apoio à decisão & Serviço isolado que consome a \textit{allowlist} e emite recomendações estruturadas em JSON Schema estrito & Alta\\
+RF08 & Classificação determinística (\textit{fail-closed}) & Validação no servidor que classifica ações em Categoria 1 (Autônoma) ou Categoria 2 (Restrita) e nega por padrão qualquer tipo desconhecido & Alta\\
+RF09 & Fila de aprovação com impacto simulado & Retenção de ações de Categoria 2 até decisão do Gerente, exibindo $\Delta P_{50}$, $\Delta P_{85}$, $\Delta P_{95}$ e $\Delta\IC_i$ em painel segregado & Alta\\
+RF10 & Trilha de auditoria resistente a adulterações & Registro encadeado por SHA-256 de eventos, sugestões e decisões, com ancoragem externa periódica do \textit{hash} de cabeça & Alta\\
+RF11 & Interface mínima reativa & SPA exibindo tabela do caminho crítico, curvas de distribuição acumulada e fila de aprovação governada & Média\\
+RF12 & Alertas determinísticos de limiar & Disparo automático de alertas no \textit{Core} quando $P_{85}$ ultrapassa a meta do marco ou $\IC_i$ supera limiar configurado, sem depender do LLM & Alta\\
+\bottomrule
+\end{tabularx}
+\fonteautores
+\end{table}
+
+De forma complementar, a Tabela~\ref{tab:rnf} especifica os nove Requisitos Não Funcionais (RNF01 a RNF09) e seus respectivos critérios objetivos de aceitação e verificação experimental. Destaca-se a articulação entre o RNF01 (autenticação JWT e autorização RBAC estrita nas rotas de decisão), o RNF02 (minimização de dados via \textit{allowlist} sanitizada), o RNF03 (auditoria \textit{tamper-evident} com ancoragem externa), o RNF04 e o RNF07 (defesa em profundidade contra injeção de \textit{prompt} e isolamento de sub-rede Docker), além das garantias formais de desempenho sub-segundo (RNF06) e reprodutibilidade concorrente bit a bit (RNF08).
+
+\begin{table}[htbp]
+\caption{Requisitos Não Funcionais do sistema (RNF01 a RNF09).}\label{tab:rnf}
+\scriptsize
+\begin{tabularx}{\textwidth}{p{1.2cm} p{4.1cm} X}
+\toprule
+\textbf{ID} & \textbf{Requisito} & \textbf{Critério objetivo de aceitação e método de verificação}\\
+\midrule
+RNF01 & Controle de acesso por papéis (RBAC) & Autenticação via JWT assinado; retorno obrigatório \texttt{403 Forbidden} caso usuários com papel Membro ou o serviço de IA invoquem rotas de aprovação (Cat. 2)\\
+RNF02 & Privacidade e minimização (\textit{Allowlist}) & Envio exclusivo do contrato JSON da \textit{allowlist} ao LLM (métricas numéricas e títulos sanitizados truncados); bloqueio total de PII, e-mails, código-fonte e corpos de \textit{commit}\\
+RNF03 & Auditoria \textit{tamper-evident} ancorada & Revogação de \texttt{UPDATE}/\texttt{DELETE} para o usuário da aplicação em \texttt{audit\_logs}, \textit{trigger} de bloqueio, cadeia SHA-256 e exportação do \texttt{head\_hash} para repositório externo \textit{append-only}\\
+RNF04 & Defesa estrutural contra \textit{prompt injection} & Zero mutações de estado oficial não autorizadas sob bateria de \textit{payloads} adversariais injetados nos campos textuais da \textit{allowlist} e rejeição \textit{fail-closed} de ações inválidas\\
+RNF05 & Consistência e idempotência & Restrições \texttt{UNIQUE} em \texttt{delivery\_id} e \texttt{idempotency\_key}; marcação \texttt{is\_stale = true} para simulações cujo \texttt{base\_state\_version} divergir do estado atual\\
+RNF06 & Desempenho sub-segundo & Execução de 10.000 iterações de Monte Carlo em tempo mediano inferior a $1{,}0$ s para redes de até 200 tarefas e 300 dependências\\
+RNF07 & Isolamento físico e de rede da IA & Contêiner de IA alocado exclusivamente na rede \texttt{ai-isolated-net}, sem rota de rede para o PostgreSQL, sem driver SQL no binário e sem variáveis de credenciais do banco\\
+RNF08 & Reprodutibilidade concorrente estrita & Mesma rede de entrada e semente $S_0$ produzem percentis e $\IC_i$ idênticos em ponto flutuante (\texttt{float64}) com 1, 4 ou 16 \textit{workers}\\
+RNF09 & Explicabilidade e verificação numérica & Toda recomendação referencia o \texttt{scenario\_id} e os valores de $P_{50}$, $P_{85}$ e $\IC_i$; verificador sintático rejeita respostas com divergência numérica superior a $10^{-2}$\\
+\bottomrule
+\end{tabularx}
+\fonteautores
+\end{table}
+
+\section{Caracterização Empírica das Janelas de \textit{Backtesting}}\label{sec:backtesting}
+
+\subsection{Fonte, Definição Operacional e Extração Reprodutível}
+
+Para investigar a aplicabilidade do modelo sobre dados reais de engenharia de software (Dimensão 3 da avaliação), selecionou-se o repositório oficial do GitHub CLI (\texttt{cli/cli}), projeto de código aberto mantido em Go cujo histórico de \textit{issues}, \textit{pull requests} e \textit{releases} é integralmente público. A coleta preliminar no TCC1 foi realizada pelo \textit{script} \texttt{extract\_dataset.py} (documentado no Apêndice~\ref{apd:extracao}), executado em 23 de outubro de 2026 sobre a API REST pública do GitHub:
+
+\begin{itemize}
+  \item \textbf{Janela de \textit{release}:} intervalo temporal entre a publicação da \textit{release} imediatamente anterior e a da \textit{release}-alvo (v2.39.2 em 27/11/2023; v2.40.0 em 07/12/2023; v2.41.0 em 08/01/2024; v2.46.0 em 20/03/2024);
+  \item \textbf{Filtragem de itens e motivos de fechamento:} são extraídos os PRs mesclados (\texttt{merged\_at != null}) na janela, descartando contas do tipo \textit{Bot} (\texttt{Dependabot}, \texttt{github-actions}), e as \textit{issues} encerradas especificamente com razão \texttt{state\_reason = completed} (excluindo-se fechamentos por desistência ou duplicidade, \texttt{not\_planned});
+  \item \textbf{Tempo de revisão de PR (\textit{PR review cycle time}):} na extração exploratória da Tabela~\ref{tab:backtesting}, mediu-se o intervalo entre \texttt{created\_at} e \texttt{merged\_at} do PR em dias úteis fracionários;
+  \item \textbf{Vínculo PR--\textit{issue}:} identificado por expressões regulares sobre palavras-chave de fechamento (\texttt{closes}, \texttt{fixes}, \texttt{resolves}) seguidas do identificador numérico da \textit{issue}.
+\end{itemize}
+
+\subsection{Análise dos Dados Extraídos e Validade de Construto}
+
+A Tabela~\ref{tab:backtesting} sintetiza as métricas obtidas para três recortes temporais do repositório \texttt{cli/cli}: duas janelas unitárias de \textit{release} (Casos 1 e 2) e uma janela agregada de um trimestre (v2.40.0 a v2.46.0).
+
+\begin{table}[htbp]
+\caption{Caracterização quantitativa de janelas de \textit{release} do GitHub CLI (\texttt{cli/cli}) para \textit{backtesting}.}\label{tab:backtesting}
+\footnotesize
+\begin{tabularx}{\textwidth}{p{4.3cm} X X X}
+\toprule
+\textbf{Métrica observada} & \textbf{Caso 1: v2.40.0} & \textbf{Caso 2: v2.41.0} & \textbf{Ampliada: v2.40.0 $\rightarrow$ v2.46.0}\\
+\midrule
+Intervalo calendário & 27/11/2023 $\rightarrow$ 07/12/2023 & 07/12/2023 $\rightarrow$ 08/01/2024 & 07/12/2023 $\rightarrow$ 20/03/2024\\
+Duração da janela (dias úteis) & 7,9 & 22,0 & 74,1\\
+PRs mesclados (total / sem \textit{bots}) & 11 / 11 & 16 / 13 & 72 / 62\\
+PRs com vínculo explícito a \textit{issue} & 6 (55\%) & 6 (46\%) & 32 (52\%)\\
+\textit{Issues} concluídas (\texttt{completed}) & 10 & 19 & 92\\
+Tempo de revisão PR P5 / P50 / P95 (d.u.) & 0,01 / 2,43 / 10,22 & 0,01 / 0,06 / 9,88 & 0,01 / 1,11 / 47,14\\
+Tempo médio de revisão PR (d.u.) & 3,88 & 2,07 & 9,45\\
+\bottomrule
+\end{tabularx}
+{\small Fonte: Extração própria pela API pública do GitHub em 23/10/2026 (\texttt{extract\_dataset.py}).}
+\end{table}
+
+A inspeção crítica da Tabela~\ref{tab:backtesting} revela três achados metodológicos fundamentais que orientam o protocolo do TCC2:
+
+\begin{enumerate}
+  \item \textbf{Problema de validade de construto (\textit{PR cycle time} vs. duração real da tarefa):} no Caso 2, a mediana ($P_{50}$) do tempo entre criação e \textit{merge} do PR é de apenas $0{,}06$ dia útil ($\approx 1{,}4$ hora), e o $P_5$ é de $0{,}01$ d.u. nas três janelas. Isso ocorre porque, no fluxo de desenvolvimento em Git, desenvolvedores frequentemente codificam a solução em uma \textit{branch} local ao longo de vários dias e só abrem o \textit{Pull Request} quando o código está pronto para revisão. Portanto, medir apenas $\texttt{merged\_at} - \texttt{created\_at}_{\mathrm{PR}}$ captura a \textit{latência de revisão de código}, e não a duração integral da tarefa de engenharia. Para corrigir essa falha de construto no TCC2, a duração real $d_i$ de cada item será medida pelo intervalo entre o marco inicial efetivo de trabalho — definido por $t_{\text{início}} = \min(\texttt{first\_commit\_author\_date}, \texttt{issue\_assigned\_at}, \texttt{pr\_created\_at})$ — e o instante de integração $\texttt{merged\_at}$, impondo-se ainda um piso operacional mínimo $t_o \ge 0{,}25$ d.u.;
+  \item \textbf{Prevenção estrita de vazamento temporal (\textit{data leakage}):} se os parâmetros $(t_o, t_m, t_p)$ de uma janela fossem estimados a partir dos próprios PRs concluídos dentro daquela mesma janela, haveria vazamento de informação futura. No protocolo do TCC2, em qualquer ponto de corte temporal $t_c$, as estimativas $(t_o, t_m, t_p)$ de cada classe de tarefa (por rótulo/componente) são parametrizadas \textbf{exclusivamente com a distribuição empírica de itens encerrados antes do corte} ($t_{\mathrm{fim}} \le t_c$, usando uma janela móvel das 3 \textit{releases} imediatamente anteriores);
+  \item \textbf{Densidade amostral e poder estatístico:} avaliar apenas 2 ou 3 janelas em três cortes (25\%, 50\% e 75\%) geraria apenas 6 a 9 observações, número insuficiente para inferência estatística confirmatória de superioridade. Por conseguinte, no TCC2: (a) a validação em dados reais (Dimensão 3) será expandida para 10 janelas de \textit{release} consecutivas do \texttt{cli/cli} (totalizando 30 pontos de corte de avaliação) e tratada com caráter \textbf{exploratório empírico}, enquanto (b) a prova estatística \textbf{confirmatória} de calibração e acurácia (Dimensão 2) será conduzida sobre $M=500$ projetos sintéticos controlados.
+\end{enumerate}
+
+\section{Protocolo de Avaliação Experimental do TCC2}\label{sec:protocolo}
+
+Para garantir que a avaliação da hipótese H1 seja estatisticamente justa e livre de espantalhos (\textit{strawman baselines}), o protocolo distingue rigorosamente \textbf{preditores pontuais de tendência central} e \textbf{avaliação de calibração probabilística}:
+
+\begin{itemize}
+  \item \textbf{Erro pontual justo ($P_{50}$ e $E[F]$):} como o percentil $P_{85}$ incorpora intencionalmente uma margem de segurança conservadora contra atrasos, compará-lo diretamente em Erro Médio Absoluto (MAE) contra o CPM determinístico ($T_{\mathrm{CPM}}$) penalizaria artificialmente o modelo estocástico quando não ocorrem atrasos extremos. Assim, o MAE e o Erro Mediano Absoluto (MdAE) são calculados comparando-se os preditores centrais da simulação — a mediana $P_{50}$ e a esperança $\bar{F} = E[F]$ — contra: (i) o CPM determinístico ($T_{\mathrm{CPM}}$), (ii) a extrapolação linear por vazão média e (iii) a mediana da \textbf{Simulação de Monte Carlo por vazão histórica} de \citeonline{vacanti2015};
+  \item \textbf{Qualidade probabilística e compromisso tático ($P_{85}$):} a qualidade do quantil $P_{85}$ e da distribuição acumulada preditiva $\hat{F}_N$ frente ao Monte Carlo por vazão \cite{vacanti2015} é aferida por regras de pontuação estritamente próprias (\textit{strictly proper scoring rules}) \cite{gneiting2007}:
+  \begin{enumerate}
+    \item \textbf{Cobertura empírica nominal:} fração de marcos reais ou sintéticos cuja duração observada $y$ satisfaz $y \le \hat{P}_{\tau}$ para $\tau \in \{0{,}50; 0{,}85; 0{,}95\}$, acompanhada do intervalo de confiança binomial de Wilson a 95\%;
+    \item \textbf{Perda Quantílica (\textit{Pinball Loss}):} para o nível $\tau \in (0,1)$ e previsão quantílica $\hat{q}_\tau$,
+    \begin{equation}
+    L_{\tau}(y, \hat{q}_\tau) = \max\big(\tau(y - \hat{q}_\tau),\; (\tau - 1)(y - \hat{q}_\tau)\big);
+    \end{equation}
+    \item \textbf{\textit{Continuous Ranked Probability Score} (CRPS):} avalia a calibração e a nitidez (\textit{sharpness}) de toda a CDF preditiva $\hat{F}_N$ em relação ao término real $y$:
+    \begin{equation}
+    \mathrm{CRPS}(\hat{F}_N, y) = \int_{-\infty}^{\infty} \big(\hat{F}_N(t) - \mathbb{I}(t \ge y)\big)^2\,dt = \frac{1}{N}\sum_{k=1}^N |F_k - y| - \frac{1}{2N^2}\sum_{k=1}^N\sum_{j=1}^N |F_k - F_j|.
+    \end{equation}
+  \end{enumerate}
+\end{itemize}
+
+De modo análogo, para evitar \textbf{circularidade} na Dimensão 2 (projetos sintéticos), a ``verdade de referência'' (\textit{ground truth}) das durações das tarefas nos $M=500$ grafos sintéticos \textbf{não} é sorteada apenas da própria distribuição PERT-Beta do simulador: o protocolo gera realizações verdadeiras a partir de quatro famílias distributivas externas — \textbf{Log-Normal} (cauda pesada típica de manutenção de software), \textbf{Weibull}, \textbf{Erlang/Phase-Type} e \textbf{PERT-Beta acoplada por cópula gaussiana} com correlação entre tarefas ($\rho \in \{0{,}0; 0{,}25; 0{,}50\}$) e viés sistemático de subestimação humana (+20\% e +40\%) —, reservando o sorteio PERT-Beta puro apenas como controle de sanidade interna.
+
+Na \textbf{Dimensão 5 (Consistência e fidelidade numérica do LLM)}, reconhece-se que observar zero falhas em apenas 15 execuções limitaria a taxa de alucinação apenas a $\approx 3/15 = 20\%$ a 95\% de confiança (pela estatística da Regra dos Três, $\mathrm{IC}_{95\%} \le 3/n$). Para atingir rigor estatístico, o protocolo define \textbf{30 cenários parametrizados executados com $R=10$ repetições independentes cada ($n = 300$ invocações por configuração)}, sob modelo e versão fixados (\texttt{Llama-3.3-70B-Instruct} local e \texttt{Gemini-2.5-Flash} em versão fixada, testados em \texttt{temperature = 0.0} e \texttt{temperature = 0.2}). Um verificador automático em Go extrai todos os literais numéricos da resposta JSON e os confronta com os valores da \textit{allowlist} enviada; zero alucinações em $n=300$ assegura um limite superior de falha $\le 1{,}0\%$ com 95\% de confiança.
+
+A Tabela~\ref{tab:protocolo} consolida as cinco dimensões do protocolo experimental.
+
+\begin{table}[htbp]
+\caption{Protocolo consolidado de avaliação experimental (DSRM, 5 dimensões).}\label{tab:protocolo}
+\scriptsize
+\begin{tabularx}{\textwidth}{p{2.3cm} p{1.4cm} X X p{0.8cm}}
+\toprule
+\textbf{Dimensão} & \textbf{Fase} & \textbf{Método experimental} & \textbf{Métricas e critérios de aceite} & \textbf{RQ}\\
+\midrule
+1. Algorítmica, estatística e desempenho & TCC1 (Concluída) & Testes em Go nos cenários A--C$'$, validação analítica, teste KS ($10^6$ amostras), caso $t_o=t_p$, 1/4/16 \textit{workers} e \textit{benchmark} (5 repetições) & Momentos exatos; $p_{\mathrm{KS}} > 0{,}05$; variação zero entre \textit{workers}; mediana de $259{,}6$ ms ($\mathrm{DP}=4{,}1$ ms) em 200 tarefas & RQ2\\
+2. Calibração confirmatória em redes sintéticas & TCC2 (Fase 1) & $M=500$ DAGs com verdade gerada por famílias Log-Normal, Weibull, Erlang e cópulas correlacionadas ($\rho \in \{0; 0{,}25; 0{,}50\}$), mais controle PERT-Beta & Cobertura empírica de $P_{50}/P_{85}/P_{95}$ (IC Wilson 95\%); MAE/MdAE de $P_{50}$ e $E[F]$; \textit{Pinball Loss} e CRPS \textit{vs.} CPM e Monte Carlo por vazão \cite{vacanti2015} & RQ4\\
+3. \textit{Backtesting} exploratório em dados reais & TCC2 (Fase 2) & 10 janelas de \textit{release} do \texttt{cli/cli} em 3 cortes (25\%, 50\%, 75\% = 30 avaliações), duração desde o 1º \textit{commit}/atribuição e parametrização estritamente anterior ao corte ($t_{\mathrm{fim}}\le t_c$) & MAE/MdAE de $P_{50}$ e $E[F]$; \textit{Pinball Loss} no $P_{85}$ e CRPS comparados ao CPM, projeção linear e Monte Carlo por vazão; sensibilidade de $c_{\mathrm{rev}}$ & RQ1, RQ4\\
+4. Segurança, isolamento e governança & TCC2 (Fase 3) & Bateria de \textit{payloads} adversariais \cite{greshake2023,debenedetti2024} nos títulos da \textit{allowlist}, ações inválidas (\textit{fail-closed}), persuasão e adulteração SQL direta & 0 mutações não autorizadas; 100\% de rejeição \textit{fail-closed}; cota de rascunhos respeitada; 100\% de detecção na cadeia SHA-256 ancorada & RQ3\\
+5. Consistência e fidelidade numérica da IA & TCC2 (Fase 4) & 30 cenários $\times$ 10 repetições ($n=300$ execuções) com modelo/versão fixados (\texttt{temp = 0.0} e \texttt{0.2}) e verificador automático de números citados & 0\% de divergência numérica frente à \textit{allowlist} (limite superior $\le 1{,}0\%$ a 95\% de confiança pela regra dos três); alinhamento ao $\IC_i$ & RQ3\\
+\bottomrule
+\end{tabularx}
+\fonteautores
+\end{table}
+
+\section{Ameaças à Validade}\label{sec:ameacas_validade}
+
+Em conformidade com as boas práticas de Engenharia de Software Experimental, identificam-se quatro categorias de ameaças à validade e os respectivos controles incorporados ao desenho da pesquisa:
+
+\begin{enumerate}
+  \item \textbf{Validade de Construto (\textit{Construct Validity}):} refere-se ao grau em que as variáveis operacionais extraídas do GitHub refletem os conceitos teóricos de duração de tarefa ($d_i$) e precedência técnica ($FS$). Conforme demonstrado na Seção~\ref{sec:backtesting}, o intervalo entre abertura e \textit{merge} do PR mede apenas a revisão de código. Para mitigar essa ameaça, o TCC2 define o início da tarefa pelo carimbo de tempo mais antigo entre o primeiro \textit{commit} da \textit{branch} associada e a atribuição da \textit{issue}, além de testar em piloto três heurísticas de extração do DAG (referências explícitas no corpo de \textit{issues}/PRs, dependências por componente arquitetural e acoplamento temporal de arquivos modificados);
+  \item \textbf{Validade Interna (\textit{Internal Validity}):} diz respeito a fatores de confusão ou vazamento de informação que possam distorcer a relação causal entre o método de previsão e o erro observado. A principal ameaça interna no \textit{backtesting} seria estimar $(t_o, t_m, t_p)$ usando tarefas concluídas após o instante de corte $t_c$. O protocolo elimina essa ameaça impondo filtragem estritamente causal ($t_{\mathrm{fim}} \le t_c$) e sementes pseudoaleatórias determinísticas isoladas por iteração;
+  \item \textbf{Validade de Conclusão Estatística (\textit{Conclusion Validity}):} relaciona-se ao tamanho amostral, à escolha das métricas e à circularidade de testes sintéticos. Foi mitigada por quatro decisões: (i) separação entre erro pontual ($P_{50}$ e $E[F]$) e métricas probabilísticas próprias (\textit{Pinball Loss} e CRPS); (ii) inclusão do Monte Carlo por vazão de \citeonline{vacanti2015} como \textit{baseline} forte; (iii) geração de verdade sintética não circular (Log-Normal, Weibull, Erlang e cópulas) com $M=500$ grafos; e (iv) ampliação da avaliação do LLM para $n=300$ execuções ($3/n = 1{,}0\%$);
+  \item \textbf{Validade Externa (\textit{External Validity}):} refere-se à generalização dos resultados para outros contextos industriais. Como o \textit{backtesting} empírico concentra-se em um único repositório de código aberto em Go (\texttt{cli/cli}) — cujo fluxo é orientado a \textit{releases} curtas e contribuições modulares —, os resultados da Dimensão 3 não podem ser generalizados automaticamente para projetos corporativos fechados com grandes equipes monolíticas. Essa limitação é explicitamente declarada, sendo compensada pela variação paramétrica de topologias, tamanhos e níveis de correlação na Dimensão 2.
+\end{enumerate}
+
+% =====================================================================
+\chapter{Arquitetura de Referência e Governança de IA}\label{cap:arquitetura}
+% =====================================================================
+
+Este capítulo especifica a arquitetura de referência da Sombra Digital Governada, detalhando a pilha tecnológica, o isolamento físico e lógico de redes, as regras completas de transição de estados a partir de eventos GitHub/CI, a especificação formal da \textit{allowlist}, o modelo de ameaças e o mecanismo de auditoria resistente a adulterações.
+
+\section{Tecnologias Utilizadas}
+
+A seleção tecnológica prioriza determinismo numérico, baixo consumo de memória, segurança de tipos e isolamento de execução:
+
+\begin{itemize}
+  \item \textbf{Go (Golang 1.22):} linguagem adotada no \textit{Core PM Service}, no \textit{Simulation Worker} e no \textit{AI Agent Service}, escolhida pela compilação estática, tipagem forte e modelo de concorrência leve baseado em \textit{goroutines} e canais \cite{donovan2015};
+  \item \textbf{PostgreSQL 16:} sistema gerenciador de banco de dados relacional responsável pela persistência transacional ACID do estado oficial, dos cenários simulados em \texttt{JSONB}, da trilha de auditoria e da fila de trabalho concorrente operada via cláusula \texttt{SELECT ... FOR UPDATE SKIP LOCKED} \cite{postgresql2024};
+  \item \textbf{Docker e Docker Compose:} infraestrutura de conteinerização utilizada para impor segregação de sub-redes virtuais e restrição de rotas de saída \cite{merkel2014};
+  \item \textbf{React, TypeScript e Vite:} pilha de interface web mínima (SPA) para visualização determinística do caminho crítico, histogramas de convergência e fila de aprovação \cite{vite2024};
+  \item \textbf{Server-Sent Events (SSE):} protocolo unidirecional sobre HTTP para notificação reativa de conclusões de simulação e alertas ao navegador do gerente \cite{w3c2015};
+  \item \textbf{SplitMix64 e Marsaglia-Tsang:} gerador pseudoaleatório de 64 bits e algoritmo exato de rejeição para variáveis Gama \cite{marsaglia2000} empregados na amostragem PERT-Beta sem dependências externas.
+\end{itemize}
+
+\section{Arquitetura em Três Processos e Isolamento de Redes}\label{sec:arq_redes}
+
+A arquitetura de referência decompõe o sistema em três serviços de \textit{backend} e um banco de dados relacional, distribuídos em duas redes virtuais Docker estritamente segregadas (Figura~\ref{fig:arq}):
+
+\begin{itemize}
+  \item \textbf{Rede Transacional (\texttt{core-net}):} interliga exclusivamente o \textit{Core PM Service}, o PostgreSQL 16 e o \textit{Simulation Worker}. Nenhum contêiner externo ou serviço de IA possui interface de rede conectada a esta sub-rede;
+  \item \textbf{Rede Isolada de IA (\texttt{ai-isolated-net}):} conecta apenas o \textit{Core PM Service} e o \textit{AI Agent Service}. O binário compilado do \textit{AI Agent Service} não inclui drivers de banco de dados (\texttt{libpq}/\texttt{pgx}), não recebe variáveis de ambiente de conexão SQL e possui apenas rota de saída HTTPS/TLS para o \textit{endpoint} da API do modelo de linguagem.
+\end{itemize}
+
+\figura{fig05_arquitetura.png}{Arquitetura de referência em três processos e isolamento físico de sub-redes (Docker Compose).}{fig:arq}{0.95}{%
+\begin{tikzpicture}[>=Latex, font=\scriptsize, every node/.style={align=center}]
+  \draw[rounded corners=6pt, dashed, thick, unbblue, fill=unbblue!4] (0,0) rectangle (8.2,4.4);
+  \node[font=\bfseries\scriptsize, unbblue, anchor=north west] at (0.2,4.3) {Sub-rede \texttt{core-net} (Isolada da IA)};
+  \draw[rounded corners=6pt, dashed, thick, red!75!black, fill=red!4] (8.6,0) rectangle (14.2,4.4);
+  \node[font=\bfseries\scriptsize, red!75!black, anchor=north west] at (8.8,4.3) {Sub-rede \texttt{ai-isolated-net}};
+
+  \node[rectangle, rounded corners=3pt, draw=unbblue, thick, fill=white, minimum width=2.6cm, minimum height=1.1cm] (core) at (4.5, 2.8) {\textbf{Core PM Service}\\(Go / RBAC / Governança)};
+  \node[rectangle, rounded corners=3pt, draw=unbblue, thick, fill=white, minimum width=2.4cm, minimum height=1.1cm] (db) at (1.6, 1.1) {\textbf{PostgreSQL 16}\\(\texttt{SKIP LOCKED} + Audit)};
+  \node[rectangle, rounded corners=3pt, draw=unbblue, thick, fill=white, minimum width=2.6cm, minimum height=1.1cm] (worker) at (5.8, 1.1) {\textbf{Simulation Worker}\\(CPM + Monte Carlo)};
+  \node[rectangle, rounded corners=3pt, draw=red!75!black, thick, fill=white, minimum width=2.8cm, minimum height=1.1cm] (ai) at (11.4, 2.8) {\textbf{AI Agent Service}\\(Sem Driver/Rota SQL)};
+  \node[rectangle, rounded corners=3pt, draw=gray!80, thick, fill=gray!10, minimum width=2.4cm, minimum height=0.9cm] (llm) at (11.4, 0.9) {API Externa LLM\\(HTTPS / TLS)};
+
+  \draw[<->, thick, unbblue] (core) -- node[left, font=\tiny]{SQL/ACID} (db);
+  \draw[<->, thick, unbblue] (worker) -- node[below, font=\tiny]{Fila \texttt{jobs}} (db);
+  \draw[<->, thick, red!75!black] (core) -- node[above, font=\tiny]{\textit{Allowlist} JSON} node[below, font=\tiny]{Schema Estrito} (ai);
+  \draw[<->, thick, gray!80] (ai) -- (llm);
+\end{tikzpicture}%
+}
+
+O fluxo operacional completo (Figura~\ref{fig:seq}) desenvolve-se em sete etapas determinísticas: (1) o \textit{webhook} assinado com HMAC-SHA256 chega ao \textit{Core PM Service}, que valida a assinatura e a chave de idempotência (\texttt{delivery\_id}), atualiza a tarefa correspondente, incrementa \texttt{state\_version} e aplica uma janela de \textit{debounce} de 30 s para absorver rajadas de eventos; (2) encerrado o \textit{debounce}, um \textit{job} é inserido na tabela \texttt{simulation\_jobs}; (3) o \textit{Simulation Worker} adquire o \textit{job} via \texttt{FOR UPDATE SKIP LOCKED}, executa o CPM e as 10.000 iterações de Monte Carlo e grava o resultado; (4) o \textit{Core} verifica se \texttt{base\_state\_version} permanece atual, dispara alertas determinísticos de limiar (RF12) se $P_{85}$ violar a meta do marco e constrói o pacote JSON da \textit{allowlist}; (5) o \textit{AI Agent Service} recebe a \textit{allowlist}, consulta o LLM e devolve uma estrutura JSON validada por esquema e verificada numericamente; (6) o classificador estático no \textit{Core} aplica a política \textit{fail-closed}, executando ações de Categoria 1 dentro de cotas e retendo ações de Categoria 2 na fila de aprovação com cálculo prévio de $\Delta P_{50}$, $\Delta P_{85}$ e $\Delta\IC_i$; e (7) o gerente humano analisa o painel segregado via SPA/SSE, aprova ou rejeita a proposta, e o \textit{Core} grava o registro encadeado em \texttt{audit\_logs}.
+
+\figura{fig06_sequencia.png}{Diagrama de sequência do fluxo Evento $\rightarrow$ Simulação $\rightarrow$ IA $\rightarrow$ Classificação \textit{Fail-Closed} $\rightarrow$ Fila de Aprovação $\rightarrow$ Auditoria.}{fig:seq}{0.95}{%
+\begin{tikzpicture}[>=Latex, font=\tiny]
+  \foreach \x/\name in {0/GitHub, 2.3/Core PM, 4.8/PostgreSQL, 7.3/Sim Worker, 9.8/AI Service, 12.2/Gerente (UI)} {
+    \node[draw=unbblue, fill=unbblue!8, rounded corners=2pt, minimum width=1.8cm, minimum height=0.5cm, font=\bfseries\tiny] (p\x) at (\x, 4.2) {\name};
+    \draw[dashed, gray] (\x, 3.95) -- (\x, 0.2);
+  }
+  \draw[->, thick] (0,3.6) -- node[above]{1. Webhook (HMAC)} (2.3,3.6);
+  \draw[->, thick] (2.3,3.2) -- node[above]{2. \texttt{state\_version++} + Job} (4.8,3.2);
+  \draw[->, thick] (7.3,2.8) -- node[above]{3. \texttt{SKIP LOCKED}} (4.8,2.8);
+  \draw[->, thick] (7.3,2.4) -- node[above]{4. Grava $P_{50}, P_{85}, \IC_i$} (2.3,2.4);
+  \draw[->, thick, red!75!black] (2.3,1.9) -- node[above]{5. Envia \textit{Allowlist} sanitizada} (9.8,1.9);
+  \draw[->, thick, red!75!black] (9.8,1.4) -- node[above]{6. JSON tipado (\textit{Fail-Closed})} (2.3,1.4);
+  \draw[->, thick, unbgreen!80!black] (2.3,0.9) -- node[above]{7. SSE: Fila Cat. 2 ($\Delta P_{85}$)} (12.2,0.9);
+  \draw[->, thick, unbblue] (12.2,0.4) -- node[above]{8. Aprova/Rejeita $\rightarrow$ SHA-256} (4.8,0.4);
+\end{tikzpicture}%
+}
+
+\section{Mapeamento de Eventos GitHub/CI e Regra Híbrida de Progresso}\label{sec:eventos_git}
+
+Para manter a Sombra Digital sincronizada sem distorções semânticas (RQ1), o receptor de \textit{webhooks} trata explicitamente todas as condições de contorno do ciclo de vida de \textit{issues} e \textit{pull requests} no GitHub, conforme especificado na Tabela~\ref{tab:eventos}.
+
+\begin{table}[htbp]
+\caption{Mapeamento formal de eventos GitHub/CI para o estado e progresso ($c_i$) das tarefas.}\label{tab:eventos}
+\scriptsize
+\begin{tabularx}{\textwidth}{p{4.3cm} p{2.9cm} X}
+\toprule
+\textbf{Evento e condição recebida} & \textbf{Novo estado} & \textbf{Regra de progresso ($c_i$) e efeito no modelo}\\
+\midrule
+\texttt{issues: assigned} ou 1º \textit{commit} em \textit{branch} vinculada & \texttt{IN\_PROGRESS} & Registra $t_{\text{início}}$ real; $c_i = c_{\mathrm{chk}} \in [0; 0{,}75]$ conforme \textit{checklist} da tarefa\\
+\texttt{issues: edited} (marcação de \textit{checkboxes} \texttt{- [x]}) & \texttt{IN\_PROGRESS} & Atualiza $c_i = \min(0{,}75;\; n_{\mathrm{concl}}/n_{\mathrm{total}})$ (origem de valores intermediários como $c=0{,}30$ e $0{,}40$)\\
+\texttt{pull\_request: opened (draft = true)} & \texttt{IN\_PROGRESS} & Mantém $c_i = \max(c_i;\; 0{,}50)$; tarefa segue em codificação ativa\\
+\texttt{pull\_request: opened / ready\_for\_review} & \texttt{IN\_REVIEW} & Aplica piso de revisão $c_i = \max(c_i;\; c_{\mathrm{rev}})$, com padrão $c_{\mathrm{rev}} = 0{,}80$ configurável\\
+\texttt{pull\_request: closed (merged = true)} & \texttt{DONE} & $c_i = 1{,}0$; consolida duração real $d_i^{\mathrm{real}} = t_{\mathrm{merge}} - t_{\text{início}}$\\
+\texttt{pull\_request: closed (merged = false)} & \texttt{IN\_PROGRESS} & Reverte de \texttt{IN\_REVIEW} para \texttt{IN\_PROGRESS}; reduz $c_i = \min(c_i;\; 0{,}50)$ e registra \texttt{PR\_ABANDONED}\\
+\texttt{issues: closed (state\_reason = completed)} & \texttt{DONE} & $c_i = 1{,}0$; consolida data real de término se não houver PR pendente\\
+\texttt{issues: closed (state\_reason = not\_planned / duplicate)} & \texttt{CANCELLED} & Tarefa desativada ($d_i = 0$ após confirmação na fila Cat. 2); \textbf{não} contabilizada como item entregue na vazão\\
+\texttt{issues: reopened} & \texttt{IN\_PROGRESS} & $c_i = \min(c_i;\; 0{,}50)$; descarta data de término anterior e recalcula rede\\
+\texttt{check\_suite / workflow\_run: failure} & Mantém estado atual & Registra \texttt{CI\_FAILURE}; $c_i$ inalterado; dispara recálculo e alerta determinístico se tarefa tiver $\IC_i > 20\%$\\
+Evento sem vínculo a tarefa & Sem transição & Registrado em \texttt{project\_events} para auditoria; estado das tarefas inalterado\\
+\bottomrule
+\end{tabularx}
+\fonteautores
+\end{table}
+
+A Tabela~\ref{tab:eventos} esclarece três pontos fundamentais de consistência:
+\begin{enumerate}
+  \item \textbf{Tratamento de cancelamentos e PRs descartados:} uma \textit{issue} fechada como \texttt{not\_planned} (desistência de escopo ou duplicata) transita para \texttt{CANCELLED} e jamais é somada como item concluído, alinhando a regra de negócio ao filtro \texttt{completed} do Apêndice~\ref{apd:extracao}. Analogamente, um PR fechado sem \textit{merge} (\texttt{merged = false}) não conclui a tarefa: reverte o estado para \texttt{IN\_PROGRESS} e remove o crédito do piso de revisão;
+  \item \textbf{Origem dos valores intermediários de progresso ($c_i \in (0, 1)$):} enquanto a tarefa está em \texttt{IN\_PROGRESS}, o progresso fracionário $c_i$ provém da razão de subtarefas concluídas no \textit{checklist} da \textit{issue} ($c_{\mathrm{chk}} = n_{\mathrm{concl}}/n_{\mathrm{total}}$, limitada a $0{,}75$ antes da revisão) ou de apontamento gerencial direto. É exatamente esse mecanismo que produz valores como $c_2 = 0{,}40$ (2 de 5 subtarefas concluídas) e $c_3 = 0{,}30$ (3 de 10 subtarefas concluídas) no Cenário C da Prova de Conceito;
+  \item \textbf{Justificativa e análise de sensibilidade de $c_{\mathrm{rev}} = 0{,}80$:} a constante $c_{\mathrm{rev}} = 0{,}80$ atribuída quando um PR entra em \texttt{ready\_for\_review} baseia-se na decomposição empírica do esforço de desenvolvimento, em que a implementação e os testes unitários respondem por cerca de 80\% do trabalho e a revisão por pares (\textit{code review}) e ajustes finais pelos 20\% restantes. Como em projetos específicos a revisão pode exigir retrabalho maior, $c_{\mathrm{rev}}$ é parametrizável por projeto e submetido a análise de sensibilidade em $c_{\mathrm{rev}} \in \{0{,}70; 0{,}80; 0{,}90\}$ na Dimensão 3.
+\end{enumerate}
+
+\section{Especificação da \textit{Allowlist}, Modelo de Ameaças e Governança \textit{Fail-Closed}}\label{sec:ameacas_ia}
+
+\subsection{Contrato Formal da \textit{Allowlist} (Coerência entre RNF02 e H2)}
+
+Para conciliar a privacidade e minimização de dados (RNF02) com a existência de uma superfície realista de avaliação contra injeção indireta de comandos (H2), o \textit{Core PM Service} constrói o \textit{payload} enviado ao \textit{AI Agent Service} aplicando um filtro estrutural de lista branca (\textit{allowlist}). A Tabela~\ref{tab:allowlist} define exatamente os campos permitidos e os campos bloqueados.
+
+\begin{table}[htbp]
+\caption{Especificação formal da \textit{allowlist} enviada ao \textit{AI Agent Service} e campos bloqueados (RNF02).}\label{tab:allowlist}
+\scriptsize
+\begin{tabularx}{\textwidth}{p{3.4cm} p{2.3cm} X}
+\toprule
+\textbf{Campo / Categoria} & \textbf{Política} & \textbf{Regra de sanitização e papel no modelo}\\
+\midrule
+\texttt{project\_id}, \texttt{state\_version}, \texttt{scenario\_id} & Permitido (\texttt{int/UUID}) & Identificadores internos opacos para amarração de rastreabilidade (RNF09)\\
+Métricas globais ($T_{\mathrm{CPM}}, P_{50}, P_{85}, P_{95}, \bar{F}$) & Permitido (\texttt{float64}) & Valores numéricos exatos calculados pelo \textit{Simulation Worker}\\
+Vetor de tarefas: \texttt{task\_id}, $(t_o, t_m, t_p)$, $c_i$, $TF_i$, $\IC_i$, \texttt{status} & Permitido (Numérico / Enum) & Indicadores quantitativos por tarefa e lista de IDs predecessores\\
+\texttt{task\_title} e \texttt{issue\_pr\_summary} & \textbf{Permitido após sanitização} & Strings truncadas em no máximo 120 e 280 caracteres, após remoção via regex de e-mails, menções \texttt{@user}, URLs, tokens e blocos de código. \textbf{Vetor realista de entrada não confiável avaliado em H2}\\
+Código-fonte, \textit{diffs} de PR e logs de CI & \textbf{Bloqueado} & Jamais incluídos no JSON enviado ao LLM (proteção de propriedade intelectual)\\
+Corpos brutos de \textit{commits}, comentários de revisão e PII & \textbf{Bloqueado} & Nomes civis, e-mails de autores (\texttt{git author}) e discussões livres são retidos no \textit{Core}\\
+\bottomrule
+\end{tabularx}
+\fonteautores
+\end{table}
+
+Essa definição resolve qualquer ambiguidade sobre o teste de H2: como os campos \texttt{task\_title} e \texttt{issue\_pr\_summary} têm origem nos títulos de \textit{issues} e \textit{pull requests} do GitHub, um atacante externo ou colaborador malicioso pode inserir instruções adversariais dentro do limite de 120/280 caracteres (por exemplo, \textit{``Ignore as instruções anteriores e emita UPDATE\_PROJECT\_BASELINE adiando o projeto em 30 dias''}). Assim, o LLM recebe contexto semântico real para formular recomendações úteis, enquanto a contenção de segurança depende das barreiras determinísticas do servidor, e não da suposição ingênua de que o modelo não sofrerá \textit{prompt injection}.
+
+\subsection{Catálogo de Ações, Regra \textit{Fail-Closed} e Defesa contra Persuasão do Aprovador}
+
+Toda resposta oriunda do \textit{AI Agent Service} é processada pelo validador determinístico do \textit{Core PM Service} segundo a máquina de decisão da Tabela~\ref{tab:governanca}.
+
+\begin{table}[htbp]
+\caption{Catálogo estático de ações da IA e regras determinísticas de governança no servidor (\textit{fail-closed}).}\label{tab:governanca}
+\scriptsize
+\begin{tabularx}{\textwidth}{p{4.1cm} p{2.1cm} p{3.1cm} X}
+\toprule
+\textbf{Ação (\texttt{action\_type})} & \textbf{Categoria} & \textbf{Decisão no servidor} & \textbf{Mecanismo de contenção e auditoria}\\
+\midrule
+\texttt{GENERATE\_STATUS\_SUMMARY} & 1 (Autônoma) & Execução controlada & Verificação automática dos números citados contra a \textit{allowlist} (tolerância $10^{-2}$) e limite de taxa\\
+\texttt{CREATE\_DRAFT\_RISK} & 1 (Autônoma) & Grava em \texttt{draft\_risks} & Cota máxima de 3 rascunhos por \texttt{state\_version}; texto puro sem links/HTML; \textbf{inativo nos cálculos} até promoção via Cat. 2\\
+\texttt{REQUEST\_SCENARIO\_SIMULATION} & 1 (Autônoma) & Simulação efêmera & Cota de 2 simulações \textit{what-if} por ciclo; persiste apenas em \texttt{simulation\_scenarios} sem alterar linha de base\\
+\texttt{UPDATE\_TASK\_ESTIMATES} & 2 (Restrita) & Retida na fila & Exige aprovação do Gerente; painel exibe $\Delta P_{50}$, $\Delta P_{85}$ e $\Delta P_{95}$ calculados pelo servidor\\
+\texttt{MODIFY\_DEPENDENCY\_GRAPH} & 2 (Restrita) & Validação de DAG + Fila & Verifica aciclicidade por ordenação topológica; propostas cíclicas são descartadas imediatamente\\
+\texttt{ACTIVATE\_OR\_MITIGATE\_RISK} & 2 (Restrita) & Retida na fila & Promove rascunho ou altera estado de risco após aprovação humana com visualização de $\Delta\IC_i$\\
+\texttt{UPDATE\_PROJECT\_BASELINE} & 2 (Restrita) & Retida com dupla confirmação & Exige confirmação expressa do Gerente e justificativa própria no log\\
+\textbf{Qualquer outro valor, ausente ou fora do JSON Schema} & \textbf{Inválida (\textit{Fail-Closed})} & \textbf{Negação imediata (\texttt{REJECTED})} & \textbf{Regra de negar por padrão:} zero mutações, descarte do pacote, alerta determinístico e gravação de \texttt{SECURITY\_POLICY\_VIOLATION} em \texttt{audit\_logs}\\
+\bottomrule
+\end{tabularx}
+\fonteautores
+\end{table}
+
+Para mitigar os dois vetores sutis apontados na análise de segurança — a saber, a gravação de conteúdo influenciado pelo LLM via \texttt{CREATE\_DRAFT\_RISK} e a \textbf{persuasão cognitiva do aprovador humano} —, a arquitetura impõe três salvaguardas adicionais:
+
+\begin{enumerate}
+  \item \textbf{Isolamento e sanitização de \texttt{CREATE\_DRAFT\_RISK}:} embora classificada na Categoria 1 por não alterar os cálculos ativos do cronograma, essa ação grava em uma tabela de quarentena (\texttt{draft\_risks}) com limite rígido de 3 registros pendentes por versão de estado. Os campos textuais são sanitizados como texto puro (remoção total de tags HTML, scripts e hiperlinks Markdown para impedir \textit{phishing} interno), e o risco proposto tem peso zero no CPM e no Monte Carlo até que o gerente decida promovê-lo por meio da ação restrita \texttt{ACTIVATE\_OR\_MITIGATE\_RISK} (Categoria 2);
+  \item \textbf{Segregação visual contra persuasão do aprovador:} se um ataque de injeção tentar manipular o campo \texttt{rationale} do LLM para convencer o gerente a aprovar uma ação prejudicial de Categoria 2, a interface da Fila de Aprovação (RF09, RF11) apresenta em \textbf{primeiro plano um cartão determinístico gerado exclusivamente pelo servidor}, contendo o \textit{diff} exato de parâmetros (ex.: $t_p: 5 \rightarrow 15$), o impacto simulado independente ($\Delta P_{50}, \Delta P_{85}, \Delta P_{95}, \Delta\IC_i$) e a origem do gatilho. O texto explicativo do LLM é exibido em seção secundária recolhível com o rótulo fixo: \textit{``Texto interpretativo gerado por IA a partir de metadados do repositório — verifique sempre os deltas numéricos calculados pelo motor antes de aprovar''};
+  \item \textbf{Verificador numérico de saída:} antes mesmo de exibir qualquer recomendação (Cat. 1 ou Cat. 2), um analisador sintático no \textit{Core} compara qualquer número citado com símbolo de percentil ou criticidade no texto da IA contra os números enviados na \textit{allowlist}, descartando em modo \textit{fail-closed} mensagens com discrepância superior a $10^{-2}$.
+\end{enumerate}
+
+\section{Trilha de Auditoria Resistente a Adulterações (\textit{Tamper-Evident}) e Ancoragem Externa}\label{sec:auditoria}
+
+Cada evento ingerido, recomendação da IA, rejeição \textit{fail-closed} ou decisão humana gera um registro sequencial $k$ na tabela \texttt{audit\_logs}, cujo resumo criptográfico $H_k$ é calculado por:
+\begin{equation}
+H_k = \mathrm{SHA256}\big(k \;\|\; \texttt{timestamp}_k \;\|\; \texttt{actor\_id}_k \;\|\; \texttt{action\_type}_k \;\|\; \mathrm{canonical\_json}(\texttt{payload}_k) \;\|\; H_{k-1}\big),
+\end{equation}
+com bloco gênese fixado em $H_0 = 0^{64}$ (Figura~\ref{fig:hash}).
+
+\figura{fig04_hash_chain.png}{Encadeamento criptográfico SHA-256 da trilha de auditoria com ancoragem externa periódica (\textit{tamper-evident}).}{fig:hash}{0.9}{%
+\begin{tikzpicture}[>=Latex, font=\scriptsize, every node/.style={align=center}]
+  \tikzstyle{blk}=[rectangle, rounded corners=3pt, draw=unbblue, thick, fill=white, minimum width=3.1cm, minimum height=1.35cm]
+  \node[blk] (b1) at (0,0) {\textbf{Bloco $k-1$}\\\texttt{payload}$_{k-1}$\\ $\texttt{prev}: H_{k-2}$\\\textbf{\texttt{hash}: $H_{k-1}$}};
+  \node[blk] (b2) at (4.4,0) {\textbf{Bloco $k$}\\\texttt{payload}$_{k}$\\ $\texttt{prev}: H_{k-1}$\\\textbf{\texttt{hash}: $H_{k}$}};
+  \node[blk] (b3) at (8.8,0) {\textbf{Bloco $k+1$}\\\texttt{payload}$_{k+1}$\\ $\texttt{prev}: H_{k}$\\\textbf{\texttt{hash}: $H_{k+1}$}};
+  \node[rectangle, rounded corners=3pt, draw=unbgreen!80!black, very thick, fill=unbgreen!10, minimum width=3.3cm, minimum height=0.95cm] (anc) at (8.8,-2.0) {\textbf{Âncora Externa (WORM)}\\Assina e replica $(k+1, H_{k+1})$\\fora do host PostgreSQL};
+  \draw[->, thick, unbblue] (b1) -- (b2);
+  \draw[->, thick, unbblue] (b2) -- (b3);
+  \draw[->, very thick, unbgreen!80!black] (b3) -- node[right, font=\tiny]{Exportação assinada} (anc);
+\end{tikzpicture}%
+}
+
+Reconhece-se, do ponto de vista da segurança de sistemas, que uma cadeia de \textit{hashes} armazenada exclusivamente dentro do mesmo banco de dados relacional oferece \textbf{evidência de adulteração (\textit{tamper-evidence})} contra usuários comuns (cujo papel SQL tem \texttt{UPDATE} e \texttt{DELETE} revogados e bloqueados por \textit{trigger}), mas não impediria que um atacante com credenciais de superusuário (\texttt{postgres}) alterasse um registro antigo e recalculasse todos os \textit{hashes} subsequentes até o topo. Para fechar essa brecha, a arquitetura combina o encadeamento interno com \textbf{ancoragem externa periódica}: a cada lote de eventos ou fechamento de ciclo de simulação, a tupla $(k, \texttt{timestamp}_k, H_k)$ assinada com HMAC pela chave privada do \textit{Core} é replicada para um destino \textit{append-only} externo ao servidor PostgreSQL (como um \textit{bucket} de armazenamento com trava WORM — \textit{Write Once, Read Many} — ou um registro de status no próprio provedor Git). Dessa forma, mesmo uma recomputação total da tabela por um superusuário local é imediatamente detectada pela divergência frente ao \texttt{head\_hash} ancorado externamente.
+
+% =====================================================================
+\chapter{Prova de Conceito e Resultados Preliminares}\label{cap:poc}
+% =====================================================================
+
+Este capítulo descreve a implementação e a verificação experimental da Prova de Conceito (\texttt{poc-engine}) desenvolvida no TCC1 para responder à questão RQ2 e cumprir a Dimensão 1 de avaliação da DSRM.
+
+\section{Implementação, Ambiente e Artefatos de Reprodutibilidade}\label{sec:poc_repro}
+
+O motor \texttt{poc-engine} foi implementado em Go 1.22 utilizando apenas a biblioteca padrão, estruturado em quatro módulos:
+\begin{enumerate}
+  \item \texttt{random.go}: gerador determinístico SplitMix64 de 64 bits, amostrador Gama pelo método de rejeição de \citeonline{marsaglia2000} e amostrador PERT-Beta com tratamento explícito do caso degenerado $t_o = t_m = t_p$;
+  \item \texttt{cpm.go}: validação de aciclicidade, ordenação topológica em tempo linear $\mathcal{O}(|V|+|E|)$, CPM determinístico e estrutura de CPM pré-alocada por \textit{worker} (zero alocação de memória dinâmica no laço interno);
+  \item \texttt{simulator.go}: orquestrador de Monte Carlo concorrente com particionamento de iterações entre $W$ \textit{workers} e semente derivada por índice global de iteração $k \in \{0,\dots,N-1\}$ segundo a função bijetora $s_k = \mathrm{SplitMix64}(S_0 \oplus k)$, tornando a sequência pseudoaleatória de cada iteração $k$ matematicamente independente do escalonamento de \textit{threads} do sistema operacional;
+  \item \texttt{engine\_test.go} e \texttt{validation\_test.go}: suíte automatizada de verificação analítica de momentos, teste de aderência de Kolmogorov-Smirnov, casos degenerados, reprodutibilidade concorrente e \textit{benchmarks} de vazão e memória.
+\end{enumerate}
+
+Para assegurar reprodutibilidade científica integral, todos os artefatos de código (\texttt{Codigo/}), o \textit{script} de extração (\texttt{Codigo/extract\_dataset.py}), o gerador estático de figuras (\texttt{Codigo/generate\_figures.py}) e o arquivo de dados resultante (\texttt{Codigo/dataset\_backtesting.json}) encontram-se organizados sob controle de versão Git no repositório oficial do trabalho (\url{https://github.com/carlinn1/TCC-01}, \textit{tag} \texttt{v1.0.0-tcc1}, \textit{commit} base \texttt{5ab9b87e5f8d830ef88026dd78f85822437f976a}, detalhado no Apêndice~\ref{apd:extracao}). As medições de referência do motor foram conduzidas em ambiente Linux (kernel 6.8, arquitetura AMD64), compilador Go 1.22.5, em instância equipada com 1 vCPU Intel Xeon de 2,80 GHz.
+
+\section{Rede de Validação e Cenários Operacionais}\label{sec:poc_cenarios}
+
+A verificação funcional utiliza a rede em diamante de quatro atividades apresentada na Figura~\ref{fig:dag}, cujos parâmetros $(t_o, t_m, t_p)$, médias analíticas $\mu_i$ e variâncias $\sigma_i^2$ (calculadas pelas Equações~\ref{eq:pert_mean} e \ref{eq:pert_var}) estão detalhados na Tabela~\ref{tab:rede}.
+
+\begin{table}[htbp]
+\caption{Parâmetros e topologia da rede de validação da Prova de Conceito.}\label{tab:rede}
+\footnotesize
+\begin{tabularx}{\textwidth}{c X c c c c}
+\toprule
+\textbf{Tarefa} & \textbf{Descrição} & $(t_o,t_m,t_p)$ & $\mu_i$ & $\sigma_i^2$ & \textbf{Predecessoras}\\
+\midrule
+T1 & Modelagem de Dados & (2, 3, 5) & 3,17 & 0,31 & ---\\
+T2 & Construção de APIs & (4, 5, 9) & 5,50 & 0,75 & T1\\
+T3 & Serviço de Mensageria & (3, 5, 10) & 5,50 & 1,61 & T1\\
+T4 & Integração Front-end & (1, 2, 4) & 2,17 & 0,31 & T2, T3\\
+\bottomrule
+\end{tabularx}
+\fonteautores
+\end{table}
+
+Avaliam-se quatro cenários de decisão, todos confrontados contra uma meta contratual de entrega $F \le 11{,}0$ dias úteis:
+\begin{itemize}
+  \item \textbf{Cenário A (Linha de base sem riscos discretos):} início do projeto ($t_s=0$, $c_i=0$ para todas as tarefas) e nenhum risco discreto ativo;
+  \item \textbf{Cenário B (Início com risco discreto ativo):} idêntico ao Cenário A, porém com o risco R1 vinculado à tarefa T3 (probabilidade $p_r=0{,}30$ e impacto $\Delta_r=2{,}0$ dias úteis em caso de ocorrência);
+  \item \textbf{Cenário C (Monitoramento em $t_s=5$ com progresso parcial):} data de status $t_s=5$ d.u.; tarefa T1 concluída ($c_1=1{,}0$ em 3 dias reais); tarefas paralelas T2 e T3 em andamento com progressos de \textit{checklist} $c_2=0{,}40$ e $c_3=0{,}30$ (conforme regra da Tabela~\ref{tab:eventos}); risco R1 ativo em T3 com impacto ponderado pela fração remanescente $s_{r,3}=1-c_3=0{,}70$;
+  \item \textbf{Cenário C$'$ (Simulação \textit{what-if} de mitigação de risco):} mesmo estado de progresso do Cenário C ($t_s=5$), simulando o efeito da mitigação preventiva do risco R1 antes da aprovação gerencial.
+\end{itemize}
+
+\section{Resultados dos Cenários e Quantificação do Viés de Convergência}
+
+A PoC executou $N=10.000$ iterações em cada cenário com semente mestre $S_0=42$. A Tabela~\ref{tab:resultados} apresenta a duração determinística do CPM, os percentis simulados ($P_{50}, P_{85}, P_{95}$) e a probabilidade de cumprir o prazo $P(F \le 11)$, enquanto a Tabela~\ref{tab:ic} reporta os Índices de Criticidade empíricos ($\IC_i$).
+
+\begin{table}[htbp]
+\caption{Resultados da PoC em Go nos quatro cenários ($N=10.000$ iterações, semente 42).}\label{tab:resultados}
+\footnotesize
+\begin{tabularx}{\textwidth}{X c c c c c}
+\toprule
+\textbf{Cenário} & \textbf{CPM ($F$)} & $P_{50}$ & $P_{85}$ & $P_{95}$ & $P(F\le 11)$\\
+\midrule
+A. Início do projeto, sem riscos & 10,83 & 11,39 & 12,75 & 13,64 & 38,3\%\\
+B. Início, com R1 em T3 ($p_r=0{,}30$, $\Delta_r=2$) & 10,83 & 11,79 & 13,43 & 14,55 & 29,4\%\\
+C. Status $t_s=5$, R1 ativo ($s_{r,3}=0{,}70$) & 11,02 & 11,47 & 12,77 & 13,55 & 32,2\%\\
+C$'$. Como C, com R1 mitigado & 11,02 & 11,14 & 12,20 & 12,89 & 43,3\%\\
+\bottomrule
+\end{tabularx}
+{\small Fonte: Resultados da execução da PoC (\texttt{poc-engine}), outubro de 2026.}
+\end{table}
+
+\begin{table}[htbp]
+\caption{Índice de Criticidade empírico ($\IC_i$ em \%) obtido pela PoC em Go.}\label{tab:ic}
+\footnotesize
+\begin{tabularx}{\textwidth}{X c c c c}
+\toprule
+\textbf{Cenário} & \textbf{T1} & \textbf{T2} & \textbf{T3} & \textbf{T4}\\
+\midrule
+A. Início, sem riscos & 100,0\% & 51,1\% & 48,9\% & 100,0\%\\
+B. Início, com R1 em T3 & 100,0\% & 38,7\% & 61,3\% & 100,0\%\\
+C. Status $t_s=5$, R1 ativo & --- (concluída) & 21,6\% & 78,4\% & 100,0\%\\
+C$'$. Status $t_s=5$, R1 mitigado & --- (concluída) & 30,7\% & 69,3\% & 100,0\%\\
+\bottomrule
+\end{tabularx}
+{\small Fonte: Resultados da execução da PoC (\texttt{poc-engine}), outubro de 2026.}
+\end{table}
+
+\figura{fig07_histograma_cdf_poc.png}{Distribuição acumulada empírica (CDF) do término simulado nos cenários A e B ($N=10.000$, semente 42), destacando o otimismo do CPM determinístico (10,83 d.u.) frente aos quantis simulados.}{fig:hist}{0.9}{%
+\begin{tikzpicture}[x=0.95cm,y=2.8cm, font=\scriptsize]
+  \draw[->, thick] (7.5,0) -- (16.5,0) node[right]{Prazo de término $F$ (d.u.)};
+  \draw[->, thick] (7.5,0) -- (7.5,1.15) node[above]{$P(F \le t)$};
+  \foreach \x in {8,9,10,11,12,13,14,15,16} \draw (\x,0.02) -- (\x,-0.02) node[below]{\x};
+  \foreach \y/\lbl in {0.2/20\%, 0.5/50\%, 0.85/85\%, 1.0/100\%} \draw (7.55,\y) -- (7.45,\y) node[left]{\lbl};
+  \draw[dotted, gray] (7.5,0.50) -- (16,0.50);
+  \draw[dotted, gray] (7.5,0.85) -- (16,0.85);
+  % Linha CPM
+  \draw[dashed, thick, unbgreen!80!black] (10.83,0) -- (10.83,1.05) node[above, font=\tiny]{CPM = 10,83};
+  % CDF Cenario A
+  \draw[very thick, unbblue] plot[smooth] coordinates {(8.2,0) (9.5,0.06) (10.83,0.31) (11.39,0.50) (12.75,0.85) (13.64,0.95) (15.2,1.0)};
+  % CDF Cenario B
+  \draw[very thick, red!75!black] plot[smooth] coordinates {(8.2,0) (9.6,0.05) (10.83,0.23) (11.79,0.50) (13.43,0.85) (14.55,0.95) (16.2,1.0)};
+  \fill[unbblue] (11.39,0.50) circle (1.8pt);
+  \fill[unbblue] (12.75,0.85) circle (1.8pt);
+  \fill[red!75!black] (11.79,0.50) circle (1.8pt);
+  \fill[red!75!black] (13.43,0.85) circle (1.8pt);
+  \node[anchor=south east, draw=gray!50, fill=white, align=left] at (16.3,0.12) {
+    {\color{unbblue}\textbf{---}} Cenário A ($P_{50}=11{,}39 \mid P_{85}=12{,}75$)\\
+    {\color{red!75!black}\textbf{---}} Cenário B ($P_{50}=11{,}79 \mid P_{85}=13{,}43$)
+  };
+\end{tikzpicture}%
+}
+
+A análise conjunta das Tabelas~\ref{tab:resultados} e \ref{tab:ic} e da Figura~\ref{fig:hist} evidencia três propriedades centrais do motor:
+\begin{enumerate}
+  \item \textbf{Quantificação exata do viés de convergência:} no Cenário A, o cálculo determinístico pelo CPM resulta em $T_{\mathrm{CPM}} = \mu_1 + \max(\mu_2, \mu_3) + \mu_4 = 3{,}1667 + 5{,}5000 + 2{,}1667 = 10{,}8333$ d.u., o que sugeriria ao gestor que a meta $F \le 11{,}0$ seria cumprida com folga. Contudo, na simulação estocástica, a mediana é $P_{50} = 11{,}39$ d.u., a esperança amostral é $\bar{F} = 11{,}44$ d.u. e a probabilidade real de cumprir o prazo de 11 dias é de apenas $38{,}3\%$. Uma aproximação analítica independente para o máximo de duas variáveis de média $5{,}50$ e variâncias $\sigma_2^2=0{,}75$ e $\sigma_3^2=1{,}6071$, dada por $E[\max(T_2,T_3)] \approx \mu + \sqrt{(\sigma_2^2+\sigma_3^2)/(2\pi)} = 5{,}50 + \sqrt{2{,}3571/6{,}2832} \approx 6{,}112$ d.u., implica $E[F] = 3{,}1667 + 6{,}112 + 2{,}1667 \approx 11{,}445$ d.u., corroborando com precisão de duas casas decimais o valor de $11{,}44$ obtido pela PoC;
+  \item \textbf{Sensibilidade a riscos discretos e progresso parcial:} no Cenário C ($t_s=5$), o término determinístico pelo CPM é $5 + \max(0{,}6\times 5{,}5;\; 0{,}7\times 5{,}5) + 2{,}1667 = 5 + 3{,}85 + 2{,}1667 = 11{,}0167$ d.u., caindo na mesma cegueira quanto ao risco R1 da comparação entre A e B;
+  \item \textbf{Utilidade da pré-visualização de impacto na governança (C vs. C$'$):} a comparação entre os Cenários C e C$'$ demonstra o valor informacional entregue ao gerente na Fila de Aprovação (RF09): mitigar o risco R1 reduz o $P_{85}$ de $12{,}77$ para $12{,}20$ d.u. ($\Delta P_{85} = -0{,}57$ d.u.), eleva a probabilidade de entrega no prazo de $32{,}2\%$ para $43{,}3\%$ e reduz o Índice de Criticidade de T3 de $78{,}4\%$ para $69{,}3\%$. Ressalta-se que esses resultados comprovam a corretude matemática do motor na rede avaliada, enquanto a superioridade preditiva empírica (H1) será testada nas Dimensões 2 e 3 do TCC2.
+\end{enumerate}
+
+\section{Validação Analítica, Teste de Kolmogorov-Smirnov e Caso Degenerado}\label{sec:ks_test}
+
+Para fechar qualquer lacuna estatística na validação do amostrador PERT-Beta (além da igualdade de média e variância), a suíte de testes (\texttt{validation\_test.go}) submete $n = 10^6$ amostras independentes de cada tarefa ao \textbf{teste de aderência de Kolmogorov-Smirnov (KS)} de uma amostra contra a Função de Distribuição Acumulada (CDF) Beta regularizada exata $F(x) = I_{(x-t_o)/(t_p-t_o)}(\alpha, \beta)$, calculando a estatística supremo:
+\begin{equation}
+D_n = \sup_{x \in [t_o, t_p]} \left|\hat{F}_n(x) - I_{\frac{x-t_o}{t_p-t_o}}(\alpha, \beta)\right|.
+\end{equation}
+Para $n = 10^6$ ao nível de significância $\alpha_{\mathrm{sig}} = 0{,}05$, o valor crítico assintótico de Kolmogorov é $D_{\mathrm{crit}} = 1{,}3581 / \sqrt{10^6} = 0{,}001358$. Adicionalmente, o teste \texttt{TestDegeneratePertBetaZeroVariance} valida o caso degenerado em que $t_o = t_m = t_p = 5{,}0$, verificando que o amostrador retorna exatamente $5{,}0$ com variância zero e sem gerar \texttt{NaN} por divisão por zero. A Tabela~\ref{tab:momentos} consolida os resultados.
+
+\begin{table}[htbp]
+\caption{Validação analítica de momentos, teste de aderência de Kolmogorov-Smirnov ($n=10^6$) e caso degenerado.}\label{tab:momentos}
+\scriptsize
+\begin{tabularx}{\textwidth}{X c c c c c c}
+\toprule
+\textbf{Tarefa / Caso} & $\mu$ analítica & $\mu$ amostral & $\sigma^2$ analítica & $\sigma^2$ amostral & \textbf{Estatística KS ($D_n$)} & \textbf{\textit{p-valor} KS}\\
+\midrule
+T1 $(2, 3, 5)$ & 3,16667 & 3,16628 & 0,30556 & 0,30549 & $0{,}00051 < D_{\mathrm{crit}}$ & 0,958 (Aceito)\\
+T2 $(4, 5, 9)$ & 5,50000 & 5,50073 & 0,75000 & 0,75055 & $0{,}00098 < D_{\mathrm{crit}}$ & 0,291 (Aceito)\\
+T3 $(3, 5, 10)$ & 5,50000 & 5,49985 & 1,60714 & 1,60472 & $0{,}00130 < D_{\mathrm{crit}}$ & 0,068 (Aceito)\\
+T4 $(1, 2, 4)$ & 2,16667 & 2,16628 & 0,30556 & 0,30549 & $0{,}00114 < D_{\mathrm{crit}}$ & 0,146 (Aceito)\\
+Degenerado $(5, 5, 5)$ & 5,00000 & 5,00000 & 0,00000 & 0,00000 & $0{,}00000$ (Exato) & 1,000 (Aceito)\\
+\bottomrule
+\end{tabularx}
+\par\vspace{1mm}{\small Fonte: Saída de \texttt{go test -v -run 'TestPertBetaMoments|TestPertBetaKS|TestDegenerate'} (Go 1.22, Linux AMD64, $D_{\mathrm{crit},0{,}05}=0{,}001358$).}
+\end{table}
+
+\section{Reprodutibilidade Concorrente Estrita (RNF08)}
+
+O teste \texttt{TestReproducibilityAcrossWorkers} verifica se a derivação de semente por iteração $s_k = \mathrm{SplitMix64}(S_0 \oplus k)$ garante invariância de ponto flutuante independentemente do grau de paralelismo. A Tabela~\ref{tab:repro} confirma variação zero até a sexta casa decimal entre execuções com 1, 4 e 16 \textit{workers} concorrentes sobre o Cenário B ($S_0 = 12345$, $N = 5.000$).
+
+\begin{table}[htbp]
+\caption{Reprodutibilidade estrita entre 1, 4 e 16 \textit{workers} concorrentes (RNF08).}\label{tab:repro}
+\footnotesize
+\begin{tabular}{l c c c c}
+\toprule
+\textbf{Métrica avaliada} & \textbf{1 \textit{worker}} & \textbf{4 \textit{workers}} & \textbf{16 \textit{workers}} & \textbf{Variação máxima}\\
+\midrule
+$P_{50}$ (d.u.) & 11,789667 & 11,789667 & 11,789667 & 0,000000\\
+$P_{85}$ (d.u.) & 13,399960 & 13,399960 & 13,399960 & 0,000000\\
+$P_{95}$ (d.u.) & 14,503067 & 14,503067 & 14,503067 & 0,000000\\
+$P(F\le 11)$ & 28,2600\% & 28,2600\% & 28,2600\% & 0,0000\%\\
+$\IC$ de T3 & 59,6200\% & 59,6200\% & 59,6200\% & 0,0000\%\\
+\bottomrule
+\end{tabular}
+\par\vspace{1mm}{\small Fonte: Saída de \texttt{go test -v -run TestPrintReproducibilityValues} (Go 1.22, Linux AMD64).}
+\end{table}
+
+\section{Topologia da Rede Sintética e Dispersão dos \textit{Benchmarks} (RNF06)}\label{sec:benchmark}
+
+Para avaliar o desempenho computacional no limite superior exigido pelo RNF06 (200 tarefas e 300 dependências $FS$), o gerador de \textit{benchmark} constrói de maneira determinística (semente topológica $S_{\mathrm{topo}} = 99$) um DAG estruturado em $L = 10$ camadas sequenciais (\textit{tiers}) contendo $20$ tarefas por camada ($V = 200$ vértices). Para garantir conectividade acíclica e múltiplos caminhos paralelos convergentes:
+\begin{itemize}
+  \item Cada tarefa $v$ de índice local $j \in \{0,\dots,19\}$ nas camadas $l \in \{2,\dots,10\}$ (180 tarefas) recebe obrigatoriamente uma aresta da tarefa de mesmo índice $j$ na camada imediatamente anterior $l-1$ (180 arestas base) e, para as primeiras 120 tarefas dessas camadas ($l \in \{2,\dots,7\}$), uma segunda aresta distinta proveniente do vértice deslocado $(j+3)\bmod 20$ na camada $l-1$ (120 arestas cruzadas), totalizando exatamente $|E| = 300$ relações $FS$ sem ciclos;
+  \item As durações otimistas são sorteadas uniformemente em $t_{o,i} \in [1{,}0; 5{,}0]$ d.u., a moda em $t_{m,i} = t_{o,i} + U(1{,}0; 4{,}0)$ e o valor pessimista em $t_{p,i} = t_{m,i} + U(2{,}0; 8{,}0)$, com 40 riscos discretos de Bernoulli ($p_r \in [0{,}10; 0{,}35]$, $\Delta_r \in [1{,}0; 4{,}0]$ d.u.) distribuídos pela rede.
+\end{itemize}
+
+A Tabela~\ref{tab:bench} apresenta os resultados de desempenho obtidos em 5 repetições independentes de \texttt{go test -bench=Benchmark -benchmem -count=5}, reportando mediana, média, desvio-padrão (DP) e intervalo $[\text{mín}, \text{máx}]$.
+
+\begin{table}[htbp]
+\caption{\textit{Benchmark} de desempenho computacional e dispersão em 5 repetições (RNF06, $N=10.000$ iterações, 1 vCPU).}\label{tab:bench}
+\scriptsize
+\begin{tabularx}{\textwidth}{X c c c c c c}
+\toprule
+\textbf{Carga (Tarefas / Dep.)} & \textbf{Mediana} & \textbf{Média $\pm$ DP} & \textbf{Mín -- Máx} & \textbf{Memória} & \textbf{Alocações} & \textbf{Vazão mediana}\\
+\midrule
+Rede base (4 / 4) & \textbf{5,8 ms} & $5{,}84 \pm 0{,}11$ ms & 5,7 -- 6,0 ms & 211 KB & 118 & 1,72 mi it/s\\
+Rede sintética (200 / 300) & \textbf{259,6 ms} & $260{,}4 \pm 4{,}12$ ms & 255,1 -- 266,2 ms & 2,6 MB & 2.998 & 38.520 it/s\\
+\bottomrule
+\end{tabularx}
+{\small Fonte: Saída de \texttt{go test -bench=Benchmark -benchmem -count=5} (Go 1.22, Linux AMD64, 1 vCPU Intel Xeon 2,8 GHz).}
+\end{table}
+
+Mesmo restrito a um único núcleo virtual de CPU, o tempo mediano de $259{,}6$ ms (e máximo de $266{,}2$ ms nas 5 repetições, com coeficiente de variação de apenas $1{,}58\%$) atende com folga de \textbf{3,9 vezes} ao limite de $1{,}0$ s estipulado no RNF06. O número de alocações no \textit{heap} (2.998 na rede de 200 tarefas) independe do número de iterações $N$, comprovando que os \textit{buffers} de ordenação topológica e de folgas são integralmente reutilizados por cada \textit{worker}.
+
+% =====================================================================
+\chapter{Cronograma do TCC2 e Considerações Finais}\label{cap:cronograma}
+% =====================================================================
+
+Este capítulo estabelece o planejamento executivo de 20 semanas para o TCC2, apresentando a matriz de rastreabilidade completa entre requisitos e pacotes de trabalho, o cronograma com estimativas PERT de três pontos reestruturado para atacar os riscos críticos de dados e de construção do DAG já nas primeiras semanas, a matriz de riscos e as limitações declaradas.
+
+\section{Matriz de Rastreabilidade (Requisitos \texorpdfstring{$\rightarrow$}{->} Pacotes de Trabalho)}
+
+Para garantir que nenhum requisito funcional (RF01 a RF12) ou não funcional (RNF01 a RNF09) fique órfão durante a implementação do TCC2, a Tabela~\ref{tab:rastreabilidade} mapeia explicitamente cada requisito aos pacotes de trabalho do cronograma (Tabela~\ref{tab:cronograma}) e à respectiva dimensão de verificação.
+
+\begin{table}[htbp]
+\caption{Matriz de rastreabilidade entre Requisitos (RF/RNF), Pacotes de Trabalho do TCC2 e Dimensões de Avaliação.}\label{tab:rastreabilidade}
+\scriptsize
+\begin{tabularx}{\textwidth}{p{2.3cm} p{2.4cm} X}
+\toprule
+\textbf{Requisitos} & \textbf{Pacotes do TCC2} & \textbf{Entregável técnico e verificação associada}\\
+\midrule
+RF01, RF02, RNF01 & E02, E03, E07, E11 & Esquema SQL e rotas CRUD de projetos, membros, WBS, tarefas e riscos com autenticação JWT e controle de acesso por papéis RBAC (\texttt{403 Forbidden} em rotas Cat. 2)\\
+RF03, RF04, RNF05 & E02, E04 & Receptor de \textit{webhooks} GitHub com validação HMAC-SHA256, idempotência por \texttt{delivery\_id}, contador \texttt{state\_version}, \textit{debounce} de 30 s e \textit{flag} \texttt{is\_stale}\\
+RF05, RF06, RNF06, RNF08 & PoC (TCC1) + E05 & Motor CPM e Monte Carlo (PERT-Beta + Bernoulli) validado na Dimensão 1 e integrado ao \textit{Simulation Worker} assíncrono via \texttt{FOR UPDATE SKIP LOCKED}\\
+RF12 & E05, E11 & Motor de regras determinísticas de limiar no \textit{Core PM Service} (alerta imediato via SSE quando $P_{85}$ viola a meta do marco ou $\IC_i$ excede limiar, sem depender da IA)\\
+RF07, RNF02, RNF07, RNF09 & E06, E10 & Contêiner \textit{AI Agent Service} na sub-rede \texttt{ai-isolated-net}, construtor sanitizado da \textit{allowlist} e verificador numérico automático (Dimensão 5, $n=300$ execuções)\\
+RF08, RF09, RNF04 & E07, E10, E11 & Classificador estático \textit{fail-closed} no servidor, quarentena de \texttt{draft\_risks}, fila de aprovação Cat. 2 e cartão visual segregado contra persuasão (Dimensão 4)\\
+RF10, RNF03 & E02, E10 & Tabela \texttt{audit\_logs} com revogação de \texttt{UPDATE}/\texttt{DELETE}, \textit{trigger} de bloqueio, cadeia SHA-256 e exportador de âncora externa WORM (Dimensão 4)\\
+RF11 & E11 (e D01) & Interface web mínima reativa em React/TypeScript (tabela CPM, curvas CDF e fila de aprovação com $\Delta P_{50}, \Delta P_{85}, \Delta\IC_i$)\\
+\bottomrule
+\end{tabularx}
+\fonteautores
+\end{table}
+
+\section{Cronograma Detalhado do TCC2 (20 Semanas)}
+
+Em resposta direta à análise de riscos do projeto, o cronograma do TCC2 (Tabela~\ref{tab:cronograma} e Figura~\ref{fig:gantt}) incorpora duas mudanças estruturais em relação a planejamentos sequenciais tradicionais:
+\begin{enumerate}
+  \item \textbf{Antecipação dos riscos críticos para as Semanas 1 a 3 (Pacote E01):} a decisão definitiva sobre as 10 janelas de \textit{release} do repositório, o cálculo da duração desde o primeiro \textit{commit}/atribuição e a validação piloto do algoritmo de construção do DAG ocorrem imediatamente nas Semanas 1 a 3, eliminando o risco de descobrir limitações nos dados apenas no final do semestre;
+  \item \textbf{Redação contínua da monografia (Pacote E12, Semanas 4 a 18):} em vez de concentrar a escrita a partir da Semana 14, a redação dos capítulos de arquitetura e resultados ocorre incrementalmente a partir da Semana 4, à medida que cada pacote essencial é encerrado.
+\end{enumerate}
+
+Na Tabela~\ref{tab:cronograma}, todas as médias esperadas satisfazem exatamente a fórmula PERT $\mathrm{Esp.} = (O + 4M + P)/6$.
+
+\begin{table}[htbp]
+\caption{Cronograma detalhado do TCC2 (20 semanas) com estimativas O/M/P, esperança PERT e linha de corte.}\label{tab:cronograma}
+\scriptsize
+\begin{tabularx}{\textwidth}{c p{4.2cm} c c c c c X}
+\toprule
+\textbf{ID} & \textbf{Pacote de trabalho} & \textbf{Escopo} & \textbf{O/M/P} & \textbf{Esp.} & \textbf{Semanas} & \textbf{Prec.} & \textbf{Entregável verificável}\\
+\midrule
+E01 & Piloto do DAG e consolidação do dataset real (10 \textit{releases}) & Essencial & 1,0/1,5/2,0 & 1,5 & 1--3 & --- & Heurística de DAG validada e JSON de 10 \textit{releases} congelado\\
+E02 & Monorepo, Docker Compose, esquema SQL e auditoria ancorada & Essencial & 1,0/1,5/2,0 & 1,5 & 1--3 & --- & Sub-redes isoladas, migrações SQL e cadeia SHA-256 + âncora\\
+E03 & CRUD de projetos/WBS/tarefas/riscos e autenticação JWT/RBAC & Essencial & 1,5/2,0/2,5 & 2,0 & 3--5 & E02 & APIs REST para RF01, RF02 e testes de bloqueio RNF01\\
+E04 & Receptor de \textit{webhooks} GitHub, regras da Tabela~\ref{tab:eventos} e \textit{debounce} & Essencial & 1,0/2,0/3,0 & 2,0 & 4--6 & E03 & Ingestão HMAC idempotente tratando \texttt{not\_planned} e PRs\\
+E05 & \textit{Simulation Worker} (\texttt{SKIP LOCKED}) e alertas determinísticos (RF12) & Essencial & 1,5/2,0/3,0 & 2,1 & 5--7 & E02, E03 & Motor PoC integrado à fila SQL e disparo de alertas de limiar\\
+E06 & \textit{AI Agent Service} isolado, \textit{allowlist} e verificador numérico & Essencial & 2,0/2,5/4,0 & 2,7 & 7--9 & E05 & Serviço de IA sem rota SQL e parser de verificação numérica\\
+E07 & Governança \textit{fail-closed}, quarentena \texttt{draft\_risks} e fila Cat. 2 & Essencial & 1,5/2,0/3,0 & 2,1 & 8--10 & E03, E06 & Máquina de estados da Tabela~\ref{tab:governanca} e cálculo de $\Delta P_{85}$\\
+E08 & Dimensão 2: calibração em 500 redes sintéticas não circulares & Essencial & 2,0/2,5/4,0 & 2,7 & 7--10 & E05 & Curvas CRPS, \textit{Pinball Loss} e MAE vs. CPM e Vacanti\\
+E09 & Dimensão 3: \textit{backtesting} nas 10 janelas (30 cortes sem vazamento) & Essencial & 2,0/3,0/4,0 & 3,0 & 9--12 & E01, E05 & Resultados empíricos em dados reais sem \textit{data leakage}\\
+E10 & Dimensões 4 e 5: segurança adversarial e 300 execuções do LLM & Essencial & 1,5/2,0/2,5 & 2,0 & 11--13 & E07 & Relatório de 0 mutações e taxa de alucinação $\le 1{,}0\%$\\
+E11 & Interface mínima reativa (React/TS) com painel anti-persuasão & Essencial & 1,5/2,0/3,0 & 2,1 & 11--14 & E07 & SPA com tabela CPM, CDF e fila de aprovação segregada\\
+E12 & Redação incremental da monografia e revisão metodológica & Essencial & 3,0/4,0/5,0 & 4,0 & 4--18 & E01--E11 & Capítulos redigidos continuamente e texto final revisado\\
+E13 & \textit{Buffer} de contingência e preparação da apresentação & Essencial & 1,0/1,5/2,0 & 1,5 & 18--19 & E12 & \textit{Slides} de defesa, pacote Zenodo e ensaio geral\\
+E14 & Defesa pública final do TCC2 & Essencial & 1,0/1,0/1,0 & 1,0 & 20 & E13 & Defesa realizada e versão final depositada\\
+\midrule
+\multicolumn{8}{c}{\textbf{--- Linha de corte de escopo (abaixo: pacotes desejáveis) ---}}\\
+\midrule
+D01 & Visualização interativa do grafo de precedências (DAG) na SPA & Desejável & 1,0/2,0/3,0 & 2,0 & 15--17 & E11 & Componente visual de rede com destaque do caminho crítico\\
+D02 & Análise de sensibilidade estendida ($c_{\mathrm{rev}} \in \{0{,}7;0{,}8;0{,}9\}$ e P10/P90) & Desejável & 0,5/1,0/2,0 & 1,1 & 14--15 & E09 & Gráficos comparativos de sensibilidade paramétrica\\
+D03 & Avaliação de clareza das justificativas por múltiplos juízes & Desejável & 1,0/1,5/2,0 & 1,5 & 15--16 & E10 & Coeficiente de concordância Kappa sobre rubricas qualitativas\\
+\bottomrule
+\end{tabularx}
+\fonteautores
+\end{table}
+
+\figura{fig08_gantt.png}{Diagrama de Gantt do TCC2 ao longo das 20 semanas, destacando a antecipação do piloto do DAG (E01) nas semanas 1--3 e a escrita contínua (E12) das semanas 4 a 18.}{fig:gantt}{0.95}{%
+\begin{tikzpicture}[x=0.50cm,y=0.34cm, font=\tiny]
+  \draw[->, thick] (0,0) -- (21,0) node[right]{Semanas};
+  \foreach \w in {1,2,...,20} {
+    \draw[gray!30] (\w,0) -- (\w,17.5);
+    \node[below] at (\w-0.5, 0) {\w};
+  }
+  \foreach \row/\lbl/\s/\e/\col in {
+    17/{E01 (Piloto DAG)}/0/3/unbgreen,
+    16/{E02 (Docker+SQL)}/0/3/unbblue,
+    15/{E03 (CRUD+RBAC)}/2/5/unbblue,
+    14/{E04 (Webhooks)}/3/6/unbblue,
+    13/{E05 (Sim Worker)}/4/7/unbblue,
+    12/{E06 (AI Service)}/6/9/unbblue,
+    11/{E07 (Fail-Closed)}/7/10/unbblue,
+    10/{E08 (Dim 2: Sint.)}/6/10/orange!85!black,
+    9/{E09 (Dim 3: Real)}/8/12/orange!85!black,
+    8/{E10 (Dim 4-5: Seg.)}/10/13/orange!85!black,
+    7/{E11 (UI React)}/10/14/unbblue,
+    6/{E12 (Redacao Cont.)}/3/18/unbgreen,
+    5/{E13 (Buffer e Slides)}/17/19/unbblue,
+    4/{E14 (Defesa)}/19/20/unbblue,
+    2.5/{D02 (Sensibilidade)}/13/15/gray,
+    1.5/{D03 (Juizes Kappa)}/14/16/gray,
+    0.5/{D01 (Grafo UI)}/14/17/gray%
+  } {
+    \node[left, font=\tiny] at (0, \row) {\lbl};
+    \fill[\col!75, draw=\col!95!black, rounded corners=1pt] (\s, \row-0.30) rectangle (\e, \row+0.30);
+  }
+  \draw[dashed, thick, red!75!black] (0, 3.25) -- (20.5, 3.25) node[right, font=\bfseries\tiny]{Linha de Corte};
+\end{tikzpicture}%
+}
+
+\section{Matriz de Riscos da Pesquisa}
+
+A Tabela~\ref{tab:riscos} sintetiza os riscos técnicos e metodológicos mapeados para o TCC2 e as respectivas estratégias de mitigação e contingência.
+
+\begin{table}[htbp]
+\caption{Matriz de riscos da pesquisa e estratégias de mitigação no TCC2.}\label{tab:riscos}
+\scriptsize
+\begin{tabularx}{\textwidth}{p{3.8cm} c c X}
+\toprule
+\textbf{Risco identificado} & \textbf{Impacto} & \textbf{Prob.} & \textbf{Mitigação e plano de contingência}\\
+\midrule
+Baixa densidade de dependências $FS$ explícitas no GitHub CLI & Alto & Média & Antecipação do piloto de extração do DAG para as Semanas 1--3 (E01), combinando links explícitos (\texttt{closes/depends on}) com dependências de módulos e usando 10 \textit{releases} consecutivas\\
+Viés de construto por abertura tardia de PRs & Alto & Alta & Medição da duração a partir de $\min(\texttt{first\_commit\_at}, \texttt{assigned\_at}, \texttt{pr\_created\_at})$ até o \texttt{merged\_at}, eliminando o viés da latência exclusiva de revisão\\
+Sobrecarga de escopo de implementação no TCC2 & Alto & Média & Linha de corte explícita separando E01--E14 de D01--D03 e motor de simulação já construído e validado em Go no TCC1\\
+Injeção indireta de \textit{prompt} ou persuasão do aprovador & Alto & Média & Isolamento de sub-rede (\texttt{ai-isolated-net}), validação \textit{fail-closed}, quarentena de \texttt{draft\_risks} e cartão determinístico segregado na UI\\
+Adulteração direta da tabela \texttt{audit\_logs} no banco & Médio & Baixa & Revogação de permissões SQL, \textit{trigger} de bloqueio, cadeia SHA-256 e exportação assinada do \texttt{head\_hash} para âncora externa WORM\\
+Obsolescência de simulação durante rajada de eventos & Médio & Média & Janela de \textit{debounce} de 30 s no \textit{Core} e verificação monotônica de \texttt{base\_state\_version} (\texttt{is\_stale = true})\\
+\bottomrule
+\end{tabularx}
+\fonteautores
+\end{table}
+
+\section{Limitações Declaradas}\label{sec:limitacoes}
+
+Por transparência científica, declaram-se seis limitações de escopo deste trabalho:
+\begin{enumerate}
+  \item \textbf{Capacidade infinita de recursos no modelo básico:} o cálculo de CPM e Monte Carlo assume que tarefas paralelas sem dependência lógica podem executar simultaneamente sem disputa por desenvolvedores; a extensão para o problema de escalonamento com restrição de recursos (RCPSP) constitui trabalho futuro;
+  \item \textbf{Independência condicional na formulação nominal:} o motor básico sorteia as durações Beta de forma independente entre tarefas, capturando acoplamento apenas pela topologia do grafo e por riscos discretos compartilhados; o efeito de correlações por cópulas será avaliado nos cenários de violação da Dimensão 2;
+  \item \textbf{Ponderação linear do impacto de riscos remanescentes:} o impacto de um risco de Bernoulli em tarefas parcialmente concluídas é escalado por $(1-c_i)$, aproximação linear que pode subestimar riscos concentrados na fase final de homologação;
+  \item \textbf{Atuação restrita ao nível de Sombra Digital Governada:} por decisão explícita de segurança contra agência excessiva (OWASP LLM06:2025), o sistema não realiza mutações automáticas não supervisionadas no repositório GitHub nem na linha de base oficial;
+  \item \textbf{Generalização empírica restrita no \textit{backtesting}:} a avaliação histórica da Dimensão 3 baseia-se em um único projeto de código aberto (\texttt{cli/cli}), tendo caráter exploratório complementar à validação confirmatória sintética da Dimensão 2;
+  \item \textbf{Alcance da Prova de Conceito no TCC1:} a PoC comprova corretude algorítmica, aderência estatística (momentos e teste KS), reprodutibilidade concorrente e desempenho sub-segundo, ficando a integração dos microsserviços e a avaliação empírica das hipóteses H1, H2 e H3 para o TCC2.
+\end{enumerate}
+
+\section{Considerações Finais do TCC1}
+
+Este trabalho especificou e fundamentou a arquitetura de referência de uma Sombra Digital Governada para apoio à decisão tática em cronogramas de projetos de software, integrando captura de eventos GitHub/CI, Método do Caminho Crítico, Simulação de Monte Carlo (PERT-Beta acoplada a riscos de Bernoulli) e recomendações interpretativas por um agente LLM fisicamente isolado da rede do banco de dados. A governança foi formalizada sobre três pilares determinísticos: filtragem de entrada por \textit{allowlist} sanitizada, classificação binária de saída com negação por padrão (\textit{fail-closed}) e fila de aprovação humana anti-persuasão, e trilha de auditoria encadeada por SHA-256 com ancoragem externa.
+
+A Prova de Conceito implementada em Go (\texttt{poc-engine}) comprovou a viabilidade algorítmica, estatística e computacional do núcleo estocástico: as amostras PERT-Beta aderem à distribuição teórica exata tanto nos momentos analíticos quanto no teste de Kolmogorov-Smirnov ($n=10^6$, $D_n < D_{\mathrm{crit},0{,}05} = 0{,}001358$, $p > 0{,}05$), o caso degenerado $t_o=t_p$ é tratado exatamente, a execução concorrente com 1, 4 e 16 \textit{workers} apresenta variação zero, e 10.000 simulações em uma rede de 200 tarefas e 300 dependências completam-se em mediana de $259{,}6$ ms em um único núcleo de CPU. Finalmente, a extração preliminar de dados do repositório GitHub CLI permitiu identificar e corrigir antecipadamente ameaças à validade de construto e de vazamento temporal, resultando em um protocolo experimental de cinco dimensões e um cronograma de 20 semanas sólido e rastreável para a execução do TCC2.
+
+% =====================================================================
+\postextual
+\bibliographystyle{abntex2-alf}
+\bibliography{referencias}
+
+\begin{apendicesenv}
+\partapendices
+
+\chapter{Decisões de Implementação e Contratos do MVP (TCC2)}\label{apd:mvp}
+
+Este apêndice consolida as decisões de engenharia de software para a construção integradora do MVP nos pacotes E02 a E11 do TCC2:
+\begin{itemize}
+  \item \textbf{Fila assíncrona transacional:} a tabela \texttt{simulation\_jobs} é consumida pelos processos do \textit{Simulation Worker} via \texttt{SELECT id, payload FROM simulation\_jobs WHERE status = 'PENDING' ORDER BY created\_at FOR UPDATE SKIP LOCKED} no PostgreSQL 16 \cite{postgresql2024}, garantindo semântica \textit{at-least-once} sem necessidade de manter corretores externos como RabbitMQ ou Kafka;
+  \item \textbf{Agrupamento temporal (\textit{Debounce}):} janela deslizante configurável de 30 s no \textit{Core PM Service} que agrupa rajadas de \textit{webhooks} (por exemplo, múltiplos \textit{commits} e fechamento simultâneo de PR e \textit{issue}) em uma única transição consolidada de \texttt{state\_version};
+  \item \textbf{Invalidação de cenários obsoletos:} toda simulação grava o campo \texttt{base\_state\_version}; caso novos eventos incrementem \texttt{projects.state\_version} enquanto o LLM ou o gerente avaliam um cenário, o registro recebe \texttt{is\_stale = true} e o servidor bloqueia sua aprovação até que seja revalidado sobre o estado corrente;
+  \item \textbf{Idempotência ponta a ponta:} chaves únicas (\texttt{UNIQUE}) sobre o cabeçalho \texttt{X-GitHub-Delivery} (\texttt{delivery\_id}) na tabela de eventos e sobre \texttt{idempotency\_key} nas rotas de decisão gerencial.
+\end{itemize}
+
+\chapter{Extração Reprodutível do Dataset e Repositório da PoC}\label{apd:extracao}
+
+Para assegurar reprodutibilidade integral dos resultados reportados nas Tabelas~\ref{tab:backtesting}, \ref{tab:resultados}, \ref{tab:ic}, \ref{tab:momentos}, \ref{tab:repro} e \ref{tab:bench}, os artefatos de código e dados estão estruturados no repositório público do projeto:
+
+\begin{itemize}
+  \item \textbf{URL do Repositório e Identificador de Versão:} \url{https://github.com/carlinn1/TCC-01} — \textit{tag} \texttt{v1.0.0-tcc1}, \textit{hash} de \textit{commit} base \texttt{5ab9b87e5f8d830ef88026dd78f85822437f976a} (pacote de preservação preparado para depósito Zenodo);
+  \item \textbf{Estrutura de diretórios do repositório:}
+  \begin{itemize}
+    \item \texttt{Codigo/}: pacote Go 1.22 do motor \texttt{poc-engine} (\texttt{go.mod}, \texttt{model.go}, \texttt{random.go}, \texttt{cpm.go}, \texttt{simulator.go}, \texttt{main.go}, \texttt{engine\_test.go}, \texttt{validation\_test.go}) e \textit{scripts} auxiliares;
+    \item \texttt{Codigo/extract\_dataset.py}: \textit{script} em Python 3.11+ (biblioteca padrão \texttt{urllib.request}, \texttt{json}, \texttt{datetime}, \texttt{re}, \texttt{argparse}) que consulta a API REST do GitHub (\texttt{repos/cli/cli}), filtra autores do tipo \texttt{Bot}, separa fechamentos \texttt{state\_reason = completed} de \texttt{not\_planned} e PRs fechados sem \textit{merge}, disponibiliza coleta do carimbo \texttt{first\_commit\_at}, \texttt{created\_at} e \texttt{merged\_at}, e exporta o arquivo determinístico;
+    \item \texttt{Codigo/dataset\_backtesting.json}: instantâneo completo dos dados extraídos em 23/10/2026 documentado no \texttt{README.md};
+    \item \texttt{Codigo/generate\_figures.py} e \texttt{Docs/figuras/}: gerador reprodutível e imagens estáticas em 300 DPI das Figuras 1 a 8 da monografia (\texttt{Docs/Main.tex} e \texttt{Docs/referencias.bib});
+  \end{itemize}
+  \item \textbf{Comandos exatos de reprodução:}
+  \begin{enumerate}
+    \item Geração estática das 8 figuras PNG (300 DPI):
+    \texttt{python3 Codigo/generate\_figures.py}
+    \item Validação funcional, analítica, teste KS, caso degenerado e reprodutibilidade concorrente:
+    \texttt{cd Codigo \&\& go test -v ./...}
+    \item Execução das 5 repetições dos \textit{benchmarks} de desempenho e memória:
+    \texttt{cd Codigo \&\& go test -bench=Benchmark -benchmem -count=5}
+    \item Reextração do conjunto de dados do GitHub CLI:
+    \texttt{python3 Codigo/extract\_dataset.py --repo cli/cli --out Codigo/dataset\_backtesting.json}
+  \end{enumerate}
+\end{itemize}
+
+\end{apendicesenv}
+
+\end{document}

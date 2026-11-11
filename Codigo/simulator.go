@@ -45,7 +45,7 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 		return nil, err
 	}
 
-	// Pre-calculate PERT-Beta parameters per task index
+	// Pre-calculate PERT-Beta parameters per task index (safe for degenerate To == Tp)
 	type betaParams struct {
 		alpha    float64
 		beta     float64
@@ -54,8 +54,8 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 	}
 	taskParams := make([]betaParams, len(sortedTasks))
 	for i, t := range sortedTasks {
-		if t.Tp > t.To {
-			diff := t.Tp - t.To
+		diff := t.Tp - t.To
+		if diff > 1e-12 && t.Tm >= t.To && t.Tm <= t.Tp {
 			a := 1.0 + cfg.Lambda*(t.Tm-t.To)/diff
 			b := 1.0 + cfg.Lambda*(t.Tp-t.Tm)/diff
 			taskParams[i] = betaParams{
@@ -142,7 +142,6 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 		go func(workerStart, workerEnd int) {
 			defer wg.Done()
 
-			// Pre-allocated reusable worker buffers
 			n := compiledGraph.NumTasks
 			durs := make([]float64, n)
 			es := make([]float64, n)
@@ -152,7 +151,6 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 			crit := make([]bool, n)
 
 			for k := workerStart; k < workerEnd; k++ {
-				// Derive deterministic independent seed for iteration k
 				iterSeed := DeriveIterationSeed(cfg.Seed, k)
 				rng := NewSplitMix64(iterSeed)
 
@@ -191,7 +189,6 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 
 				// C. Run FastCPM for this iteration
 				tCPM := FastCPM(compiledGraph, durs, es, ef, ls, lf, crit, cfg.EpsilonFloat)
-
 				finishDates[k] = net.StatusDate + tCPM
 
 				for i := 0; i < n; i++ {
@@ -210,7 +207,6 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 	copy(sortedFinishes, finishDates)
 	sort.Float64s(sortedFinishes)
 
-	// Percentiles (ceil(q*N))
 	idxP50 := int(math.Ceil(0.50*float64(cfg.Iterations))) - 1
 	idxP85 := int(math.Ceil(0.85*float64(cfg.Iterations))) - 1
 	idxP95 := int(math.Ceil(0.95*float64(cfg.Iterations))) - 1
@@ -219,7 +215,6 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 	p85 := sortedFinishes[idxP85]
 	p95 := sortedFinishes[idxP95]
 
-	// Target probability P(F <= target)
 	targetCount := 0
 	if cfg.TargetDate > 0 {
 		for _, f := range finishDates {
@@ -230,7 +225,6 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 	}
 	probTarget := float64(targetCount) / float64(cfg.Iterations) * 100.0
 
-	// Criticality index
 	critIndex := make(map[string]float64)
 	for i, arr := range criticalMatrix {
 		if !compiledGraph.IsActive[i] {
