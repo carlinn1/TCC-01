@@ -35,57 +35,143 @@ def binomial_pmf(k: int, n: int, p: float) -> float:
     return math.exp(log_pmf)
 
 
+def _evaluate_acceptance_region(
+    m: int,
+    p: float,
+    k_min: int | None,
+    k_max: int | None,
+    lower_bound: float,
+    upper_bound: float,
+    extra: dict,
+) -> dict:
+    """Computes power at p and exact Type I errors at lower/upper TOST boundaries."""
+    if k_min is None or k_max is None or k_min > k_max:
+        out = {
+            "M": m,
+            "p": p,
+            "power_pct": 0.0,
+            "k_min": None,
+            "k_max": None,
+            "type_i_error_lower_pct": 0.0,
+            "type_i_error_upper_pct": 0.0,
+        }
+        out.update(extra)
+        return out
+
+    power = sum(binomial_pmf(k, m, p) for k in range(k_min, k_max + 1))
+    err_lo = sum(binomial_pmf(k, m, lower_bound) for k in range(k_min, k_max + 1))
+    err_hi = sum(binomial_pmf(k, m, upper_bound) for k in range(k_min, k_max + 1))
+    out = {
+        "M": m,
+        "p": p,
+        "power_pct": round(power * 100.0, 2),
+        "k_min": k_min,
+        "k_max": k_max,
+        "type_i_error_lower_pct": round(err_lo * 100.0, 4),
+        "type_i_error_upper_pct": round(err_hi * 100.0, 4),
+    }
+    out.update(extra)
+    return out
+
+
 def compute_exact_power(m: int, p: float, z: float, lower_bound: float = 0.80, upper_bound: float = 0.90) -> dict:
-    power = 0.0
+    """Acceptance region via two-sided Wilson interval containment."""
     k_min = None
     k_max = None
     for k in range(m + 1):
         lo, hi = wilson_interval(k, m, z)
         if lo >= lower_bound and hi <= upper_bound:
-            prob = binomial_pmf(k, m, p)
-            power += prob
             if k_min is None:
                 k_min = k
             k_max = k
-    return {
-        "M": m,
-        "p": p,
-        "z": round(z, 6),
-        "power_pct": round(power * 100.0, 2),
-        "k_min": k_min,
-        "k_max": k_max,
-    }
+    return _evaluate_acceptance_region(m, p, k_min, k_max, lower_bound, upper_bound, {"z": round(z, 6)})
+
+
+def compute_exact_tost_power(
+    m: int,
+    p: float,
+    alpha: float = 0.05,
+    lower_bound: float = 0.80,
+    upper_bound: float = 0.90,
+) -> dict:
+    """Exact Binomial TOST (equivalent to Clopper-Pearson 1-2*alpha CI inside [L, U])."""
+    k_min = None
+    tail_upper = 0.0
+    for k in range(m, -1, -1):
+        pmf = binomial_pmf(k, m, lower_bound)
+        if tail_upper + pmf <= alpha + 1e-12:
+            tail_upper += pmf
+            k_min = k
+        else:
+            break
+
+    k_max = None
+    tail_lower = 0.0
+    for k in range(m + 1):
+        pmf = binomial_pmf(k, m, upper_bound)
+        if tail_lower + pmf <= alpha + 1e-12:
+            tail_lower += pmf
+            k_max = k
+        else:
+            break
+
+    if k_min is None or k_max is None or k_min > k_max:
+        k_min, k_max = None, None
+
+    return _evaluate_acceptance_region(
+        m,
+        p,
+        k_min,
+        k_max,
+        lower_bound,
+        upper_bound,
+        {"alpha": alpha},
+    )
 
 
 def main():
     m_values = [200, 300, 400, 500, 600, 800, 1000]
     p_values = [0.83, 0.85, 0.87]
-    z_95 = 1.959963984540054   # IC 95% de Wilson (two-sided alpha=0.05)
-    z_90 = 1.6448536269514722  # TOST alpha=0.05 (IC 90% de Wilson)
+    z_95 = 1.959963984540054   # IC 95% de Wilson (conservador)
+    z_90 = 1.6448536269514722  # Wilson 90% aproximado (referencia comparativa)
+    alpha = 0.05               # TOST Binomial Exato / Clopper-Pearson 90% (criterio primario)
 
-    results = {"wilson_95": {}, "tost_90": {}}
-    print("=========================================================================")
+    results = {"wilson_95": {}, "wilson_90": {}, "tost_exact_90": {}}
+    print("============================================================================================================")
     print("  Poder Exato de H1b: Inclusao em [80%, 90%] sob Binomial(M, p)")
-    print("=========================================================================")
-    print(f"{'M':>6} | {'W95 (p=0.85)':>14} | {'TOST90 (p=0.83)':>16} | {'TOST90 (p=0.85)':>16} | {'TOST90 (p=0.87)':>16}")
-    print("-" * 78)
+    print("============================================================================================================")
+    print(
+        f"{'M':>5} | {'W95(.85)':>8} | {'W90(.85) [TypeI lo/hi]':>24} | "
+        f"{'ExTOST(.83)':>11} | {'ExTOST(.85)':>11} | {'ExTOST(.87)':>11} | {'Regiao [TypeI lo/hi]':>26}"
+    )
+    print("-" * 112)
 
     for m in m_values:
-        w95_85 = compute_exact_power(m, 0.85, z_95)
-        results["wilson_95"][str(m)] = {
-            str(p): compute_exact_power(m, p, z_95) for p in p_values
+        results["wilson_95"][str(m)] = {str(p): compute_exact_power(m, p, z_95) for p in p_values}
+        results["wilson_90"][str(m)] = {str(p): compute_exact_power(m, p, z_90) for p in p_values}
+        results["tost_exact_90"][str(m)] = {
+            str(p): compute_exact_tost_power(m, p, alpha=alpha) for p in p_values
         }
-        results["tost_90"][str(m)] = {
-            str(p): compute_exact_power(m, p, z_90) for p in p_values
-        }
-        t83 = results["tost_90"][str(m)]["0.83"]["power_pct"]
-        t85 = results["tost_90"][str(m)]["0.85"]["power_pct"]
-        t87 = results["tost_90"][str(m)]["0.87"]["power_pct"]
-        print(f"{m:6d} | {w95_85['power_pct']:13.1f}% | {t83:15.1f}% | {t85:15.1f}% | {t87:15.1f}%")
 
-    # Assert key properties from EST-01 / ADR-001
+        w95_85 = results["wilson_95"][str(m)]["0.85"]["power_pct"]
+        w90_entry = results["wilson_90"][str(m)]["0.85"]
+        t83 = results["tost_exact_90"][str(m)]["0.83"]["power_pct"]
+        t85_entry = results["tost_exact_90"][str(m)]["0.85"]
+        t87 = results["tost_exact_90"][str(m)]["0.87"]["power_pct"]
+        reg = f"[{t85_entry['k_min']},{t85_entry['k_max']}]" if t85_entry["k_min"] is not None else "vazio"
+        print(
+            f"{m:5d} | {w95_85:7.2f}% | "
+            f"{w90_entry['power_pct']:6.2f}% [{w90_entry['type_i_error_lower_pct']:4.2f}/{w90_entry['type_i_error_upper_pct']:4.2f}%] | "
+            f"{t83:10.2f}% | {t85_entry['power_pct']:10.2f}% | {t87:10.2f}% | "
+            f"{reg:>10} [{t85_entry['type_i_error_lower_pct']:4.2f}/{t85_entry['type_i_error_upper_pct']:4.2f}%]"
+        )
+
+    # Assert key properties from EST-01 / ADR-001 (PK-02.2)
     assert results["wilson_95"]["200"]["0.85"]["power_pct"] == 0.0, "M=200 under Wilson 95% must have 0% power"
-    assert results["tost_90"]["500"]["0.85"]["power_pct"] >= 80.0, "M=500 under TOST 90% at p=0.85 must achieve >= 80% power"
+    ex500 = results["tost_exact_90"]["500"]["0.85"]
+    assert ex500["k_min"] == 416 and ex500["k_max"] == 438, f"Expected [416, 438], got [{ex500['k_min']}, {ex500['k_max']}]"
+    assert ex500["power_pct"] >= 80.0, "M=500 under Exact TOST 90% at p=0.85 must achieve >= 80% power"
+    assert ex500["type_i_error_lower_pct"] <= 5.0 and ex500["type_i_error_upper_pct"] <= 5.0, "Exact TOST must satisfy alpha <= 5%"
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
     data_dir = os.path.join(os.path.dirname(script_dir), "data")

@@ -11,26 +11,62 @@
       "prs_merged_non_bot": 11,
       "prs_closed_unmerged_excluded": 3,
       "prs_with_closing_keyword": 6,
-      "prs_with_commit_before_pr": 7,
+      "prs_with_commit_before_pr": 11,
+      "prs_with_issue_assigned_before_pr": 0,
       "issues_closed_completed": 10,
       "issues_closed_not_planned_excluded": 1,
+      "floor_business_days": 0.25,
+      "floor_count": 3,
+      "floor_fraction": 0.2727,
+      "floor_sensitivity": {
+        "floor_0.10": {
+          "floor_bd": 0.1,
+          "at_floor_count": 3,
+          "at_floor_fraction": 0.2727,
+          "p10": 0.1,
+          "p50": 4.5408,
+          "p90": 15.3185,
+          "p95": 24.741,
+          "mean": 7.3271
+        },
+        "floor_0.25": {
+          "floor_bd": 0.25,
+          "at_floor_count": 3,
+          "at_floor_fraction": 0.2727,
+          "p10": 0.25,
+          "p50": 4.5408,
+          "p90": 15.3185,
+          "p95": 24.741,
+          "mean": 7.368
+        },
+        "floor_0.50": {
+          "floor_bd": 0.5,
+          "at_floor_count": 3,
+          "at_floor_fraction": 0.2727,
+          "p10": 0.5,
+          "p50": 4.5408,
+          "p90": 15.3185,
+          "p95": 24.741,
+          "mean": 7.4362
+        }
+      },
       "cycle_time_business_days": {
         "n": 11,
-        "p5": 0.0067824075000000004,
-        "p10": 0.007291667,
-        "p50": 2.432789352,
-        "p90": 9.590590278,
-        "p95": 10.220908565,
-        "mean": 3.8849179292727274
+        "p5": 0.006782407407407407,
+        "p10": 0.007291666666666667,
+        "p50": 2.4327893518518517,
+        "p90": 9.590590277777777,
+        "p95": 10.220908564814813,
+        "mean": 3.884917929292929
       },
       "engineering_duration_business_days": {
         "n": 11,
         "p5": 0.25,
         "p10": 0.25,
-        "p50": 4.540798611,
-        "p90": 15.318506944,
-        "p95": 24.741006944,
-        "mean": 7.363710016727273
+        "p50": 4.540798611111112,
+        "p90": 15.318506944444444,
+        "p95": 24.741006944444443,
+        "mean": 7.368025042087542
       },
       "top_labels": [
         [
@@ -45,27 +81,15 @@
       "items": [
         {
           "item_id": "PR_01",
-          "created_to_merged_bd": 0.006273148,
-          "first_commit_to_merged_raw_bd": 0.006273148,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
+          "created_to_merged_bd": 9.590590278,
+          "first_commit_to_merged_raw_bd": 9.594641204,
+          "first_commit_to_merged_floored_bd": 9.594641204,
+          "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
-          "has_closing_keyword": true,
-          "labels": [
-            "external",
-            "discuss"
-          ],
-          "fs_edges": []
-        },
-        {
-          "item_id": "PR_02",
-          "created_to_merged_bd": 0.007291667,
-          "first_commit_to_merged_raw_bd": 0.007291667,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
-          "commit_precedes_pr": true,
-          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": true,
           "labels": [
             "external"
@@ -73,13 +97,33 @@
           "fs_edges": []
         },
         {
-          "item_id": "PR_03",
-          "created_to_merged_bd": 0.613666088,
-          "first_commit_to_merged_raw_bd": 0.485028284,
-          "first_commit_to_merged_floored_bd": 0.485028284,
+          "item_id": "PR_02",
+          "created_to_merged_bd": 10.851226852,
+          "first_commit_to_merged_raw_bd": 15.318506944,
+          "first_commit_to_merged_floored_bd": 15.318506944,
           "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
+          "labels": [
+            "external"
+          ],
+          "fs_edges": []
+        },
+        {
+          "item_id": "PR_03",
+          "created_to_merged_bd": 7.650960648,
+          "first_commit_to_merged_raw_bd": 7.672384259,
+          "first_commit_to_merged_floored_bd": 7.672384259,
+          "at_floor": false,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": true,
           "labels": [
             "external"
@@ -88,29 +132,33 @@
         },
         {
           "item_id": "PR_04",
-          "created_to_merged_bd": 0.644878248,
-          "first_commit_to_merged_raw_bd": 0.608781033,
-          "first_commit_to_merged_floored_bd": 0.608781033,
+          "created_to_merged_bd": 5.9284375,
+          "first_commit_to_merged_raw_bd": 5.929409722,
+          "first_commit_to_merged_floored_bd": 5.929409722,
           "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": true,
           "labels": [
             "external"
           ],
-          "fs_edges": [
-            "PR_03"
-          ]
+          "fs_edges": []
         },
         {
           "item_id": "PR_05",
-          "created_to_merged_bd": 1.251252669,
-          "first_commit_to_merged_raw_bd": 0.843809317,
-          "first_commit_to_merged_floored_bd": 0.843809317,
+          "created_to_merged_bd": 4.539594907,
+          "first_commit_to_merged_raw_bd": 4.540798611,
+          "first_commit_to_merged_floored_bd": 4.540798611,
           "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
-          "has_closing_keyword": true,
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
           "labels": [
             "external"
           ],
@@ -119,11 +167,29 @@
         {
           "item_id": "PR_06",
           "created_to_merged_bd": 2.432789352,
-          "first_commit_to_merged_raw_bd": 4.540798611,
-          "first_commit_to_merged_floored_bd": 4.540798611,
+          "first_commit_to_merged_raw_bd": 2.454780093,
+          "first_commit_to_merged_floored_bd": 2.454780093,
           "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
+          "labels": [],
+          "fs_edges": []
+        },
+        {
+          "item_id": "PR_07",
+          "created_to_merged_bd": 0.617118056,
+          "first_commit_to_merged_raw_bd": 0.624247685,
+          "first_commit_to_merged_floored_bd": 0.624247685,
+          "at_floor": false,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": true,
           "labels": [
             "external"
@@ -131,27 +197,16 @@
           "fs_edges": []
         },
         {
-          "item_id": "PR_07",
-          "created_to_merged_bd": 4.222239583,
-          "first_commit_to_merged_raw_bd": 7.235225694,
-          "first_commit_to_merged_floored_bd": 7.235225694,
-          "at_floor": false,
-          "commit_precedes_pr": true,
-          "first_commit_source": "git_log",
-          "has_closing_keyword": false,
-          "labels": [
-            "external"
-          ],
-          "fs_edges": []
-        },
-        {
           "item_id": "PR_08",
-          "created_to_merged_bd": 5.662219553,
-          "first_commit_to_merged_raw_bd": 7.305363137,
-          "first_commit_to_merged_floored_bd": 7.305363137,
-          "at_floor": false,
-          "commit_precedes_pr": false,
-          "first_commit_source": "rest_api",
+          "created_to_merged_bd": 0.048159722,
+          "first_commit_to_merged_raw_bd": 0.051412037,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": false,
           "labels": [
             "external"
@@ -160,80 +215,55 @@
         },
         {
           "item_id": "PR_09",
-          "created_to_merged_bd": 7.451669784,
-          "first_commit_to_merged_raw_bd": 9.99979022,
-          "first_commit_to_merged_floored_bd": 9.99979022,
-          "at_floor": false,
-          "commit_precedes_pr": false,
-          "first_commit_source": "rest_api",
-          "has_closing_keyword": false,
+          "created_to_merged_bd": 0.007291667,
+          "first_commit_to_merged_raw_bd": 0.00869213,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": true,
           "labels": [
             "external"
           ],
-          "fs_edges": [
-            "PR_08"
-          ]
+          "fs_edges": []
         },
         {
           "item_id": "PR_10",
-          "created_to_merged_bd": 9.590590278,
-          "first_commit_to_merged_raw_bd": 15.318506944,
-          "first_commit_to_merged_floored_bd": 15.318506944,
-          "at_floor": false,
-          "commit_precedes_pr": false,
-          "first_commit_source": "rest_api",
-          "has_closing_keyword": false,
-          "labels": [],
+          "created_to_merged_bd": 0.006273148,
+          "first_commit_to_merged_raw_bd": 0.018946759,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": true,
+          "labels": [
+            "discuss",
+            "external"
+          ],
           "fs_edges": []
         },
         {
           "item_id": "PR_11",
-          "created_to_merged_bd": 10.851226852,
+          "created_to_merged_bd": 1.061655093,
           "first_commit_to_merged_raw_bd": 34.163506944,
           "first_commit_to_merged_floored_bd": 34.163506944,
           "at_floor": false,
-          "commit_precedes_pr": false,
-          "first_commit_source": "rest_api",
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": false,
           "labels": [],
           "fs_edges": []
         }
-      ],
-      "floor_business_days": 0.25,
-      "floor_count": 2,
-      "floor_fraction": 0.1818,
-      "floor_sensitivity": {
-        "floor_0.10": {
-          "floor_bd": 0.1,
-          "at_floor_count": 2,
-          "at_floor_fraction": 0.1818,
-          "p10": 0.1,
-          "p50": 4.5408,
-          "p90": 15.3185,
-          "p95": 24.741,
-          "mean": 7.3364
-        },
-        "floor_0.25": {
-          "floor_bd": 0.25,
-          "at_floor_count": 2,
-          "at_floor_fraction": 0.1818,
-          "p10": 0.25,
-          "p50": 4.5408,
-          "p90": 15.3185,
-          "p95": 24.741,
-          "mean": 7.3637
-        },
-        "floor_0.50": {
-          "floor_bd": 0.5,
-          "at_floor_count": 3,
-          "at_floor_fraction": 0.2727,
-          "p10": 0.5,
-          "p50": 4.5408,
-          "p90": 15.3185,
-          "p95": 24.741,
-          "mean": 7.4105
-        }
-      }
+      ]
     },
     {
       "target": "v2.41.0",
@@ -245,220 +275,10 @@
       "prs_merged_non_bot": 13,
       "prs_closed_unmerged_excluded": 6,
       "prs_with_closing_keyword": 6,
-      "prs_with_commit_before_pr": 12,
+      "prs_with_commit_before_pr": 13,
+      "prs_with_issue_assigned_before_pr": 0,
       "issues_closed_completed": 19,
       "issues_closed_not_planned_excluded": 3,
-      "cycle_time_business_days": {
-        "n": 13,
-        "p5": 0.006541666600000001,
-        "p10": 0.006833333400000001,
-        "p50": 0.060578704,
-        "p90": 4.193219907600002,
-        "p95": 9.882243055799982,
-        "mean": 2.072881054230769
-      },
-      "engineering_duration_business_days": {
-        "n": 13,
-        "p5": 0.25,
-        "p10": 0.25,
-        "p50": 0.25,
-        "p90": 4.1964513886000026,
-        "p95": 9.934918981399981,
-        "mean": 2.2069782762307693
-      },
-      "top_labels": [
-        [
-          "external",
-          10
-        ],
-        [
-          "discuss",
-          1
-        ]
-      ],
-      "items": [
-        {
-          "item_id": "PR_01",
-          "created_to_merged_bd": 0.006104362,
-          "first_commit_to_merged_raw_bd": 0.006104362,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
-          "commit_precedes_pr": true,
-          "first_commit_source": "git_log",
-          "has_closing_keyword": true,
-          "labels": [
-            "external",
-            "discuss"
-          ],
-          "fs_edges": []
-        },
-        {
-          "item_id": "PR_02",
-          "created_to_merged_bd": 0.006833203,
-          "first_commit_to_merged_raw_bd": 0.006833203,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
-          "commit_precedes_pr": true,
-          "first_commit_source": "git_log",
-          "has_closing_keyword": true,
-          "labels": [
-            "external"
-          ],
-          "fs_edges": []
-        },
-        {
-          "item_id": "PR_03",
-          "created_to_merged_bd": 0.006833855,
-          "first_commit_to_merged_raw_bd": 0.006833855,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
-          "commit_precedes_pr": true,
-          "first_commit_source": "git_log",
-          "has_closing_keyword": true,
-          "labels": [
-            "external"
-          ],
-          "fs_edges": []
-        },
-        {
-          "item_id": "PR_04",
-          "created_to_merged_bd": 0.006833855,
-          "first_commit_to_merged_raw_bd": 0.006833855,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
-          "commit_precedes_pr": true,
-          "first_commit_source": "git_log",
-          "has_closing_keyword": true,
-          "labels": [
-            "external"
-          ],
-          "fs_edges": [
-            "PR_03"
-          ]
-        },
-        {
-          "item_id": "PR_05",
-          "created_to_merged_bd": 0.006833855,
-          "first_commit_to_merged_raw_bd": 0.006833855,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
-          "commit_precedes_pr": true,
-          "first_commit_source": "git_log",
-          "has_closing_keyword": true,
-          "labels": [
-            "external"
-          ],
-          "fs_edges": []
-        },
-        {
-          "item_id": "PR_06",
-          "created_to_merged_bd": 0.006833855,
-          "first_commit_to_merged_raw_bd": 0.006833855,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
-          "commit_precedes_pr": true,
-          "first_commit_source": "git_log",
-          "has_closing_keyword": true,
-          "labels": [
-            "external"
-          ],
-          "fs_edges": []
-        },
-        {
-          "item_id": "PR_07",
-          "created_to_merged_bd": 0.060578704,
-          "first_commit_to_merged_raw_bd": 0.060578704,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
-          "commit_precedes_pr": true,
-          "first_commit_source": "git_log",
-          "has_closing_keyword": false,
-          "labels": [
-            "external"
-          ],
-          "fs_edges": []
-        },
-        {
-          "item_id": "PR_08",
-          "created_to_merged_bd": 0.921545621,
-          "first_commit_to_merged_raw_bd": 0.958898311,
-          "first_commit_to_merged_floored_bd": 0.958898311,
-          "at_floor": false,
-          "commit_precedes_pr": true,
-          "first_commit_source": "git_log",
-          "has_closing_keyword": false,
-          "labels": [
-            "external"
-          ],
-          "fs_edges": []
-        },
-        {
-          "item_id": "PR_09",
-          "created_to_merged_bd": 0.924269236,
-          "first_commit_to_merged_raw_bd": 0.958898311,
-          "first_commit_to_merged_floored_bd": 0.958898311,
-          "at_floor": false,
-          "commit_precedes_pr": true,
-          "first_commit_source": "git_log",
-          "has_closing_keyword": false,
-          "labels": [
-            "external"
-          ],
-          "fs_edges": [
-            "PR_08"
-          ]
-        },
-        {
-          "item_id": "PR_10",
-          "created_to_merged_bd": 1.372207982,
-          "first_commit_to_merged_raw_bd": 1.321602651,
-          "first_commit_to_merged_floored_bd": 1.321602651,
-          "at_floor": false,
-          "commit_precedes_pr": true,
-          "first_commit_source": "git_log",
-          "has_closing_keyword": false,
-          "labels": [
-            "external"
-          ],
-          "fs_edges": []
-        },
-        {
-          "item_id": "PR_11",
-          "created_to_merged_bd": 1.372207982,
-          "first_commit_to_merged_raw_bd": 1.321602651,
-          "first_commit_to_merged_floored_bd": 1.321602651,
-          "at_floor": false,
-          "commit_precedes_pr": true,
-          "first_commit_source": "git_log",
-          "has_closing_keyword": false,
-          "labels": [],
-          "fs_edges": []
-        },
-        {
-          "item_id": "PR_12",
-          "created_to_merged_bd": 4.898472889,
-          "first_commit_to_merged_raw_bd": 4.915163573,
-          "first_commit_to_merged_floored_bd": 4.915163573,
-          "at_floor": false,
-          "commit_precedes_pr": true,
-          "first_commit_source": "git_log",
-          "has_closing_keyword": false,
-          "labels": [],
-          "fs_edges": []
-        },
-        {
-          "item_id": "PR_13",
-          "created_to_merged_bd": 17.357898306,
-          "first_commit_to_merged_raw_bd": 17.464552094,
-          "first_commit_to_merged_floored_bd": 17.464552094,
-          "at_floor": false,
-          "commit_precedes_pr": false,
-          "first_commit_source": "rest_api",
-          "has_closing_keyword": false,
-          "labels": [],
-          "fs_edges": []
-        }
-      ],
       "floor_business_days": 0.25,
       "floor_count": 7,
       "floor_fraction": 0.5385,
@@ -493,7 +313,253 @@
           "p95": 9.9349,
           "mean": 2.3416
         }
-      }
+      },
+      "cycle_time_business_days": {
+        "n": 13,
+        "p5": 0.006541666666666667,
+        "p10": 0.006833333333333334,
+        "p50": 0.060578703703703704,
+        "p90": 4.19321990740741,
+        "p95": 9.882243055555538,
+        "mean": 2.072881054131054
+      },
+      "engineering_duration_business_days": {
+        "n": 13,
+        "p5": 0.25,
+        "p10": 0.25,
+        "p50": 0.25,
+        "p90": 4.1964513888888915,
+        "p95": 9.934918981481463,
+        "mean": 2.206978276353276
+      },
+      "top_labels": [
+        [
+          "external",
+          10
+        ],
+        [
+          "discuss",
+          1
+        ]
+      ],
+      "items": [
+        {
+          "item_id": "PR_01",
+          "created_to_merged_bd": 4.78556713,
+          "first_commit_to_merged_raw_bd": 4.788206019,
+          "first_commit_to_merged_floored_bd": 4.788206019,
+          "at_floor": false,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
+          "labels": [
+            "discuss",
+            "external"
+          ],
+          "fs_edges": []
+        },
+        {
+          "item_id": "PR_02",
+          "created_to_merged_bd": 0.856006944,
+          "first_commit_to_merged_raw_bd": 0.857268519,
+          "first_commit_to_merged_floored_bd": 0.857268519,
+          "at_floor": false,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": true,
+          "labels": [
+            "external"
+          ],
+          "fs_edges": []
+        },
+        {
+          "item_id": "PR_03",
+          "created_to_merged_bd": 0.060578704,
+          "first_commit_to_merged_raw_bd": 0.061423611,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": true,
+          "labels": [
+            "external"
+          ],
+          "fs_edges": []
+        },
+        {
+          "item_id": "PR_04",
+          "created_to_merged_bd": 0.006851852,
+          "first_commit_to_merged_raw_bd": 0.01224537,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
+          "labels": [],
+          "fs_edges": []
+        },
+        {
+          "item_id": "PR_05",
+          "created_to_merged_bd": 0.011886574,
+          "first_commit_to_merged_raw_bd": 0.012824074,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
+          "labels": [],
+          "fs_edges": []
+        },
+        {
+          "item_id": "PR_06",
+          "created_to_merged_bd": 0.045393519,
+          "first_commit_to_merged_raw_bd": 0.047048611,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
+          "labels": [
+            "external"
+          ],
+          "fs_edges": []
+        },
+        {
+          "item_id": "PR_07",
+          "created_to_merged_bd": 17.527256944,
+          "first_commit_to_merged_raw_bd": 17.654988426,
+          "first_commit_to_merged_floored_bd": 17.654988426,
+          "at_floor": false,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": true,
+          "labels": [
+            "external"
+          ],
+          "fs_edges": []
+        },
+        {
+          "item_id": "PR_08",
+          "created_to_merged_bd": 0.006828704,
+          "first_commit_to_merged_raw_bd": 0.010983796,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": true,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": true,
+          "labels": [],
+          "fs_edges": []
+        },
+        {
+          "item_id": "PR_09",
+          "created_to_merged_bd": 0.865983796,
+          "first_commit_to_merged_raw_bd": 0.868483796,
+          "first_commit_to_merged_floored_bd": 0.868483796,
+          "at_floor": false,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
+          "labels": [
+            "external"
+          ],
+          "fs_edges": []
+        },
+        {
+          "item_id": "PR_10",
+          "created_to_merged_bd": 1.823831019,
+          "first_commit_to_merged_raw_bd": 1.82943287,
+          "first_commit_to_merged_floored_bd": 1.82943287,
+          "at_floor": false,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": true,
+          "labels": [
+            "external"
+          ],
+          "fs_edges": []
+        },
+        {
+          "item_id": "PR_11",
+          "created_to_merged_bd": 0.011238426,
+          "first_commit_to_merged_raw_bd": 0.012604167,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
+          "labels": [
+            "external"
+          ],
+          "fs_edges": []
+        },
+        {
+          "item_id": "PR_12",
+          "created_to_merged_bd": 0.939918981,
+          "first_commit_to_merged_raw_bd": 0.942337963,
+          "first_commit_to_merged_floored_bd": 0.942337963,
+          "at_floor": false,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": true,
+          "labels": [
+            "external"
+          ],
+          "fs_edges": []
+        },
+        {
+          "item_id": "PR_13",
+          "created_to_merged_bd": 0.006111111,
+          "first_commit_to_merged_raw_bd": 0.00755787,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
+          "labels": [
+            "external"
+          ],
+          "fs_edges": []
+        }
+      ]
     },
     {
       "target": "v2.46.0 (janela ampliada)",
@@ -505,26 +571,62 @@
       "prs_merged_non_bot": 62,
       "prs_closed_unmerged_excluded": 28,
       "prs_with_closing_keyword": 32,
-      "prs_with_commit_before_pr": 45,
+      "prs_with_commit_before_pr": 61,
+      "prs_with_issue_assigned_before_pr": 1,
       "issues_closed_completed": 92,
       "issues_closed_not_planned_excluded": 8,
+      "floor_business_days": 0.25,
+      "floor_count": 22,
+      "floor_fraction": 0.3548,
+      "floor_sensitivity": {
+        "floor_0.10": {
+          "floor_bd": 0.1,
+          "at_floor_count": 19,
+          "at_floor_fraction": 0.3065,
+          "p10": 0.1,
+          "p50": 1.7059,
+          "p90": 28.9961,
+          "p95": 47.4188,
+          "mean": 9.8032
+        },
+        "floor_0.25": {
+          "floor_bd": 0.25,
+          "at_floor_count": 22,
+          "at_floor_fraction": 0.3548,
+          "p10": 0.25,
+          "p50": 1.7059,
+          "p90": 28.9961,
+          "p95": 47.4188,
+          "mean": 9.8551
+        },
+        "floor_0.50": {
+          "floor_bd": 0.5,
+          "at_floor_count": 23,
+          "at_floor_fraction": 0.371,
+          "p10": 0.5,
+          "p50": 1.7059,
+          "p90": 28.9961,
+          "p95": 47.4188,
+          "mean": 9.9439
+        }
+      },
       "cycle_time_business_days": {
         "n": 62,
-        "p5": 0.00682969965,
-        "p10": 0.0105510429,
-        "p50": 1.105543633,
-        "p90": 28.992153935399998,
-        "p95": 47.140891613499974,
-        "mean": 9.445007661564516
+        "p5": 0.006829861111111111,
+        "p10": 0.01055787037037037,
+        "p50": 1.1055439814814814,
+        "p90": 28.992153935185176,
+        "p95": 47.14089178240739,
+        "mean": 9.445007653823177
       },
       "engineering_duration_business_days": {
         "n": 62,
         "p5": 0.25,
         "p10": 0.25,
-        "p50": 1.105607639,
-        "p90": 28.995810185399996,
-        "p95": 47.41883738429998,
-        "mean": 9.592457623935484
+        "p50": 1.7058680555555554,
+        "p90": 28.99610995370369,
+        "p95": 47.418837384259234,
+        "mean": 9.855063284050178
       },
       "top_labels": [
         [
@@ -543,43 +645,50 @@
       "items": [
         {
           "item_id": "PR_01",
-          "created_to_merged_bd": 0.004,
-          "first_commit_to_merged_raw_bd": 0.004,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
+          "created_to_merged_bd": 106.740729167,
+          "first_commit_to_merged_raw_bd": 106.740729167,
+          "first_commit_to_merged_floored_bd": 106.740729167,
+          "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
-          "has_closing_keyword": true,
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
           "labels": [
-            "external",
-            "discuss",
-            "codespaces"
+            "external"
           ],
           "fs_edges": []
         },
         {
           "item_id": "PR_02",
-          "created_to_merged_bd": 0.004,
-          "first_commit_to_merged_raw_bd": 0.004,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
+          "created_to_merged_bd": 56.102847222,
+          "first_commit_to_merged_raw_bd": 56.10755787,
+          "first_commit_to_merged_floored_bd": 56.10755787,
+          "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": true,
           "labels": [
-            "external",
-            "discuss"
+            "discuss",
+            "external"
           ],
           "fs_edges": []
         },
         {
           "item_id": "PR_03",
-          "created_to_merged_bd": 0.004,
-          "first_commit_to_merged_raw_bd": 0.004,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
+          "created_to_merged_bd": 79.078993056,
+          "first_commit_to_merged_raw_bd": 79.10025463,
+          "first_commit_to_merged_floored_bd": 79.10025463,
+          "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": true,
           "labels": [
             "external"
@@ -588,28 +697,32 @@
         },
         {
           "item_id": "PR_04",
-          "created_to_merged_bd": 0.006829692,
-          "first_commit_to_merged_raw_bd": 0.006829692,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
+          "created_to_merged_bd": 34.956053241,
+          "first_commit_to_merged_raw_bd": 34.957048611,
+          "first_commit_to_merged_floored_bd": 34.957048611,
+          "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": true,
           "labels": [
             "external"
           ],
-          "fs_edges": [
-            "PR_03"
-          ]
+          "fs_edges": []
         },
         {
           "item_id": "PR_05",
-          "created_to_merged_bd": 0.006829845,
-          "first_commit_to_merged_raw_bd": 0.006829845,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
+          "created_to_merged_bd": 47.416435185,
+          "first_commit_to_merged_raw_bd": 47.707615741,
+          "first_commit_to_merged_floored_bd": 47.707615741,
+          "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": true,
           "labels": [
             "external"
@@ -618,26 +731,33 @@
         },
         {
           "item_id": "PR_06",
-          "created_to_merged_bd": 0.006829853,
-          "first_commit_to_merged_raw_bd": 0.006829853,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
+          "created_to_merged_bd": 4.78556713,
+          "first_commit_to_merged_raw_bd": 4.788206019,
+          "first_commit_to_merged_floored_bd": 4.788206019,
+          "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
-          "has_closing_keyword": true,
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
           "labels": [
+            "discuss",
             "external"
           ],
           "fs_edges": []
         },
         {
           "item_id": "PR_07",
-          "created_to_merged_bd": 0.010551005,
-          "first_commit_to_merged_raw_bd": 0.010551005,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
+          "created_to_merged_bd": 41.90556713,
+          "first_commit_to_merged_raw_bd": 41.932048611,
+          "first_commit_to_merged_floored_bd": 41.932048611,
+          "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": true,
           "labels": [
             "external"
@@ -646,12 +766,15 @@
         },
         {
           "item_id": "PR_08",
-          "created_to_merged_bd": 0.010551384,
-          "first_commit_to_merged_raw_bd": 0.010551384,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
+          "created_to_merged_bd": 0.856006944,
+          "first_commit_to_merged_raw_bd": 0.857268519,
+          "first_commit_to_merged_floored_bd": 0.857268519,
+          "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": true,
           "labels": [
             "external"
@@ -660,57 +783,63 @@
         },
         {
           "item_id": "PR_09",
-          "created_to_merged_bd": 0.010551428,
-          "first_commit_to_merged_raw_bd": 0.010551428,
+          "created_to_merged_bd": 0.060578704,
+          "first_commit_to_merged_raw_bd": 0.061423611,
           "first_commit_to_merged_floored_bd": 0.25,
           "at_floor": true,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": true,
           "labels": [
             "external"
           ],
-          "fs_edges": [
-            "PR_08"
-          ]
+          "fs_edges": []
         },
         {
           "item_id": "PR_10",
-          "created_to_merged_bd": 0.010551794,
-          "first_commit_to_merged_raw_bd": 0.010551794,
+          "created_to_merged_bd": 0.006851852,
+          "first_commit_to_merged_raw_bd": 0.01224537,
           "first_commit_to_merged_floored_bd": 0.25,
           "at_floor": true,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
-          "has_closing_keyword": true,
-          "labels": [
-            "external"
-          ],
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
+          "labels": [],
           "fs_edges": []
         },
         {
           "item_id": "PR_11",
-          "created_to_merged_bd": 0.010551833,
-          "first_commit_to_merged_raw_bd": 0.010551833,
+          "created_to_merged_bd": 0.011886574,
+          "first_commit_to_merged_raw_bd": 0.012824074,
           "first_commit_to_merged_floored_bd": 0.25,
           "at_floor": true,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
-          "has_closing_keyword": true,
-          "labels": [
-            "external"
-          ],
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
+          "labels": [],
           "fs_edges": []
         },
         {
           "item_id": "PR_12",
-          "created_to_merged_bd": 0.010552188,
-          "first_commit_to_merged_raw_bd": 0.010552188,
+          "created_to_merged_bd": 0.045393519,
+          "first_commit_to_merged_raw_bd": 0.047048611,
           "first_commit_to_merged_floored_bd": 0.25,
           "at_floor": true,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
-          "has_closing_keyword": true,
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
           "labels": [
             "external"
           ],
@@ -718,12 +847,15 @@
         },
         {
           "item_id": "PR_13",
-          "created_to_merged_bd": 0.010552568,
-          "first_commit_to_merged_raw_bd": 0.010552568,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
+          "created_to_merged_bd": 17.527256944,
+          "first_commit_to_merged_raw_bd": 17.654988426,
+          "first_commit_to_merged_floored_bd": 17.654988426,
+          "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": true,
           "labels": [
             "external"
@@ -732,27 +864,31 @@
         },
         {
           "item_id": "PR_14",
-          "created_to_merged_bd": 0.010552929,
-          "first_commit_to_merged_raw_bd": 0.010552929,
+          "created_to_merged_bd": 0.006828704,
+          "first_commit_to_merged_raw_bd": 0.010983796,
           "first_commit_to_merged_floored_bd": 0.25,
           "at_floor": true,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": true,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": true,
-          "labels": [
-            "external"
-          ],
+          "labels": [],
           "fs_edges": []
         },
         {
           "item_id": "PR_15",
-          "created_to_merged_bd": 0.010553275,
-          "first_commit_to_merged_raw_bd": 0.010553275,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
+          "created_to_merged_bd": 0.865983796,
+          "first_commit_to_merged_raw_bd": 0.868483796,
+          "first_commit_to_merged_floored_bd": 0.868483796,
+          "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
-          "has_closing_keyword": true,
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
           "labels": [
             "external"
           ],
@@ -760,12 +896,15 @@
         },
         {
           "item_id": "PR_16",
-          "created_to_merged_bd": 0.010553607,
-          "first_commit_to_merged_raw_bd": 0.010553607,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
+          "created_to_merged_bd": 1.823831019,
+          "first_commit_to_merged_raw_bd": 1.82943287,
+          "first_commit_to_merged_floored_bd": 1.82943287,
+          "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": true,
           "labels": [
             "external"
@@ -774,13 +913,16 @@
         },
         {
           "item_id": "PR_17",
-          "created_to_merged_bd": 0.010553929,
-          "first_commit_to_merged_raw_bd": 0.010553929,
+          "created_to_merged_bd": 0.011238426,
+          "first_commit_to_merged_raw_bd": 0.012604167,
           "first_commit_to_merged_floored_bd": 0.25,
           "at_floor": true,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
-          "has_closing_keyword": true,
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
           "labels": [
             "external"
           ],
@@ -788,12 +930,15 @@
         },
         {
           "item_id": "PR_18",
-          "created_to_merged_bd": 0.01055424,
-          "first_commit_to_merged_raw_bd": 0.01055424,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
+          "created_to_merged_bd": 0.939918981,
+          "first_commit_to_merged_raw_bd": 0.942337963,
+          "first_commit_to_merged_floored_bd": 0.942337963,
+          "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": true,
           "labels": [
             "external"
@@ -802,12 +947,15 @@
         },
         {
           "item_id": "PR_19",
-          "created_to_merged_bd": 0.010554538,
-          "first_commit_to_merged_raw_bd": 0.010554538,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
+          "created_to_merged_bd": 20.925185185,
+          "first_commit_to_merged_raw_bd": 20.92818287,
+          "first_commit_to_merged_floored_bd": 20.92818287,
+          "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": true,
           "labels": [
             "external"
@@ -816,12 +964,15 @@
         },
         {
           "item_id": "PR_20",
-          "created_to_merged_bd": 0.010554822,
-          "first_commit_to_merged_raw_bd": 0.010554822,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
+          "created_to_merged_bd": 14.634768519,
+          "first_commit_to_merged_raw_bd": 14.641157407,
+          "first_commit_to_merged_floored_bd": 14.641157407,
+          "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": true,
           "labels": [
             "external"
@@ -830,12 +981,15 @@
         },
         {
           "item_id": "PR_21",
-          "created_to_merged_bd": 0.010555094,
-          "first_commit_to_merged_raw_bd": 0.010555094,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
+          "created_to_merged_bd": 10.715810185,
+          "first_commit_to_merged_raw_bd": 17.222511574,
+          "first_commit_to_merged_floored_bd": 17.222511574,
+          "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": true,
           "labels": [
             "external"
@@ -844,27 +998,31 @@
         },
         {
           "item_id": "PR_22",
-          "created_to_merged_bd": 0.010555355,
-          "first_commit_to_merged_raw_bd": 0.010555355,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
+          "created_to_merged_bd": 3.974965278,
+          "first_commit_to_merged_raw_bd": 3.977291667,
+          "first_commit_to_merged_floored_bd": 3.977291667,
+          "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": true,
-          "labels": [
-            "external"
-          ],
+          "labels": [],
           "fs_edges": []
         },
         {
           "item_id": "PR_23",
-          "created_to_merged_bd": 0.010555608,
-          "first_commit_to_merged_raw_bd": 0.010555608,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
-          "commit_precedes_pr": true,
+          "created_to_merged_bd": 7.432418981,
+          "first_commit_to_merged_raw_bd": 7.432418981,
+          "first_commit_to_merged_floored_bd": 7.432418981,
+          "at_floor": false,
+          "commit_precedes_pr": false,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
-          "has_closing_keyword": true,
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
           "labels": [
             "external"
           ],
@@ -872,13 +1030,16 @@
         },
         {
           "item_id": "PR_24",
-          "created_to_merged_bd": 0.010555852,
-          "first_commit_to_merged_raw_bd": 0.010555852,
+          "created_to_merged_bd": 0.006111111,
+          "first_commit_to_merged_raw_bd": 0.00755787,
           "first_commit_to_merged_floored_bd": 0.25,
           "at_floor": true,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
-          "has_closing_keyword": true,
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
           "labels": [
             "external"
           ],
@@ -886,12 +1047,15 @@
         },
         {
           "item_id": "PR_25",
-          "created_to_merged_bd": 0.010556086,
-          "first_commit_to_merged_raw_bd": 0.010556086,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
+          "created_to_merged_bd": 6.414340278,
+          "first_commit_to_merged_raw_bd": 6.418854167,
+          "first_commit_to_merged_floored_bd": 6.418854167,
+          "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": true,
           "labels": [
             "external"
@@ -900,110 +1064,15 @@
         },
         {
           "item_id": "PR_26",
-          "created_to_merged_bd": 0.01055631,
-          "first_commit_to_merged_raw_bd": 0.01055631,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
-          "commit_precedes_pr": true,
-          "first_commit_source": "git_log",
-          "has_closing_keyword": true,
-          "labels": [
-            "external"
-          ],
-          "fs_edges": []
-        },
-        {
-          "item_id": "PR_27",
-          "created_to_merged_bd": 0.010556524,
-          "first_commit_to_merged_raw_bd": 0.010556524,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
-          "commit_precedes_pr": true,
-          "first_commit_source": "git_log",
-          "has_closing_keyword": true,
-          "labels": [
-            "external"
-          ],
-          "fs_edges": []
-        },
-        {
-          "item_id": "PR_28",
-          "created_to_merged_bd": 0.010556729,
-          "first_commit_to_merged_raw_bd": 0.010556729,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
-          "commit_precedes_pr": true,
-          "first_commit_source": "git_log",
-          "has_closing_keyword": true,
-          "labels": [
-            "external"
-          ],
-          "fs_edges": []
-        },
-        {
-          "item_id": "PR_29",
-          "created_to_merged_bd": 0.010556928,
-          "first_commit_to_merged_raw_bd": 0.010556928,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
-          "commit_precedes_pr": true,
-          "first_commit_source": "git_log",
-          "has_closing_keyword": true,
-          "labels": [
-            "external"
-          ],
-          "fs_edges": []
-        },
-        {
-          "item_id": "PR_30",
-          "created_to_merged_bd": 0.010557119,
-          "first_commit_to_merged_raw_bd": 0.010557119,
-          "first_commit_to_merged_floored_bd": 0.25,
-          "at_floor": true,
-          "commit_precedes_pr": true,
-          "first_commit_source": "git_log",
-          "has_closing_keyword": true,
-          "labels": [
-            "external"
-          ],
-          "fs_edges": []
-        },
-        {
-          "item_id": "PR_31",
-          "created_to_merged_bd": 1.10554363,
-          "first_commit_to_merged_raw_bd": 1.105607639,
-          "first_commit_to_merged_floored_bd": 1.105607639,
+          "created_to_merged_bd": 2.428784722,
+          "first_commit_to_merged_raw_bd": 2.437708333,
+          "first_commit_to_merged_floored_bd": 2.437708333,
           "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
-          "has_closing_keyword": true,
-          "labels": [
-            "external"
-          ],
-          "fs_edges": []
-        },
-        {
-          "item_id": "PR_32",
-          "created_to_merged_bd": 1.105543636,
-          "first_commit_to_merged_raw_bd": 1.105607639,
-          "first_commit_to_merged_floored_bd": 1.105607639,
-          "at_floor": false,
-          "commit_precedes_pr": true,
-          "first_commit_source": "git_log",
-          "has_closing_keyword": true,
-          "labels": [
-            "external"
-          ],
-          "fs_edges": []
-        },
-        {
-          "item_id": "PR_33",
-          "created_to_merged_bd": 1.105543643,
-          "first_commit_to_merged_raw_bd": 1.105607639,
-          "first_commit_to_merged_floored_bd": 1.105607639,
-          "at_floor": false,
-          "commit_precedes_pr": true,
-          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": false,
           "labels": [
             "external"
@@ -1011,13 +1080,135 @@
           "fs_edges": []
         },
         {
-          "item_id": "PR_34",
-          "created_to_merged_bd": 1.105543971,
-          "first_commit_to_merged_raw_bd": 1.105607639,
-          "first_commit_to_merged_floored_bd": 1.105607639,
+          "item_id": "PR_27",
+          "created_to_merged_bd": 0.100115741,
+          "first_commit_to_merged_raw_bd": 0.102835648,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
+          "labels": [
+            "external"
+          ],
+          "fs_edges": []
+        },
+        {
+          "item_id": "PR_28",
+          "created_to_merged_bd": 4.002395833,
+          "first_commit_to_merged_raw_bd": 4.008055556,
+          "first_commit_to_merged_floored_bd": 4.008055556,
           "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
+          "labels": [
+            "external"
+          ],
+          "fs_edges": []
+        },
+        {
+          "item_id": "PR_29",
+          "created_to_merged_bd": 0.049039352,
+          "first_commit_to_merged_raw_bd": 0.051712963,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
+          "labels": [
+            "external"
+          ],
+          "fs_edges": []
+        },
+        {
+          "item_id": "PR_30",
+          "created_to_merged_bd": 0.025497685,
+          "first_commit_to_merged_raw_bd": 0.028796296,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
+          "labels": [
+            "external"
+          ],
+          "fs_edges": []
+        },
+        {
+          "item_id": "PR_31",
+          "created_to_merged_bd": 4.469618056,
+          "first_commit_to_merged_raw_bd": 4.469618056,
+          "first_commit_to_merged_floored_bd": 4.469618056,
+          "at_floor": false,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
+          "labels": [
+            "external"
+          ],
+          "fs_edges": []
+        },
+        {
+          "item_id": "PR_32",
+          "created_to_merged_bd": 0.878553241,
+          "first_commit_to_merged_raw_bd": 0.88005787,
+          "first_commit_to_merged_floored_bd": 0.88005787,
+          "at_floor": false,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": false,
+          "labels": [
+            "external"
+          ],
+          "fs_edges": []
+        },
+        {
+          "item_id": "PR_33",
+          "created_to_merged_bd": 29.888483796,
+          "first_commit_to_merged_raw_bd": 29.892546296,
+          "first_commit_to_merged_floored_bd": 29.892546296,
+          "at_floor": false,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": true,
+          "labels": [
+            "external"
+          ],
+          "fs_edges": []
+        },
+        {
+          "item_id": "PR_34",
+          "created_to_merged_bd": 1.1721875,
+          "first_commit_to_merged_raw_bd": 1.172314815,
+          "first_commit_to_merged_floored_bd": 1.172314815,
+          "at_floor": false,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": false,
           "labels": [
             "external"
@@ -1026,12 +1217,15 @@
         },
         {
           "item_id": "PR_35",
-          "created_to_merged_bd": 1.911325937,
-          "first_commit_to_merged_raw_bd": 1.929168794,
-          "first_commit_to_merged_floored_bd": 1.929168794,
+          "created_to_merged_bd": 13.795011574,
+          "first_commit_to_merged_raw_bd": 13.795347222,
+          "first_commit_to_merged_floored_bd": 13.795347222,
           "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": false,
           "labels": [
             "external"
@@ -1040,13 +1234,16 @@
         },
         {
           "item_id": "PR_36",
-          "created_to_merged_bd": 3.054219788,
-          "first_commit_to_merged_raw_bd": 3.072209882,
-          "first_commit_to_merged_floored_bd": 3.072209882,
+          "created_to_merged_bd": 2.859594907,
+          "first_commit_to_merged_raw_bd": 2.8609375,
+          "first_commit_to_merged_floored_bd": 2.8609375,
           "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
-          "has_closing_keyword": false,
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": true,
           "labels": [
             "external"
           ],
@@ -1054,13 +1251,16 @@
         },
         {
           "item_id": "PR_37",
-          "created_to_merged_bd": 4.197113639,
-          "first_commit_to_merged_raw_bd": 4.21525097,
-          "first_commit_to_merged_floored_bd": 4.21525097,
+          "created_to_merged_bd": 3.044212963,
+          "first_commit_to_merged_raw_bd": 3.05712963,
+          "first_commit_to_merged_floored_bd": 3.05712963,
           "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
-          "has_closing_keyword": false,
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": true,
           "labels": [
             "external"
           ],
@@ -1068,41 +1268,49 @@
         },
         {
           "item_id": "PR_38",
-          "created_to_merged_bd": 5.340007489,
-          "first_commit_to_merged_raw_bd": 5.358292058,
-          "first_commit_to_merged_floored_bd": 5.358292058,
+          "created_to_merged_bd": 0.785104167,
+          "first_commit_to_merged_raw_bd": 0.787511574,
+          "first_commit_to_merged_floored_bd": 0.787511574,
           "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": false,
           "labels": [
-            "external"
+            "external",
+            "codespaces"
           ],
           "fs_edges": []
         },
         {
           "item_id": "PR_39",
-          "created_to_merged_bd": 6.48290134,
-          "first_commit_to_merged_raw_bd": 6.501333146,
-          "first_commit_to_merged_floored_bd": 6.501333146,
-          "at_floor": false,
+          "created_to_merged_bd": 0.014363426,
+          "first_commit_to_merged_raw_bd": 0.014675926,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": false,
-          "labels": [
-            "external"
-          ],
+          "labels": [],
           "fs_edges": []
         },
         {
           "item_id": "PR_40",
-          "created_to_merged_bd": 7.62579519,
-          "first_commit_to_merged_raw_bd": 7.644374234,
-          "first_commit_to_merged_floored_bd": 7.644374234,
+          "created_to_merged_bd": 0.032731481,
+          "first_commit_to_merged_raw_bd": 6.945543981,
+          "first_commit_to_merged_floored_bd": 6.945543981,
           "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": true,
+          "issue_assigned_precedes_pr": true,
           "first_commit_source": "git_log",
-          "has_closing_keyword": false,
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": true,
           "labels": [
             "external"
           ],
@@ -1110,41 +1318,46 @@
         },
         {
           "item_id": "PR_41",
-          "created_to_merged_bd": 8.768689041,
-          "first_commit_to_merged_raw_bd": 8.787415322,
-          "first_commit_to_merged_floored_bd": 8.787415322,
-          "at_floor": false,
+          "created_to_merged_bd": 0.012141204,
+          "first_commit_to_merged_raw_bd": 0.012615741,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": false,
-          "labels": [
-            "external"
-          ],
+          "labels": [],
           "fs_edges": []
         },
         {
           "item_id": "PR_42",
-          "created_to_merged_bd": 9.911582891,
-          "first_commit_to_merged_raw_bd": 9.93045641,
-          "first_commit_to_merged_floored_bd": 9.93045641,
-          "at_floor": false,
+          "created_to_merged_bd": 0.127175926,
+          "first_commit_to_merged_raw_bd": 0.136446759,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": false,
-          "labels": [
-            "external"
-          ],
+          "labels": [],
           "fs_edges": []
         },
         {
           "item_id": "PR_43",
-          "created_to_merged_bd": 11.054476742,
-          "first_commit_to_merged_raw_bd": 11.073497498,
-          "first_commit_to_merged_floored_bd": 11.073497498,
+          "created_to_merged_bd": 5.197407407,
+          "first_commit_to_merged_raw_bd": 5.416261574,
+          "first_commit_to_merged_floored_bd": 5.416261574,
           "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
-          "has_closing_keyword": false,
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": true,
           "labels": [
             "external"
           ],
@@ -1152,12 +1365,15 @@
         },
         {
           "item_id": "PR_44",
-          "created_to_merged_bd": 12.197370592,
-          "first_commit_to_merged_raw_bd": 12.216538586,
-          "first_commit_to_merged_floored_bd": 12.216538586,
+          "created_to_merged_bd": 12.270023148,
+          "first_commit_to_merged_raw_bd": 12.2828125,
+          "first_commit_to_merged_floored_bd": 12.2828125,
           "at_floor": false,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": false,
           "labels": [
             "external"
@@ -1166,27 +1382,33 @@
         },
         {
           "item_id": "PR_45",
-          "created_to_merged_bd": 13.340264443,
-          "first_commit_to_merged_raw_bd": 13.359579674,
-          "first_commit_to_merged_floored_bd": 13.359579674,
-          "at_floor": false,
+          "created_to_merged_bd": 0.011099537,
+          "first_commit_to_merged_raw_bd": 0.081342593,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
           "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
           "first_commit_source": "git_log",
-          "has_closing_keyword": false,
-          "labels": [
-            "external"
-          ],
-          "fs_edges": []
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": true,
+          "labels": [],
+          "fs_edges": [
+            "PR_07"
+          ]
         },
         {
           "item_id": "PR_46",
-          "created_to_merged_bd": 14.483158294,
-          "first_commit_to_merged_raw_bd": 14.502620762,
-          "first_commit_to_merged_floored_bd": 14.502620762,
+          "created_to_merged_bd": 8.521423611,
+          "first_commit_to_merged_raw_bd": 11.655520833,
+          "first_commit_to_merged_floored_bd": 11.655520833,
           "at_floor": false,
-          "commit_precedes_pr": false,
-          "first_commit_source": "rest_api",
-          "has_closing_keyword": false,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": true,
           "labels": [
             "external"
           ],
@@ -1194,13 +1416,16 @@
         },
         {
           "item_id": "PR_47",
-          "created_to_merged_bd": 15.626052144,
-          "first_commit_to_merged_raw_bd": 15.64566185,
-          "first_commit_to_merged_floored_bd": 15.64566185,
+          "created_to_merged_bd": 1.582303241,
+          "first_commit_to_merged_raw_bd": 1.582303241,
+          "first_commit_to_merged_floored_bd": 1.582303241,
           "at_floor": false,
-          "commit_precedes_pr": false,
-          "first_commit_source": "rest_api",
-          "has_closing_keyword": false,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": true,
           "labels": [
             "external"
           ],
@@ -1208,26 +1433,30 @@
         },
         {
           "item_id": "PR_48",
-          "created_to_merged_bd": 16.768945995,
-          "first_commit_to_merged_raw_bd": 16.788702938,
-          "first_commit_to_merged_floored_bd": 16.788702938,
-          "at_floor": false,
-          "commit_precedes_pr": false,
-          "first_commit_source": "rest_api",
-          "has_closing_keyword": false,
-          "labels": [
-            "external"
-          ],
+          "created_to_merged_bd": 0.0,
+          "first_commit_to_merged_raw_bd": 0.0,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": true,
+          "labels": [],
           "fs_edges": []
         },
         {
           "item_id": "PR_49",
-          "created_to_merged_bd": 17.911839845,
-          "first_commit_to_merged_raw_bd": 17.931744026,
-          "first_commit_to_merged_floored_bd": 17.931744026,
+          "created_to_merged_bd": 6.421678241,
+          "first_commit_to_merged_raw_bd": 6.425729167,
+          "first_commit_to_merged_floored_bd": 6.425729167,
           "at_floor": false,
-          "commit_precedes_pr": false,
-          "first_commit_source": "rest_api",
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": false,
           "labels": [
             "external"
@@ -1236,196 +1465,218 @@
         },
         {
           "item_id": "PR_50",
-          "created_to_merged_bd": 19.054733696,
-          "first_commit_to_merged_raw_bd": 19.074785114,
-          "first_commit_to_merged_floored_bd": 19.074785114,
+          "created_to_merged_bd": 17.499201389,
+          "first_commit_to_merged_raw_bd": 17.499201389,
+          "first_commit_to_merged_floored_bd": 17.499201389,
           "at_floor": false,
-          "commit_precedes_pr": false,
-          "first_commit_source": "rest_api",
-          "has_closing_keyword": false,
-          "labels": [],
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": true,
+          "labels": [
+            "external"
+          ],
           "fs_edges": []
         },
         {
           "item_id": "PR_51",
-          "created_to_merged_bd": 20.197627546,
-          "first_commit_to_merged_raw_bd": 20.217826202,
-          "first_commit_to_merged_floored_bd": 20.217826202,
+          "created_to_merged_bd": 3.548726852,
+          "first_commit_to_merged_raw_bd": 3.548726852,
+          "first_commit_to_merged_floored_bd": 3.548726852,
           "at_floor": false,
-          "commit_precedes_pr": false,
-          "first_commit_source": "rest_api",
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": false,
-          "labels": [],
+          "labels": [
+            "external"
+          ],
           "fs_edges": []
         },
         {
           "item_id": "PR_52",
-          "created_to_merged_bd": 21.340521397,
-          "first_commit_to_merged_raw_bd": 21.36086729,
-          "first_commit_to_merged_floored_bd": 21.36086729,
+          "created_to_merged_bd": 0.7053125,
+          "first_commit_to_merged_raw_bd": 0.966481481,
+          "first_commit_to_merged_floored_bd": 0.966481481,
           "at_floor": false,
-          "commit_precedes_pr": false,
-          "first_commit_source": "rest_api",
-          "has_closing_keyword": false,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": true,
           "labels": [],
           "fs_edges": []
         },
         {
           "item_id": "PR_53",
-          "created_to_merged_bd": 22.483415247,
-          "first_commit_to_merged_raw_bd": 22.503908378,
-          "first_commit_to_merged_floored_bd": 22.503908378,
+          "created_to_merged_bd": 1.038900463,
+          "first_commit_to_merged_raw_bd": 4.071527778,
+          "first_commit_to_merged_floored_bd": 4.071527778,
           "at_floor": false,
-          "commit_precedes_pr": false,
-          "first_commit_source": "rest_api",
-          "has_closing_keyword": false,
-          "labels": [],
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": true,
+          "labels": [
+            "external"
+          ],
           "fs_edges": []
         },
         {
           "item_id": "PR_54",
-          "created_to_merged_bd": 23.626309098,
-          "first_commit_to_merged_raw_bd": 23.646949466,
-          "first_commit_to_merged_floored_bd": 23.646949466,
+          "created_to_merged_bd": 7.15462963,
+          "first_commit_to_merged_raw_bd": 7.159803241,
+          "first_commit_to_merged_floored_bd": 7.159803241,
           "at_floor": false,
-          "commit_precedes_pr": false,
-          "first_commit_source": "rest_api",
-          "has_closing_keyword": false,
-          "labels": [],
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": true,
+          "labels": [
+            "external"
+          ],
           "fs_edges": []
         },
         {
           "item_id": "PR_55",
-          "created_to_merged_bd": 27.910784094,
-          "first_commit_to_merged_raw_bd": 27.9133224,
-          "first_commit_to_merged_floored_bd": 27.9133224,
-          "at_floor": false,
-          "commit_precedes_pr": false,
-          "first_commit_source": "rest_api",
+          "created_to_merged_bd": 0.012824074,
+          "first_commit_to_merged_raw_bd": 0.014027778,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": false,
-          "labels": [],
+          "labels": [
+            "external"
+          ],
           "fs_edges": []
         },
         {
           "item_id": "PR_56",
-          "created_to_merged_bd": 29.11230614,
-          "first_commit_to_merged_raw_bd": 29.116086606,
-          "first_commit_to_merged_floored_bd": 29.116086606,
-          "at_floor": false,
-          "commit_precedes_pr": false,
-          "first_commit_source": "rest_api",
+          "created_to_merged_bd": 0.018611111,
+          "first_commit_to_merged_raw_bd": 0.018854167,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": false,
-          "labels": [],
+          "labels": [
+            "external"
+          ],
           "fs_edges": []
         },
         {
           "item_id": "PR_57",
-          "created_to_merged_bd": 32.343253851,
-          "first_commit_to_merged_raw_bd": 32.463097998,
-          "first_commit_to_merged_floored_bd": 32.463097998,
+          "created_to_merged_bd": 0.490856481,
+          "first_commit_to_merged_raw_bd": 0.492395833,
+          "first_commit_to_merged_floored_bd": 0.492395833,
           "at_floor": false,
-          "commit_precedes_pr": false,
-          "first_commit_source": "rest_api",
-          "has_closing_keyword": false,
-          "labels": [],
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": true,
+          "labels": [
+            "external"
+          ],
           "fs_edges": []
         },
         {
           "item_id": "PR_58",
-          "created_to_merged_bd": 41.552864893,
-          "first_commit_to_merged_raw_bd": 41.744156182,
-          "first_commit_to_merged_floored_bd": 41.744156182,
-          "at_floor": false,
-          "commit_precedes_pr": false,
-          "first_commit_source": "rest_api",
-          "has_closing_keyword": false,
+          "created_to_merged_bd": 0.14474537,
+          "first_commit_to_merged_raw_bd": 0.148159722,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": true,
           "labels": [],
           "fs_edges": []
         },
         {
           "item_id": "PR_59",
-          "created_to_merged_bd": 47.434998283,
-          "first_commit_to_merged_raw_bd": 47.717504816,
-          "first_commit_to_merged_floored_bd": 47.717504816,
-          "at_floor": false,
-          "commit_precedes_pr": false,
-          "first_commit_source": "rest_api",
+          "created_to_merged_bd": 0.010497685,
+          "first_commit_to_merged_raw_bd": 0.015636574,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": false,
-          "labels": [],
+          "labels": [
+            "external"
+          ],
           "fs_edges": []
         },
         {
           "item_id": "PR_60",
-          "created_to_merged_bd": 47.434998443,
-          "first_commit_to_merged_raw_bd": 47.717504816,
-          "first_commit_to_merged_floored_bd": 47.717504816,
-          "at_floor": false,
-          "commit_precedes_pr": false,
-          "first_commit_source": "rest_api",
-          "has_closing_keyword": false,
-          "labels": [],
+          "created_to_merged_bd": 0.008576389,
+          "first_commit_to_merged_raw_bd": 0.042152778,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
+          "has_closing_keyword": true,
+          "labels": [
+            "external"
+          ],
           "fs_edges": []
         },
         {
           "item_id": "PR_61",
-          "created_to_merged_bd": 48.699274515,
-          "first_commit_to_merged_raw_bd": 49.02250637,
-          "first_commit_to_merged_floored_bd": 49.02250637,
-          "at_floor": false,
-          "commit_precedes_pr": false,
-          "first_commit_source": "rest_api",
+          "created_to_merged_bd": 0.01662037,
+          "first_commit_to_merged_raw_bd": 0.017488426,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": false,
           "labels": [],
           "fs_edges": []
         },
         {
           "item_id": "PR_62",
-          "created_to_merged_bd": 51.017679029,
-          "first_commit_to_merged_raw_bd": 51.35458034,
-          "first_commit_to_merged_floored_bd": 51.35458034,
-          "at_floor": false,
-          "commit_precedes_pr": false,
-          "first_commit_source": "rest_api",
+          "created_to_merged_bd": 0.006458333,
+          "first_commit_to_merged_raw_bd": 0.007199074,
+          "first_commit_to_merged_floored_bd": 0.25,
+          "at_floor": true,
+          "commit_precedes_pr": true,
+          "has_issue_assigned_at": false,
+          "issue_assigned_precedes_pr": false,
+          "first_commit_source": "git_log",
+          "squash_or_rebase_checked": true,
           "has_closing_keyword": false,
           "labels": [],
           "fs_edges": []
         }
-      ],
-      "floor_business_days": 0.25,
-      "floor_count": 30,
-      "floor_fraction": 0.4839,
-      "floor_sensitivity": {
-        "floor_0.10": {
-          "floor_bd": 0.1,
-          "at_floor_count": 30,
-          "at_floor_fraction": 0.4839,
-          "p10": 0.1,
-          "p50": 1.1056,
-          "p90": 28.9958,
-          "p95": 47.4188,
-          "mean": 9.5199
-        },
-        "floor_0.25": {
-          "floor_bd": 0.25,
-          "at_floor_count": 30,
-          "at_floor_fraction": 0.4839,
-          "p10": 0.25,
-          "p50": 1.1056,
-          "p90": 28.9958,
-          "p95": 47.4188,
-          "mean": 9.5925
-        },
-        "floor_0.50": {
-          "floor_bd": 0.5,
-          "at_floor_count": 30,
-          "at_floor_fraction": 0.4839,
-          "p10": 0.5,
-          "p50": 1.1056,
-          "p90": 28.9958,
-          "p95": 47.4188,
-          "mean": 9.7134
-        }
-      }
+      ]
     }
   ]
 }
