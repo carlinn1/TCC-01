@@ -49,6 +49,10 @@ def save_rgb_png(fig, path):
             bg.paste(rgba, mask=rgba.split()[3])
         else:
             bg.paste(img.convert("RGB"))
+        max_w = 1400
+        if bg.width > max_w:
+            new_h = round(bg.height * (max_w / bg.width))
+            bg = bg.resize((max_w, new_h), Image.Resampling.LANCZOS)
         bg.save(out_path, format="PNG", optimize=True, pnginfo=PngImagePlugin.PngInfo(), dpi=(FIGURE_DPI, FIGURE_DPI))
 
 
@@ -140,36 +144,52 @@ def fig02():
 
 
 def fig03():
-    fig, ax = plt.subplots(figsize=(10.8, 4.3), dpi=FIGURE_DPI)
-    ax.set_xlim(0, 13.8)
-    ax.set_ylim(0, 4.6)
+    fig, ax = plt.subplots(figsize=(11.2, 4.5), dpi=FIGURE_DPI)
+    ax.set_xlim(0, 14.2)
+    ax.set_ylim(-0.15, 4.75)
     ax.axis("off")
 
     cols = [
-        (0.3, "1. Modelo Digital", "Processo Real", "Modelo Virtual", "Manual", "Manual", "#F3F4F6", "#6B7280"),
+        (0.3, "1. Modelo Digital", "Processo Real", "Modelo Virtual", "Manual", "Manual", "#F3F4F6", "#6B7280", None),
         (
-            4.8,
+            5.0,
             "2. Sombra Digital Governada\n(Este Trabalho)",
             "Repositório Git / CI",
-            "Estado + Monte Carlo + IA",
+            "Modelo Virtual + MC + Fila IA",
             "Auto\n(Webhooks)",
-            "Fila +\nAprovação\nHumana",
+            "Manual Externo\n(Sem escrita Git)",
             "#E6F4EA",
             UNB_GREEN,
+            "Aprovação humana atualiza somente a baseline virtual",
         ),
-        (9.3, "3. Gêmeo Digital Pleno", "Processo Real", "Modelo Virtual", "Automático", "Automático", "#EBF2F9", UNB_BLUE),
+        (9.7, "3. Gêmeo Digital Pleno", "Processo Real", "Modelo Virtual", "Automático", "Automático", "#EBF2F9", UNB_BLUE, None),
     ]
     pill = dict(boxstyle="round,pad=0.15", fc="white", ec="none", alpha=0.92)
-    for x0, title, top_lbl, bot_lbl, f1, f2, fc, ec in cols:
-        ax.text(x0 + 2.0, 4.15, title, ha="center", va="center", fontsize=9.5, weight="bold", color=ec)
-        draw_box(ax, x0 + 0.3, 2.55, 3.4, 0.9, top_lbl, fc=fc, ec=ec, fontsize=8.5, weight="bold")
-        draw_box(ax, x0 + 0.3, 0.45, 3.4, 0.9, bot_lbl, fc=fc, ec=ec, fontsize=8.5, weight="bold")
+    for x0, title, top_lbl, bot_lbl, f1, f2, fc, ec, foot in cols:
+        ax.text(x0 + 2.0, 4.25, title, ha="center", va="center", fontsize=9.5, weight="bold", color=ec)
+        draw_box(ax, x0 + 0.25, 2.65, 3.5, 0.9, top_lbl, fc=fc, ec=ec, fontsize=8.4, weight="bold")
+        draw_box(ax, x0 + 0.25, 0.55, 3.5, 0.9, bot_lbl, fc=fc, ec=ec, fontsize=8.4, weight="bold")
         # Seta descendente (Real -> Virtual) à direita do centro da coluna
-        ax.annotate("", xy=(x0 + 2.55, 1.42), xytext=(x0 + 2.55, 2.48), arrowprops=dict(arrowstyle="->", color=UNB_BLUE, lw=1.8))
-        ax.text(x0 + 2.68, 1.95, f1, fontsize=7.6, va="center", ha="left", color=UNB_BLUE, weight="bold", bbox=pill)
-        # Seta ascendente (Virtual -> Real) à esquerda do centro da coluna
-        ax.annotate("", xy=(x0 + 1.45, 2.48), xytext=(x0 + 1.45, 1.42), arrowprops=dict(arrowstyle="->", color=RED_ACCENT, lw=1.6, ls="--"))
-        ax.text(x0 + 1.32, 1.95, f2, fontsize=7.6, va="center", ha="right", color=RED_ACCENT, weight="bold", bbox=pill)
+        ax.annotate("", xy=(x0 + 2.65, 1.52), xytext=(x0 + 2.65, 2.58), arrowprops=dict(arrowstyle="->", color=UNB_BLUE, lw=1.8))
+        ax.text(x0 + 2.78, 2.05, f1, fontsize=7.5, va="center", ha="left", color=UNB_BLUE, weight="bold", bbox=pill)
+        # Seta ascendente (Virtual -> Real): automática no Pleno, manual externa nos demais
+        is_auto_rev = foot is None and title.startswith("3.")
+        rev_color = UNB_BLUE if is_auto_rev else "#6B7280"
+        rev_ls = "-" if is_auto_rev else "--"
+        ax.annotate("", xy=(x0 + 1.35, 2.58), xytext=(x0 + 1.35, 1.52), arrowprops=dict(arrowstyle="->", color=rev_color, lw=1.6, ls=rev_ls))
+        ax.text(x0 + 1.22, 2.05, f2, fontsize=7.4, va="center", ha="right", color=rev_color, weight="bold", bbox=pill)
+        if foot:
+            ax.text(
+                x0 + 2.0,
+                0.15,
+                foot,
+                ha="center",
+                va="center",
+                fontsize=7.1,
+                color=UNB_GREEN,
+                weight="bold",
+                bbox=dict(boxstyle="round,pad=0.16", fc="#F0FDF4", ec=UNB_GREEN, lw=0.7),
+            )
 
     fig.tight_layout()
     save_rgb_png(fig, "figuras/fig03_niveis_gemeo_digital.png")
@@ -217,7 +237,7 @@ def fig04():
         0.2,
         4.4,
         1.05,
-        "Âncora Externa Assinada (HMAC / Ed25519)\nReplica $(k+1,\\,H_{k+1})$ fora do PostgreSQL ($K=100$ ou $15$ min)",
+        "Âncora Externa Assinada (Ed25519)\nReplica $(k+1,\\,H_{k+1})$ fora do PostgreSQL ($K=100$ ou $15$ min)",
         fc="#E6F4EA",
         ec=UNB_GREEN,
         fontsize=8.0,
@@ -233,55 +253,86 @@ def fig04():
 
 
 def fig05():
-    fig, ax = plt.subplots(figsize=(10.5, 4.7), dpi=FIGURE_DPI)
-    ax.set_xlim(0, 14.0)
-    ax.set_ylim(0, 5.4)
+    fig, ax = plt.subplots(figsize=(11.0, 5.4), dpi=FIGURE_DPI)
+    ax.set_xlim(0, 14.5)
+    ax.set_ylim(-0.1, 6.9)
     ax.axis("off")
 
+    # Entradas externas de borda (GitHub Webhooks + Navegador com Cartão Mínimo CSP)
+    draw_box(ax, 0.55, 5.55, 3.25, 1.05, "GitHub Webhooks\n(TLS + HMAC-SHA256)", fc="#F3F4F6", ec="#4B5563", fontsize=8.3, weight="bold")
+    draw_box(ax, 4.35, 5.55, 3.70, 1.05, "Navegador / Cartão Mínimo\n(JWT + RBAC + CSP Estrita)", fc="#E6F4EA", ec=UNB_GREEN, fontsize=8.3, weight="bold")
+
     # Duas sub-redes separadas; Core PM Service atua em modo dual-homed atravessando a fronteira
-    draw_box(ax, 0.3, 0.35, 6.75, 4.65, "", fc="#F5F9FD", ec=UNB_BLUE)
-    ax.text(0.55, 4.70, "Sub-rede: core-net (Isolada da IA)", fontsize=9.2, weight="bold", color=UNB_BLUE)
+    draw_box(ax, 0.3, 0.25, 6.95, 4.75, "", fc="#F5F9FD", ec=UNB_BLUE)
+    ax.text(0.55, 4.72, "Sub-rede: core-net (Isolada da IA)", fontsize=9.2, weight="bold", color=UNB_BLUE)
 
-    draw_box(ax, 7.25, 0.35, 6.45, 4.65, "", fc="#FEF6F6", ec=RED_ACCENT)
-    ax.text(13.45, 4.70, "Sub-rede: ai-isolated-net", fontsize=9.2, weight="bold", color=RED_ACCENT, ha="right")
+    draw_box(ax, 7.50, 0.25, 6.70, 4.75, "", fc="#FEF6F6", ec=RED_ACCENT)
+    ax.text(13.95, 4.72, "Sub-rede: ai-isolated-net", fontsize=9.2, weight="bold", color=RED_ACCENT, ha="right")
 
-    draw_box(ax, 0.55, 0.75, 2.75, 1.2, "PostgreSQL 16\nSKIP LOCKED + Audit", fc="#FFFFFF", ec=UNB_BLUE, weight="bold")
-    draw_box(ax, 3.65, 0.75, 2.95, 1.2, "Simulation Worker\nCPM + Monte Carlo", fc="#FFFFFF", ec=UNB_BLUE, weight="bold")
+    draw_box(ax, 0.55, 0.65, 2.85, 1.2, "PostgreSQL 16\nSKIP LOCKED + Audit (Ed25519)", fc="#FFFFFF", ec=UNB_BLUE, fontsize=8.2, weight="bold")
+    draw_box(ax, 3.75, 0.65, 3.10, 1.2, "Simulation Worker\nCPM + Monte Carlo (Go)", fc="#FFFFFF", ec=UNB_BLUE, fontsize=8.2, weight="bold")
     draw_box(
         ax,
-        4.95,
+        4.65,
         2.95,
-        4.30,
+        4.65,
         1.25,
         "Core PM Service (Go)\nDual-Homed: RBAC + Fail-Closed",
         fc="#FFFBEB",
         ec="#B45309",
+        fontsize=8.4,
         weight="bold",
     )
-    draw_box(ax, 10.15, 2.95, 3.25, 1.25, "AI Agent Service\n(Sem Driver/Rota SQL)", fc="#FFFFFF", ec=RED_ACCENT, weight="bold")
-    draw_box(ax, 10.15, 0.75, 3.25, 1.2, "API LLM Externa / Local\n(HTTPS / TLS)", fc="#F3F4F6", ec="#4B5563", weight="bold")
+    draw_box(ax, 10.45, 2.95, 3.45, 1.25, "AI Agent Service\n(Sem Driver/Rota SQL)", fc="#FFFFFF", ec=RED_ACCENT, fontsize=8.3, weight="bold")
+    draw_box(
+        ax,
+        10.45,
+        0.65,
+        3.45,
+        1.30,
+        "Proxy de Egresso / Firewall\nAllowlist TLS -> Llama-3 (temp=0,0)",
+        fc="#F3F4F6",
+        ec="#4B5563",
+        fontsize=8.0,
+        weight="bold",
+    )
 
-    ax.text(7.10, 2.35, "Fronteira\nDual-Homed", ha="center", va="center", fontsize=7.2, color="#B45309", weight="bold")
+    ax.text(7.37, 2.35, "Fronteira\nDual-Homed", ha="center", va="center", fontsize=7.2, color="#B45309", weight="bold")
+
+    # Setas de entrada (Ingresso -> Core PM Service)
+    ax.annotate("", xy=(5.25, 4.22), xytext=(2.20, 5.53), arrowprops=dict(arrowstyle="->", color="#4B5563", lw=1.7))
+    ax.annotate("", xy=(6.45, 4.22), xytext=(6.20, 5.53), arrowprops=dict(arrowstyle="<->", color=UNB_GREEN, lw=1.8))
 
     # Setas internas à core-net e ponte dual-homed
-    ax.annotate("", xy=(1.95, 2.00), xytext=(5.55, 2.92), arrowprops=dict(arrowstyle="<->", color=UNB_BLUE, lw=1.8))
-    ax.annotate("", xy=(5.15, 2.00), xytext=(6.25, 2.92), arrowprops=dict(arrowstyle="<->", color=UNB_BLUE, lw=1.8))
-    ax.annotate("", xy=(3.62, 1.35), xytext=(3.33, 1.35), arrowprops=dict(arrowstyle="<->", color=UNB_BLUE, lw=1.8))
+    ax.annotate("", xy=(1.98, 1.88), xytext=(5.55, 2.93), arrowprops=dict(arrowstyle="<->", color=UNB_BLUE, lw=1.8))
+    ax.annotate("", xy=(5.30, 1.88), xytext=(6.45, 2.93), arrowprops=dict(arrowstyle="<->", color=UNB_BLUE, lw=1.8))
+    ax.annotate("", xy=(3.73, 1.25), xytext=(3.42, 1.25), arrowprops=dict(arrowstyle="<->", color=UNB_BLUE, lw=1.8))
 
     # Comunicação permitida via ai-isolated-net entre Core PM Service (NIC secundária) e AI Agent
-    ax.annotate("", xy=(10.10, 3.57), xytext=(9.30, 3.57), arrowprops=dict(arrowstyle="<->", color=RED_ACCENT, lw=1.8))
+    ax.annotate("", xy=(10.42, 3.57), xytext=(9.33, 3.57), arrowprops=dict(arrowstyle="<->", color=RED_ACCENT, lw=1.8))
     ax.text(
-        9.70,
-        4.32,
+        9.87,
+        4.30,
         "Allowlist JSON\n(HTTP/REST)",
         ha="center",
         va="center",
-        fontsize=7.3,
+        fontsize=7.2,
         color=RED_ACCENT,
         weight="bold",
         bbox=dict(boxstyle="round,pad=0.16", fc="white", ec=RED_ACCENT, lw=0.8),
     )
-    ax.annotate("", xy=(11.77, 2.00), xytext=(11.77, 2.92), arrowprops=dict(arrowstyle="<->", color="#4B5563", lw=1.8))
+    ax.annotate("", xy=(12.17, 1.98), xytext=(12.17, 2.93), arrowprops=dict(arrowstyle="<->", color="#4B5563", lw=1.8))
+    ax.text(
+        12.17,
+        2.45,
+        "Egresso Restrito",
+        ha="center",
+        va="center",
+        fontsize=7.0,
+        color="#374151",
+        weight="bold",
+        bbox=dict(boxstyle="round,pad=0.14", fc="white", ec="#9CA3AF", lw=0.7),
+    )
 
     fig.tight_layout()
     save_rgb_png(fig, "figuras/fig05_arquitetura.png")
@@ -312,7 +363,7 @@ def fig06():
         (2.44, 7.3, 5.2, "4. Persiste $P_{50}, P_{85}, P_{95}$ e $IC_i$", UNB_BLUE),
         (1.97, 3.1, 9.4, "5. Envia Allowlist sanitizada", RED_ACCENT),
         (1.50, 9.4, 3.1, "6. JSON validado (Fail-Closed)", RED_ACCENT),
-        (1.03, 3.1, 11.6, "7. SSE: Fila Cat. 2 com $\\Delta P_{85}$", UNB_GREEN),
+        (1.03, 3.1, 11.6, "7. HTTP/UI: Fila Cat. 2 com $\\Delta P_{85}$", UNB_GREEN),
         (0.52, 11.6, 5.2, "8. Aprovação humana $\\rightarrow$ SHA-256", UNB_BLUE),
     ]
     pill = dict(boxstyle="round,pad=0.14", fc="white", ec="none", alpha=0.94)
@@ -345,6 +396,7 @@ def fig07():
     ax1.bar(centers, dens_a, width=width * 0.95, alpha=0.55, color=UNB_BLUE, label="Cenário A (Sem risco)")
     ax1.bar(centers, dens_b, width=width * 0.95, alpha=0.45, color=RED_ACCENT, label="Cenário B (Com R1)")
     ax1.axvline(sa["cpm_deterministic"], color=UNB_GREEN, ls="--", lw=1.8, label=f"CPM = {sa['cpm_deterministic']:.2f}".replace(".", ",") + " d.u.")
+    ax1.axvline(11.0, color="#111827", ls="-.", lw=1.6, label="Meta = 11,00 d.u.")
     ax1.set_xlabel("Prazo de término $F$ (dias úteis)")
     ax1.set_ylabel("Densidade empírica (PoC em Go)")
     ax1.grid(True, ls="--", alpha=0.3)
@@ -355,6 +407,7 @@ def fig07():
     ax2.plot(grid_x, ecdf_a, color=UNB_BLUE, lw=2.2, label=lbl_a)
     ax2.plot(grid_x, ecdf_b, color=RED_ACCENT, lw=2.2, label=lbl_b)
     ax2.axvline(sa["cpm_deterministic"], color=UNB_GREEN, ls="--", lw=1.8, label=f"CPM = {sa['cpm_deterministic']:.2f}".replace(".", ","))
+    ax2.axvline(11.0, color="#111827", ls="-.", lw=1.6, label="Meta = 11,00 d.u.")
     ax2.axhline(0.50, color="gray", ls=":", lw=1)
     ax2.axhline(0.85, color="gray", ls=":", lw=1)
     ax2.set_xlabel("Prazo de término $F$ (dias úteis)")
@@ -371,60 +424,55 @@ def fig08():
         poc = json.load(f)
     tb = poc["tcc2_schedule_base"]
     tr = poc["tcc2_schedule_risks"]
-    tc = poc["tcc2_schedule_cuts"]
+    ts40 = poc["tcc2_schedule_stress_40"]
 
+    # Janelas ES -> EF nominais (CAMINHO CRÍTICO CPM = 12,00 sem; zero itens desejáveis D01-D03)
     tasks = [
-        ("E01 [Trilha B]: Extrator GitHub + Replay", 1, 2, UNB_GREEN),
-        ("E02 [Trilha A]: Contrato + SQL + Âncora", 1, 2, UNB_BLUE),
-        ("E03 [Trilha A]: CRUD + Paginação + RBAC", 3, 4, UNB_BLUE),
-        ("E04 [Trilha B]: Ingestão + Outbox + DLQ", 3, 4, UNB_GREEN),
-        ("E05 [Trilha A]: Motor Monte Carlo + CRN", 5, 6, UNB_BLUE),
-        ("E06 [Trilha A]: Sim Worker + Persistência", 7, 8, UNB_BLUE),
-        ("E08 [Trilha B]: Dim. 2 (10 Regimes, M=500)", 7, 8, UNB_GREEN),
-        ("E07 [Trilha A]: Propostas + Guardrails", 9, 10, UNB_BLUE),
-        ("E09 [Trilha B]: Dim. 3 (Backtesting Real)", 9, 11, UNB_GREEN),
-        ("E11 [Trilha A]: UI Web Mínima Anti-Viés", 11, 12, UNB_BLUE),
-        ("E10 [Trilha B]: Dim. 5 (300 Cenários + Abl.)", 12, 14, UNB_GREEN),
-        ("E12 [Conjunto]: Consolidação Estatística", 15, 16, ORANGE_ACCENT),
-        ("E13 [Conjunto]: Redação Final + Ameaças", 17, 18, ORANGE_ACCENT),
-        ("E14 [Conjunto]: Revisão ABNT + Defesa + Buffer", 19, 20, ORANGE_ACCENT),
-        ("D01 [Desejável]: Grafo Visual UI", 13, 14, "#6B7280"),
-        ("D02 [Desejável]: Painel de Sensibilidade", 15, 16, "#6B7280"),
-        ("D03 [Desejável]: 3º Juiz Externo Adicional", 16, 17, "#6B7280"),
+        ("E01 [Trilha B]: Extrator cli/cli + Replay (12 h)", 0.00, 1.00, UNB_GREEN),
+        ("E02 [Trilha A]: Contrato + Proxy + SQL + Ed25519 (18 h)", 0.00, 1.50, UNB_BLUE),
+        ("E03 [Trilha A]: REST + Paginação + RBAC 403 (15 h)", 1.50, 2.75, UNB_BLUE),
+        ("E04 [Trilha B]: Webhooks HMAC + Audit Trail (15 h)", 1.50, 2.75, UNB_GREEN),
+        ("E05 [Trilha A]: Motor Monte Carlo + CRN (12 h)", 2.75, 3.75, UNB_BLUE),
+        ("E06 [Trilha A]: Persistência Sim Worker <2 s (12 h)", 3.75, 4.75, UNB_BLUE),
+        ("E08 [Trilha B]: Dim. 2 Enxuta (6 Regimes, R9/R10) (18 h)", 3.75, 5.25, UNB_GREEN),
+        ("E07 [Trilha A]: Proxy Llama-3 + Fail-Closed (18 h)", 4.75, 6.25, UNB_BLUE),
+        ("E09 [Trilha B]: Dim. 3 Descritiva (2 Níveis cli/cli) (18 h)", 5.25, 6.75, UNB_GREEN),
+        ("E11 [Trilha A]: Cartão Mínimo Anti-Viés + CSP (12 h)", 6.25, 7.25, UNB_BLUE),
+        ("E10 [Trilha B]: Dim. 5 (Llama-3 t=0 + H2b Expl.) (18 h)", 6.75, 8.25, UNB_GREEN),
+        ("E12 [Conjunto]: Consolidação + Zenodo (15 h/autor)", 8.25, 9.50, ORANGE_ACCENT),
+        ("E13 [Conjunto]: Redação Final + Ameaças (18 h/autor)", 9.50, 11.00, ORANGE_ACCENT),
+        ("E14 [Conjunto]: Revisão ABNT + Banca Estoc. (12 h/autor)", 11.00, 12.00, ORANGE_ACCENT),
+        ("Reserva / Buffer de Contingência (Semanas 12–20)", 12.00, 20.00, "#9CA3AF"),
     ]
-    fig, ax = plt.subplots(figsize=(10.0, 5.4), dpi=FIGURE_DPI)
+    fig, ax = plt.subplots(figsize=(10.5, 5.5), dpi=FIGURE_DPI)
     y_pos = np.arange(len(tasks))[::-1]
     for idx, (label, start, end, col) in enumerate(tasks):
         y = y_pos[idx]
-        ax.barh(y, end - start + 0.8, left=start - 0.4, height=0.6, color=col, alpha=0.85, edgecolor="#222222")
+        alpha_v = 0.45 if col == "#9CA3AF" else 0.86
+        hatch_v = "//" if col == "#9CA3AF" else None
+        ax.barh(y, end - start, left=start, height=0.62, color=col, alpha=alpha_v, edgecolor="#222222", hatch=hatch_v)
 
-    ax.axhline(2.5, color=RED_ACCENT, ls="--", lw=1.6)
-    ax.text(
-        0.75,
-        2.5,
-        "Linha de Corte de Escopo (Abaixo: Desejáveis D01–D03)",
-        color=RED_ACCENT,
-        fontsize=8.0,
-        weight="bold",
-        va="center",
-        bbox=dict(boxstyle="round,pad=0.2", fc="white", ec=RED_ACCENT, lw=0.9),
-    )
+    ax.axvline(tr["p85"], color=UNB_BLUE, ls="--", lw=1.6, label=f"P85 Nominal c/ Riscos e ρ=0,50 ({tr['p85']:.2f} sem)".replace(".", ","))
+    ax.axvline(ts40["p85"], color=RED_ACCENT, ls="-.", lw=1.7, label=f"P85 Estresse R10 (+40% + ρ=0,50: {ts40['p85']:.2f} sem)".replace(".", ","))
+    ax.axvline(20.0, color="#111827", ls="-", lw=1.8, label="Prazo Limite do Semestre (20,0 sem)")
+
     title_str = (
-        f"Base: P50={tb['p50']:.2f} | P85={tb['p85']:.2f} sem  •  "
-        f"Com Riscos: P50={tr['p50']:.2f} | P85={tr['p85']:.2f} sem (P≤20 = {tr['prob_target']:.1f}%)\n"
-        f"Estresse (+25% O/M/P + Riscos) c/ Cortes Pré-Registrados: P85={tc['p85']:.2f} sem (P≤20 = {tc['prob_target']:.1f}%)"
+        f"Cronograma Bottom-Up Enxuto (258 h totais • CPM={tb['cpm_deterministic']:.2f} sem • Escopo Pré-Cortado sem D01–D03)\n"
+        f"Nominal (ρ=0,50): P85={tr['p85']:.2f} sem (P≤20={tr['prob_target']:.1f}%)  •  "
+        f"Estresse R10 (+40% + ρ=0,50): P85={ts40['p85']:.2f} sem (P≤20={ts40['prob_target']:.1f}%)"
     ).replace(".", ",")
     ax.set_title(title_str, fontsize=8.3, weight="bold", color="#1F2937", pad=8)
     ax.set_yticks(y_pos)
-    ax.set_yticklabels([t[0] for t in tasks], fontsize=8)
-    ax.set_xlim(0.5, 20.5)
-    ax.set_xticks(range(1, 21))
+    ax.set_yticklabels([t[0] for t in tasks], fontsize=7.9)
+    ax.set_xlim(0.0, 20.8)
+    ax.set_xticks(range(0, 21, 2))
     ax.set_xlabel(
-        "Semanas Úteis do Cronograma do TCC 2 (01/03/2027 a 16/07/2027 • CEPE UnB nº 0151/2026: Aulas 15/03–16/07)\n"
-        "Trilha A: Azul | Trilha B: Verde | Conjunto: Laranja | Desejáveis: Cinza",
-        fontsize=8.3,
+        "Semanas Acumuladas do Semestre Letivo do TCC 2 (0 a 20 semanas • CEPE UnB nº 0151/2026: Aulas 15/03–16/07/2027)\n"
+        "Trilha A: Azul (87 h) | Trilha B: Verde (81 h) | Conjunto: Laranja (45 h/autor) | Buffer: Cinza (8,0 sem nominais)",
+        fontsize=8.2,
     )
     ax.grid(True, axis="x", ls="--", alpha=0.35)
+    ax.legend(fontsize=7.6, loc="lower left", framealpha=0.95)
     fig.tight_layout()
     save_rgb_png(fig, "figuras/fig08_gantt.png")
 
