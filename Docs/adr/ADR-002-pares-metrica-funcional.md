@@ -23,5 +23,5 @@ As métricas $\mathrm{MdAE}$ e $\mathrm{NMAE}$ são reportadas exclusivamente co
 
 ## Consequences
 - Elimina a inconsistência teórica de funções de perda apontada na revisão técnica.
-- Mantém compatibilidade total com a inferência primária da Dimensão 2 via *bootstrap* pareado com correção de Holm-Bonferroni ($m=3$) sobre $\Delta\overline{\mathrm{AE}}$ e $\Delta\overline{\mathrm{SE}}$ (reportando Wilcoxon pareado e estimador de Hodges-Lehmann como análise complementar).
+- Mantém compatibilidade total com a inferência primária da Dimensão 2 via *bootstrap* pareado unilateral com correção de Holm-Bonferroni ($m=2$ por regime e funcional contra CPM e regressão linear em H1a; $m=3$ entre os regimes R1, R3 e R5 para *Pinball Loss* em H1b) sobre $\Delta\overline{\mathrm{AE}}$ e $\Delta\overline{\mathrm{SE}}$ (reportando Wilcoxon pareado e estimador de Hodges-Lehmann como análise complementar).
 
