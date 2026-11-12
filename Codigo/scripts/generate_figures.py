@@ -233,42 +233,55 @@ def fig04():
 
 
 def fig05():
-    fig, ax = plt.subplots(figsize=(10.2, 4.6), dpi=FIGURE_DPI)
-    ax.set_xlim(0, 13.8)
-    ax.set_ylim(0, 5.3)
+    fig, ax = plt.subplots(figsize=(10.5, 4.7), dpi=FIGURE_DPI)
+    ax.set_xlim(0, 14.0)
+    ax.set_ylim(0, 5.4)
     ax.axis("off")
 
-    draw_box(ax, 0.3, 0.35, 7.6, 4.55, "", fc="#F5F9FD", ec=UNB_BLUE)
-    ax.text(0.55, 4.62, "Sub-rede Docker: core-net (Isolada da IA)", fontsize=9.5, weight="bold", color=UNB_BLUE)
+    # Duas sub-redes separadas; Core PM Service atua em modo dual-homed atravessando a fronteira
+    draw_box(ax, 0.3, 0.35, 6.75, 4.65, "", fc="#F5F9FD", ec=UNB_BLUE)
+    ax.text(0.55, 4.70, "Sub-rede: core-net (Isolada da IA)", fontsize=9.2, weight="bold", color=UNB_BLUE)
 
-    draw_box(ax, 8.9, 0.35, 4.6, 4.55, "", fc="#FEF6F6", ec=RED_ACCENT)
-    ax.text(9.15, 4.62, "Sub-rede: ai-isolated-net", fontsize=9.5, weight="bold", color=RED_ACCENT)
+    draw_box(ax, 7.25, 0.35, 6.45, 4.65, "", fc="#FEF6F6", ec=RED_ACCENT)
+    ax.text(13.45, 4.70, "Sub-rede: ai-isolated-net", fontsize=9.2, weight="bold", color=RED_ACCENT, ha="right")
 
-    draw_box(ax, 2.1, 2.95, 4.2, 1.2, "Core PM Service (Go)\nRBAC / Governança Fail-Closed", fc="#FFFFFF", ec=UNB_BLUE, weight="bold")
-    draw_box(ax, 0.6, 0.75, 3.1, 1.2, "PostgreSQL 16\nSKIP LOCKED + Audit", fc="#FFFFFF", ec=UNB_BLUE, weight="bold")
-    draw_box(ax, 4.5, 0.75, 3.1, 1.2, "Simulation Worker\nCPM + Monte Carlo", fc="#FFFFFF", ec=UNB_BLUE, weight="bold")
-    draw_box(ax, 9.35, 2.95, 3.7, 1.2, "AI Agent Service\n(Sem Driver/Rota SQL)", fc="#FFFFFF", ec=RED_ACCENT, weight="bold")
-    draw_box(ax, 9.35, 0.75, 3.7, 1.2, "API LLM Externa / Local\n(HTTPS / TLS)", fc="#F3F4F6", ec="#4B5563", weight="bold")
+    draw_box(ax, 0.55, 0.75, 2.75, 1.2, "PostgreSQL 16\nSKIP LOCKED + Audit", fc="#FFFFFF", ec=UNB_BLUE, weight="bold")
+    draw_box(ax, 3.65, 0.75, 2.95, 1.2, "Simulation Worker\nCPM + Monte Carlo", fc="#FFFFFF", ec=UNB_BLUE, weight="bold")
+    draw_box(
+        ax,
+        4.95,
+        2.95,
+        4.30,
+        1.25,
+        "Core PM Service (Go)\nDual-Homed: RBAC + Fail-Closed",
+        fc="#FFFBEB",
+        ec="#B45309",
+        weight="bold",
+    )
+    draw_box(ax, 10.15, 2.95, 3.25, 1.25, "AI Agent Service\n(Sem Driver/Rota SQL)", fc="#FFFFFF", ec=RED_ACCENT, weight="bold")
+    draw_box(ax, 10.15, 0.75, 3.25, 1.2, "API LLM Externa / Local\n(HTTPS / TLS)", fc="#F3F4F6", ec="#4B5563", weight="bold")
 
-    # Setas internas à core-net sem cruzar bordas de caixas
-    ax.annotate("", xy=(2.15, 2.00), xytext=(3.1, 2.90), arrowprops=dict(arrowstyle="<->", color=UNB_BLUE, lw=1.8))
-    ax.annotate("", xy=(5.8, 2.00), xytext=(5.2, 2.90), arrowprops=dict(arrowstyle="<->", color=UNB_BLUE, lw=1.8))
-    ax.annotate("", xy=(4.45, 1.35), xytext=(3.75, 1.35), arrowprops=dict(arrowstyle="<->", color=UNB_BLUE, lw=1.8))
+    ax.text(7.10, 2.35, "Fronteira\nDual-Homed", ha="center", va="center", fontsize=7.2, color="#B45309", weight="bold")
 
-    # Fronteira entre core-net e ai-isolated-net
-    ax.annotate("", xy=(9.30, 3.55), xytext=(6.35, 3.55), arrowprops=dict(arrowstyle="<->", color=RED_ACCENT, lw=1.8))
+    # Setas internas à core-net e ponte dual-homed
+    ax.annotate("", xy=(1.95, 2.00), xytext=(5.55, 2.92), arrowprops=dict(arrowstyle="<->", color=UNB_BLUE, lw=1.8))
+    ax.annotate("", xy=(5.15, 2.00), xytext=(6.25, 2.92), arrowprops=dict(arrowstyle="<->", color=UNB_BLUE, lw=1.8))
+    ax.annotate("", xy=(3.62, 1.35), xytext=(3.33, 1.35), arrowprops=dict(arrowstyle="<->", color=UNB_BLUE, lw=1.8))
+
+    # Comunicação permitida via ai-isolated-net entre Core PM Service (NIC secundária) e AI Agent
+    ax.annotate("", xy=(10.10, 3.57), xytext=(9.30, 3.57), arrowprops=dict(arrowstyle="<->", color=RED_ACCENT, lw=1.8))
     ax.text(
-        7.82,
-        3.92,
+        9.70,
+        4.32,
         "Allowlist JSON\n(HTTP/REST)",
         ha="center",
         va="center",
-        fontsize=7.6,
+        fontsize=7.3,
         color=RED_ACCENT,
         weight="bold",
-        bbox=dict(boxstyle="round,pad=0.18", fc="white", ec=RED_ACCENT, lw=0.9),
+        bbox=dict(boxstyle="round,pad=0.16", fc="white", ec=RED_ACCENT, lw=0.8),
     )
-    ax.annotate("", xy=(11.2, 2.00), xytext=(11.2, 2.90), arrowprops=dict(arrowstyle="<->", color="#4B5563", lw=1.8))
+    ax.annotate("", xy=(11.77, 2.00), xytext=(11.77, 2.92), arrowprops=dict(arrowstyle="<->", color="#4B5563", lw=1.8))
 
     fig.tight_layout()
     save_rgb_png(fig, "figuras/fig05_arquitetura.png")
@@ -406,7 +419,11 @@ def fig08():
     ax.set_yticklabels([t[0] for t in tasks], fontsize=8)
     ax.set_xlim(0.5, 20.5)
     ax.set_xticks(range(1, 21))
-    ax.set_xlabel("Semanas Úteis do Cronograma do TCC 2 (08/03/2027 a 23/07/2027)\nTrilha A: Azul | Trilha B: Verde | Conjunto: Laranja | Desejáveis: Cinza", fontsize=8.5)
+    ax.set_xlabel(
+        "Semanas Úteis do Cronograma do TCC 2 (01/03/2027 a 16/07/2027 • CEPE UnB nº 0151/2026: Aulas 15/03–16/07)\n"
+        "Trilha A: Azul | Trilha B: Verde | Conjunto: Laranja | Desejáveis: Cinza",
+        fontsize=8.3,
+    )
     ax.grid(True, axis="x", ls="--", alpha=0.35)
     fig.tight_layout()
     save_rgb_png(fig, "figuras/fig08_gantt.png")
