@@ -7,7 +7,7 @@ Executa:
   2. Verificacao de referencias cruzadas: todo \ref{...} possui \label{...} correspondente
      e nao ha labels duplicados;
   3. Verificacao bibliografica completa: toda chave em \cite{...} ou \citeonline{...} existe em
-     Docs/monografia/Referencias.bib e todas as 61 entradas sao citadas no texto
+     Docs/monografia/Referencias.bib e todas as entradas sao citadas no texto
      (zero entradas orfas, zero citacoes indefinidas);
   4. Verificacao de existencia fisica de todos os arquivos \input{...} e \includegraphics{...}
      e isolamento da pasta Overleaf (Docs/monografia/) sem arquivos .md/.txt nem espelhos duplicados;
@@ -138,7 +138,7 @@ def main() -> None:
 
     for m in re.finditer(r"\\includegraphics(?:\[[^\]]*\])?\{([^}]+)\}", main_clean):
         rel = m.group(1)
-        if "#" in rel or rel == "capa_fundo.jpg":
+        if "#" in rel:
             continue
         target = os.path.join(docs_dir, rel)
         if not os.path.exists(target):
@@ -194,8 +194,8 @@ def main() -> None:
     uncited = sorted(bib_keys - cited_keys)
     if uncited:
         errors.append(f"Entradas no .bib nao citadas em Docs/monografia/Main.tex ({len(uncited)}): {', '.join(uncited)}")
-    if len(bib_keys) < 61:
-        errors.append(f"Esperadas >= 61 entradas verificadas em Referencias.bib, encontradas {len(bib_keys)}")
+    if len(bib_keys) < 66:
+        errors.append(f"Esperadas >= 66 entradas verificadas em Referencias.bib, encontradas {len(bib_keys)}")
 
     # 5. Verifica ausencia de expressoes proibidas (DEC-1..7, PK-03..PK-06) e limite <= 250 palavras
     macros = load_latex_macros(os.path.join(docs_dir, "resultados_poc.tex"))
@@ -221,12 +221,29 @@ def main() -> None:
         ("61.00 ms", "PK-05 proibe benchmark hardcoded antigo no Abstract EN"),
         ("243.86 ms", "PK-05 proibe benchmark hardcoded antigo no Abstract EN"),
         ("em sete etapas", "PK-05 exige 'oito etapas' na descricao da Figura 6"),
-        ("TF(\\text{E01})=TF(\\text{E04})=0{,}42", "PK-03: TF(E01)=TF(E04) real e 1,92 sem. via \\tccDoisTFEUm{}"),
-        ("Corte 2 (em \\texttt{E11})", "PK-03 / OPEN-2: Corte 2 deve incidir em E06 (E11 tem IC=0%)"),
+        ("TF(\\text{E01})=TF(\\text{E04})=0{,}42", "PK-03: TF(E01)=TF(E04) legado proibido"),
+        ("Gemini-2.5-Flash", "DEC-2: modelo comercial externo excluido"),
+        ("86,2%", "H1b legado proibido (correto: 83,9% / 83,93%)"),
+        ("86{,}2", "H1b legado proibido (correto: 83,9% / 83,93%)"),
+        ("Q10/Q90", "DEC-3: regra em 2 niveis exclui casamento Q10/Q90"),
     ]
     for phrase, reason in forbidden_phrases:
         if phrase in main_clean:
             errors.append(f"Frase proibida encontrada em Docs/monografia/Main.tex ('{phrase}'): {reason}")
+
+    forbidden_regexes = [
+        (r"pr[eé]-registrad", "DEC-6 exige substituir por 'especificado(s) previamente'"),
+        (r"garantindo a entrega", "DEC-6 exige formulacao condicional no TCC2"),
+        (r"arquitetura de refer[eê]ncia", "DEC-7 exige usar 'arquitetura proposta'"),
+        (r"temperature\s*=\s*0[.,]2", "DEC-2 exclui lote exploratorio em temperature=0.2"),
+    ]
+    for pat, reason in forbidden_regexes:
+        if re.search(pat, main_clean, flags=re.IGNORECASE):
+            errors.append(f"Padrao proibido '{pat}' encontrado em Docs/monografia/Main.tex: {reason}")
+
+    for lno, line in enumerate(main_clean.splitlines(), start=1):
+        if re.search(r"\bD0[123]\b", line) and not re.search(r"remo(?:[cç][aã]o|vid)", line, flags=re.IGNORECASE):
+            errors.append(f"Docs/monografia/Main.tex:{lno}: referencia ativa a pacote desejavel removido D01-D03 (DEC-1/DEC-5)")
 
     if re.search(
         r"temperature\s*=\s*0(?:[.,]0)?[^.\n]{0,120}(?:são determinísticas|garante determinismo absoluto)",

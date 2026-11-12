@@ -99,16 +99,25 @@ def main() -> None:
         "tccDoisRiscosPoitentaeCincoEN": fmt_en(tcc2["with_risks"]["p85"], 2),
         "tccDoisRiscosProbVinte": fmt_br(tcc2["with_risks"]["prob_target"], 1),
         "tccDoisRiscosProbVinteEN": fmt_en(tcc2["with_risks"]["prob_target"], 1),
-        "tccDoisStressPoitentaeCinco": fmt_br(tcc2["stress"]["p85"], 2),
-        "tccDoisCutsCPM": fmt_br(tcc2["stress_with_cuts"]["cpm_deterministic"], 2),
-        "tccDoisCutsPoitentaeCinco": fmt_br(tcc2["stress_with_cuts"]["p85"], 2),
-        "tccDoisCutsPoitentaeCincoEN": fmt_en(tcc2["stress_with_cuts"]["p85"], 2),
-        "tccDoisCutsProbVinte": fmt_br(tcc2["stress_with_cuts"]["prob_target"], 1),
+        "tccDoisStressPoitentaeCinco": fmt_br(tcc2["stress_25"]["p85"], 2),
+        "tccDoisStressProbVinte": fmt_br(tcc2["stress_25"]["prob_target"], 1),
+        "tccDoisQuarentaCPM": fmt_br(tcc2["stress_40"]["cpm_deterministic"], 2),
+        "tccDoisQuarentaMean": fmt_br(tcc2["stress_40"]["mean"], 2),
+        "tccDoisQuarentaPcinquenta": fmt_br(tcc2["stress_40"]["p50"], 2),
+        "tccDoisQuarentaPoitentaeCinco": fmt_br(tcc2["stress_40"]["p85"], 2),
+        "tccDoisQuarentaPoitentaeCincoEN": fmt_en(tcc2["stress_40"]["p85"], 2),
+        "tccDoisQuarentaPnoventaeCinco": fmt_br(tcc2["stress_40"]["p95"], 2),
+        "tccDoisQuarentaProbVinte": fmt_br(tcc2["stress_40"]["prob_target"], 1),
+        "tccDoisQuarentaProbVinteEN": fmt_en(tcc2["stress_40"]["prob_target"], 1),
         "tccDoisTFEUm": fmt_br(tcc2["task_cpm"]["E01"]["tf"], 2),
+        "tccDoisTFEQuatro": fmt_br(tcc2["task_cpm"]["E04"]["tf"], 2),
         "tccDoisTFESeis": fmt_br(tcc2["task_cpm"]["E06"]["tf"], 2),
+        "tccDoisTFESete": fmt_br(tcc2["task_cpm"]["E07"]["tf"], 2),
         "tccDoisTFEOnze": fmt_br(tcc2["task_cpm"]["E11"]["tf"], 2),
         "tccDoisRiscosICESeis": fmt_br(tcc2["with_risks"]["criticality_index"]["E06"], 1),
+        "tccDoisRiscosICESete": fmt_br(tcc2["with_risks"]["criticality_index"]["E07"], 1),
         "tccDoisRiscosICEOito": fmt_br(tcc2["with_risks"]["criticality_index"]["E08"], 1),
+        "tccDoisRiscosICENove": fmt_br(tcc2["with_risks"]["criticality_index"]["E09"], 1),
         "tccDoisRiscosICEOnze": fmt_br(tcc2["with_risks"]["criticality_index"]["E11"], 1),
         "benchBaseMedMs": fmt_br(b_res[0]["median_ms"], 2),
         "benchBaseMedMsEN": fmt_en(b_res[0]["median_ms"], 2),
@@ -133,14 +142,15 @@ def main() -> None:
 
     # 1b. Verifica uso das macros EN/TCC2/Benchmark em Docs/monografia/Main.tex (Resumo, Abstract, Cap. 5-6)
     required_macros_in_main = [
-        "\\benchBaseMedMsEN{}",
-        "\\benchSynthWOneMedMsEN{}",
-        "\\benchSynthWFourMedMsEN{}",
-        "\\benchSynthWEightMedMsEN{}",
+        "\\benchSynthWOneMedMs{}",
+        "\\benchSynthWTwoMedMs{}",
+        "\\benchSynthWFourMedMs{}",
+        "\\benchSynthWEightMedMs{}",
         "\\tccDoisRiscosPcinquentaEN{}",
         "\\tccDoisRiscosPoitentaeCincoEN{}",
         "\\tccDoisRiscosProbVinteEN{}",
-        "\\tccDoisCutsPoitentaeCincoEN{}",
+        "\\tccDoisQuarentaPoitentaeCincoEN{}",
+        "\\tccDoisQuarentaProbVinteEN{}",
         "\\tccDoisTFEUm{}",
         "\\benchSpeedupDoisW{}",
         "\\benchSpeedupQuatroW{}",
@@ -167,6 +177,20 @@ def main() -> None:
             continue
         if f"\\input{{tabelas/{tname}}}" not in main_tex:
             errors.append(f"Docs/monografia/Main.tex nao inclui \\input{{tabelas/{tname}}}")
+        with open(p_docs, "r", encoding="utf-8") as tf:
+            t_content = tf.read()
+        for stale_num in ["86,2%", "86{,}2%", "19{,}57", "22{,}40", "18{,}31"]:
+            if stale_num in t_content:
+                errors.append(f"Valor legado proibido '{stale_num}' encontrado em Docs/monografia/tabelas/{tname}")
+
+    for stale_num in ["86,2%", "86{,}2%"]:
+        if stale_num in main_tex:
+            errors.append(f"Valor legado proibido '{stale_num}' encontrado em Docs/monografia/Main.tex")
+
+    with open(os.path.join(docs_dir, "tabelas", "tab_tcc2_mc.tex"), "r", encoding="utf-8") as tf:
+        tab_tcc2_txt = tf.read()
+    if fmt_br(tcc2["stress_40"]["p85"], 2) not in tab_tcc2_txt or fmt_br(tcc2["stress_40"]["prob_target"], 1) not in tab_tcc2_txt:
+        errors.append("tab_tcc2_mc.tex dessincronizada com stress_40 do poc_results.json")
 
     # 3. Verifica poder estatistico de H1b (M=500, TOST binomial exato 90% [416, 438]) em Main.tex
     p500 = pwr["tost_exact_90"]["500"]["0.85"]
@@ -211,14 +235,23 @@ def main() -> None:
     crn_ratio_str = f"{fmt_br_plain(crn['variance_reduction_ratio'], 1)}x"
     pwr_2d_str = f"{fmt_br_plain(p500['power_pct'], 2)}%"
     pwr_1d_str = f"{fmt_br_plain(p500['power_pct'], 1)}%"
-    cuts_p85_str = fmt_br_plain(tcc2["stress_with_cuts"]["p85"], 2)
-    for token in ["93,8%", crn_ratio_str]:
+    s40_p85_str = fmt_br_plain(tcc2["stress_40"]["p85"], 2)
+    s40_prob_plain = fmt_br_plain(tcc2["stress_40"]["prob_target"], 1)
+    s40_prob_tex = fmt_br(tcc2["stress_40"]["prob_target"], 1)
+    w4_med_str = fmt_br_plain(b_res[3]["median_ms"], 1)
+    for token in ["94,1%", crn_ratio_str, "12,00", w4_med_str]:
         if token not in readme_md:
             errors.append(f"Valor chave '{token}' ausente em README.md")
+    if (
+        f"{s40_prob_plain}%" not in readme_md
+        and (s40_prob_plain + r"\%") not in readme_md
+        and (s40_prob_tex + r"\%") not in readme_md
+    ):
+        errors.append(f"Valor chave '{s40_prob_plain}%' ausente em README.md")
     if pwr_2d_str not in readme_md and pwr_1d_str not in readme_md:
         errors.append(f"Valor chave '{pwr_2d_str}' / '{pwr_1d_str}' ausente em README.md")
-    if cuts_p85_str not in readme_md and fmt_br(tcc2["stress_with_cuts"]["p85"], 2) not in readme_md:
-        errors.append(f"Valor chave '{cuts_p85_str}' ausente em README.md")
+    if s40_p85_str not in readme_md and fmt_br(tcc2["stress_40"]["p85"], 2) not in readme_md:
+        errors.append(f"Valor chave '{s40_p85_str}' ausente em README.md")
 
     if errors:
         print("FALHA na verificacao de consistencia numerica:")
