@@ -2,12 +2,11 @@
   "classification": "exploratory_stochastic_parameterization_only",
   "temporal_leakage": false,
   "min_sample_size_n": 15,
-  "note": "Demonstracao exploratoria de parametrizacao da arvore em 3 niveis no TCC 1; replay point-in-time integral com congelamento causal fica reservado a E09 do TCC 2.",
+  "note": "Demonstracao exploratoria de parametrizacao da arvore em 2 niveis no TCC 1 (C1: Nivel 2 Q10/Q90 removido); backtesting descritivo com congelamento causal fica reservado a E09 do TCC 2.",
   "window_parameterizations": [
     {
       "selected_rule": "primaria_quantis_regularizados_Q05_HSM_Q95",
       "reason": "Q50 > 0,25 d.u.; suporte Beta definido por Q05/Q95 com moda HSM projetada em [to, tp].",
-      "q10_q90_applicable": false,
       "passes_min_sample_n15": false,
       "q05": 0.25,
       "q10": 0.25,
@@ -30,7 +29,6 @@
     {
       "selected_rule": "fallback_bootstrap_empirico",
       "reason": "Mediana Q50 atinge o piso de truncamento (0,25 d.u.); parametrizacao Beta degenerada.",
-      "q10_q90_applicable": false,
       "passes_min_sample_n15": false,
       "q05": 0.25,
       "q10": 0.25,
@@ -53,7 +51,6 @@
     {
       "selected_rule": "primaria_quantis_regularizados_Q05_HSM_Q95",
       "reason": "Q50 > 0,25 d.u.; suporte Beta definido por Q05/Q95 com moda HSM projetada em [to, tp].",
-      "q10_q90_applicable": false,
       "passes_min_sample_n15": true,
       "q05": 0.25,
       "q10": 0.25,

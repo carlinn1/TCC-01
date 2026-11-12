@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
 """
 Demonstracao exploratoria de parametrizacao estocastica da Dimensao 3
-(Arvore em 3 Niveis — EST-02, EST-03, DAD-05, ADR-002, ADR-003, ADR-005).
+(Arvore em 2 Niveis — EST-02, EST-03, DAD-05, ADR-002, ADR-003, ADR-005, C1).
 
-Nota metodologica (PK-01): No TCC 1 este script executa EXCLUSIVAMENTE a calibracao
-exploratoria da regra em 3 niveis sobre as distribuicoes empiricas extraidas de `cli/cli`,
-sem utilizar duracao futura da janela (`y_real`), sem simulacao sintetica de entregas e sem
-heuristica de paralelismo. O backtesting point-in-time integral com congelamento causal e
-metricas proprias de Gneiting (MAE, RMSE, Pinball L_0.85, CRPS) fica reservado a E09 (TCC 2).
+Nota metodologica (PK-01 / C1 / B2): No TCC 1 este script executa EXCLUSIVAMENTE a calibracao
+exploratoria da regra em 2 niveis (Nível 1: Q05/m_HSM/Q95; Fallback: Bootstrap empirico quando Q50 <= 0.25)
+sobre as distribuicoes empiricas extraidas de `cli/cli`, removendo o antigo Nivel 2 (casamento Q10/Q90)
+que nunca disparava por coincidir Q10 com o piso operacional. Sem vazamento temporal (`y_real`), e o
+backtesting descritivo com congelamento causal fica reservado a E09 (TCC 2).
 """
 
 import json
 import os
 
 FLOOR_BD = 0.25
-DELTA_INTERIOR = 0.05
 
 
 def pct(xs: list[float], q: float) -> float:
@@ -56,7 +55,7 @@ MIN_SAMPLE_SIZE_N = 15
 
 def classify_and_parameterize(durations: list[float]) -> dict:
     """
-    Aplica a arvore de decisao em 3 niveis (DEC-3 / ADR-003) sobre um vetor de duracoes
+    Aplica a arvore de decisao em 2 niveis (C1 / B2 / ADR-003) sobre um vetor de duracoes
     de engenharia (em dias uteis, com piso de 0,25 d.u.), sem uso de dados futuros.
     """
     if not durations:
@@ -72,8 +71,6 @@ def classify_and_parameterize(durations: list[float]) -> dict:
     interior = [x for x in durations if x > FLOOR_BD + 1e-9]
     m_hsm = half_sample_mode(interior) if len(interior) >= 3 else half_sample_mode(durations)
 
-    # Verifica se Q10 esta no interior do suporte (> 0.25 + delta) e se n >= 15
-    q10_interior = q10 > (FLOOR_BD + DELTA_INTERIOR)
     passes_min_n = len(durations) >= MIN_SAMPLE_SIZE_N
 
     # Verifica condicao de degenerescencia no piso (Q50 == 0.25 d.u.)
@@ -81,7 +78,6 @@ def classify_and_parameterize(durations: list[float]) -> dict:
         return {
             "selected_rule": "fallback_bootstrap_empirico",
             "reason": "Mediana Q50 atinge o piso de truncamento (0,25 d.u.); parametrizacao Beta degenerada.",
-            "q10_q90_applicable": False,
             "passes_min_sample_n15": passes_min_n,
             "q05": round(q05, 4),
             "q10": round(q10, 4),
@@ -104,7 +100,6 @@ def classify_and_parameterize(durations: list[float]) -> dict:
     return {
         "selected_rule": "primaria_quantis_regularizados_Q05_HSM_Q95",
         "reason": "Q50 > 0,25 d.u.; suporte Beta definido por Q05/Q95 com moda HSM projetada em [to, tp].",
-        "q10_q90_applicable": q10_interior,
         "passes_min_sample_n15": passes_min_n,
         "q05": round(q05, 4),
         "q10": round(q10, 4),
@@ -166,8 +161,8 @@ def main():
         "temporal_leakage": False,
         "min_sample_size_n": MIN_SAMPLE_SIZE_N,
         "note": (
-            "Demonstracao exploratoria de parametrizacao da arvore em 3 niveis no TCC 1; "
-            "replay point-in-time integral com congelamento causal fica reservado a E09 do TCC 2."
+            "Demonstracao exploratoria de parametrizacao da arvore em 2 niveis no TCC 1 (C1: Nivel 2 Q10/Q90 removido); "
+            "backtesting descritivo com congelamento causal fica reservado a E09 do TCC 2."
         ),
         "window_parameterizations": window_params,
     }
@@ -211,7 +206,7 @@ def main():
         f.writelines(tex_lines)
 
     print("=========================================================================")
-    print("  Estudo Exploratorio de Parametrizacao (Arvore em 3 Niveis, Sem Replay)")
+    print("  Estudo Exploratorio de Parametrizacao (Arvore em 2 Niveis, Sem Replay)")
     print("=========================================================================")
     for wp in window_params:
         ed_val = wp["pert_expected_mean"] if wp["pert_expected_mean"] is not None else wp["sample_mean"]
