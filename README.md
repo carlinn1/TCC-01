@@ -2,16 +2,16 @@
 
 # Sombra Digital Governada & IA para Apoio à Decisão em Projetos de Software
 
-**Arquitetura de Referência com Simulação de Monte Carlo (PERT-Beta + Bernoulli), Método do Caminho Crítico e Governança Determinística *Fail-Closed***
+**Arquitetura Proposta com Simulação de Monte Carlo (PERT-Beta + Bernoulli + Cópula Gaussiana), Método do Caminho Crítico e Governança Determinística *Fail-Closed***
 
 [![Go Version](https://img.shields.io/badge/Go-1.27%2B-00ADD8?style=flat-square&logo=go&logoColor=white)](Codigo/poc-engine/go.mod)
 [![Python Version](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=flat-square&logo=python&logoColor=white)](Codigo/scripts/extract_dataset.py)
 [![LaTeX](https://img.shields.io/badge/Monografia-abnTeX2%20%7C%20Overleaf-008080?style=flat-square&logo=overleaf&logoColor=white)](Docs/monografia/Main.tex)
-[![Tests](https://img.shields.io/badge/PoC%20Tests-PASS%20(93.8%25%20cov)-008C4F?style=flat-square)](#como-executar-a-poc-e-os-testes)
+[![Tests](https://img.shields.io/badge/PoC%20Tests-PASS%20(94.1%25%20cov)-008C4F?style=flat-square)](#como-executar-a-poc-e-os-testes)
 [![UnB FCTE](https://img.shields.io/badge/UnB%20%7C%20FCTE-TCC%201%20(2026)-1D4B7C?style=flat-square)](Docs/monografia/Main.tex)
 
 [Visão Geral](#visão-geral) •
-[Arquitetura](#arquitetura-de-referência) •
+[Arquitetura](#arquitetura-proposta) •
 [Prova de Conceito](#prova-de-conceito-poc-engine) •
 [Execução Rápida](#como-executar-a-poc-e-os-testes) •
 [Monografia Overleaf](#compilação-da-monografia-overleaf--latex) •
@@ -34,15 +34,15 @@ Projetos de software em ciclos iterativos ou híbridos sofrem com desvios de pra
 
 Este repositório reúne a especificação arquitetural, a monografia completa em LaTeX ([`Docs/monografia/Main.tex`](Docs/monografia/Main.tex)), os *scripts* auditáveis de dados/figuras e a **Prova de Conceito (`poc-engine`)** em **Go 1.27** de uma **Sombra Digital Governada de Processo** (taxonomia de Kritzinger):
 
-- **Sincronização automatizada (Físico $\rightarrow$ Virtual):** ingestão idempotente de *webhooks* GitHub/CI com validação HMAC-SHA256, *debounce* configurável (30 s), regra de parametrização empírica em 3 níveis ($Q_{05}/\hat{m}_{\mathrm{HSM}}/Q_{95}$, casamento $Q_{10}/Q_{90}$ e *fallback* de *bootstrap*) e progresso híbrido (incluindo tratamento explícito de `not_planned`, atribuição de *issues*, histórico pré-*squash* e PRs abandonados).
-- **Motor Estocástico Determinístico (`poc-engine`):** ordenação topológica $\mathcal{O}(\lvert V\rvert+\lvert E\rvert)$, CPM exato e Simulação de Monte Carlo concorrente (PERT-Beta via Marsaglia-Tsang + riscos discretos de Bernoulli) com derivação não comutativa `Mix64` + subfluxos independentes por par $(\text{iteração } k, \text{entidade})$ para comparação pareada via Números Aleatórios Comuns (CRN, redução de variância de `6,3x`), soma compensada de Kahan e cálculo de erro-padrão de Monte Carlo (MCSE).
-- **Governança de IA *Fail-Closed*:** agente LLM em sub-rede isolada (`ai-isolated-net`) sem driver ou rota SQL (mediado pelo `Core PM Service` *dual-homed*), restrito a uma *allowlist* submetida a pipeline de sanitização Unicode NFKC em 5 estágios, verificador numérico pós-geração, classificador estático no servidor (Categorias 1 e 2 + negação por padrão), quarentena de `draft_risks` com máquina de estados completa (`DRAFT -> PENDING_APPROVAL -> APPROVED/REJECTED/STALE/EXPIRED`), cartão segregado com $\Delta P_{50}/\Delta P_{85}/\Delta \mathrm{IC}_i$, alerta simétrico de deriva (`±30%`) e trilha de auditoria encadeada por **SHA-256** isolada por projeto (`UNIQUE (project_id, prev_hash)`) com ancoragem externa autenticada via **HMAC-SHA256** ou **Ed25519**.
+- **Sincronização automatizada (Físico $\rightarrow$ Virtual):** ingestão idempotente de *webhooks* GitHub/CI com validação HMAC-SHA256 (RFC 2104), *debounce* configurável (30 s), regra de parametrização empírica em 2 níveis ($Q_{05}/\hat{m}_{\mathrm{HSM}}/Q_{95}$ ou *fallback* de *bootstrap* empírico) e progresso híbrido (incluindo tratamento explícito de `not_planned`, atribuição de *issues*, histórico pré-*squash* e PRs abandonados).
+- **Motor Estocástico Determinístico (`poc-engine`):** ordenação topológica $\mathcal{O}(\lvert V\rvert+\lvert E\rvert)$, CPM exato e Simulação de Monte Carlo concorrente (PERT-Beta via Marsaglia-Tsang, riscos discretos de Bernoulli e cópula gaussiana) com derivação não comutativa `Mix64` + subfluxos independentes por par $(\text{iteração } k, \text{entidade})$ para comparação pareada via Números Aleatórios Comuns (CRN, redução de variância de `6,3x`), soma compensada de Kahan e cálculo de erro-padrão de Monte Carlo (MCSE).
+- **Governança de IA *Fail-Closed*:** modelo de pesos abertos único da família Llama-3 (`temperature = 0.0`) em sub-rede isolada (`ai-isolated-net`) sem driver ou rota SQL (mediado pelo `Core PM Service` *dual-homed* e por *proxy* egresso com *allowlist* TLS), restrito a uma *allowlist* submetida a pipeline de sanitização Unicode NFKC em 5 estágios, verificador numérico pós-geração, classificador estático no servidor (Categorias 1 e 2 + negação por padrão), quarentena de `draft_risks` com máquina de estados completa (`DRAFT -> PENDING_APPROVAL -> APPROVED/REJECTED/STALE/EXPIRED`), cartão mínimo de aprovação com pré-visualização segregada de $\Delta P_{50}/\Delta P_{85}/\Delta \mathrm{IC}_i$ e CSP estrita, alerta simétrico de deriva (`±30%`) e trilha de auditoria encadeada por **SHA-256** isolada por projeto (`UNIQUE (project_id, prev_hash)`) com ancoragem externa assinada exclusivamente via **Ed25519 (RFC 8032)**.
 
 ---
 
-## Arquitetura de Referência
+## Arquitetura Proposta
 
-![Arquitetura de referência em três processos e isolamento de redes](Docs/monografia/figuras/fig05_arquitetura.png)
+![Arquitetura proposta com isolamento de redes, proxy egresso e auditoria Ed25519](Docs/monografia/figuras/fig05_arquitetura.png)
 
 <details>
 <summary><strong>Ver fluxo completo Evento → Simulação → IA → Governança → Auditoria</strong></summary>
@@ -50,19 +50,19 @@ Este repositório reúne a especificação arquitetural, a monografia completa e
 ```mermaid
 flowchart LR
     GH["GitHub / CI Webhooks<br/>(HMAC-SHA256)"] --> Core["Core PM Service (Go)<br/>Dual-homed • RBAC • Fail-Closed"]
-    Core <-->|"ACID + audit_logs"| PG[("PostgreSQL 16<br/>SKIP LOCKED + SHA-256")]
-    PG <-->|"Fila de Jobs"| Worker["Simulation Worker (Go)<br/>CPM + Monte Carlo PERT-Beta"]
+    Core <-->|"ACID + audit_logs + Ed25519"| PG[("PostgreSQL 16<br/>SKIP LOCKED + SHA-256")]
+    PG <-->|"Fila de Jobs"| Worker["Simulation Worker (Go)<br/>CPM + MC + Cópula Gaussiana"]
     Core <-->|"Allowlist JSON Sanitizada<br/>(Sem driver/rota SQL)"| AI["AI Agent Service<br/>(ai-isolated-net)"]
-    AI <-->|"HTTPS / TLS"| LLM["API Externa LLM"]
-    Core -->|"SSE: Cartão Determinístico<br/>+ ΔP50 / ΔP85"| UI["Gerente (SPA React/TS)<br/>Aprovação Humana (Cat. 2)"]
+    AI <-->|"TLS via Proxy Egresso"| LLM["Llama-3 (Pesos Fixados)<br/>temperature = 0.0"]
+    Core -->|"JSON/HTML CSP Estrita<br/>+ ΔP50 / ΔP85"| UI["Gerente (Cartão Mínimo)<br/>Aprovação Humana (Cat. 2)"]
 ```
 
 | Camada / Contêiner | Sub-rede Docker | Responsabilidade Central | Garantias Principais |
 | :--- | :--- | :--- | :--- |
-| **Core PM Service** (`Go`) | `core-net` + `ai-isolated-net` (*dual-homed*) | Ingestão HMAC, construção da *allowlist*, classificação binária *fail-closed*, fila Cat. 2 e alertas (RF12) | Negação por padrão (`REJECTED`), verificação numérica ($\pm 0{,}05$ / $\pm 0{,}01$), RBAC |
+| **Core PM Service** (`Go`) | `core-net` + `ai-isolated-net` (*dual-homed*) | Ingestão HMAC, construção da *allowlist*, classificação binária *fail-closed*, fila Cat. 2 e âncora Ed25519 | Negação por padrão (`REJECTED`), verificação numérica ($\pm 0{,}05$ / $\pm 0{,}01$), RBAC |
 | **PostgreSQL 16** | `core-net` | Estado versionado (`state_version`), cenários em `JSONB`, fila assíncrona e trilha de auditoria | `FOR UPDATE SKIP LOCKED`, `UPDATE`/`DELETE` revogados + cadeia SHA-256 por projeto |
 | **Simulation Worker** (`Go`) | `core-net` | Execução concorrente de CPM + 10.000 iterações Monte Carlo com soma de Kahan e MCSE | Reprodutibilidade determinística por índice (1/4/16 *workers*) e latência `< 500 ms` (`RNF06`) |
-| **AI Agent Service** | `ai-isolated-net` | Consome apenas métricas e títulos sanitizados (120/280 chars) e retorna JSON validado por *schema* | Sem `libpq`/`pgx`, sem credenciais SQL, sem código-fonte ou PII |
+| **AI Agent Service** | `ai-isolated-net` | Consome apenas métricas e títulos sanitizados (120/280 chars) via Llama-3 (`t=0.0`) e retorna JSON validado por *schema* | Sem `libpq`/`pgx`, sem credenciais SQL, sem código-fonte ou PII, egress TLS restrito |
 
 </details>
 
@@ -83,8 +83,8 @@ O núcleo estocástico implementado em [`Codigo/poc-engine/`](Codigo/poc-engine/
 | **Teste KS PERT-Beta ($n=10^6$ + 100 seeds)** | `ComputeKSBetaFit` ($D_{\mathrm{crit},0{,}05}=0{,}00136$) + `RunKSMultiSeedSuite` | $H_0$ não rejeitada em T1–T4 ($D_n \in [0{,}00067;\, 0{,}00104]$, $p \in [0{,}229;\, 0{,}768]$; taxa de rejeição em 100 seeds: `2%–7%`, média `4,75%`) | RQ2 |
 | **Caso Degenerado ($t_o=t_m=t_p$)** | `TestDegeneratePertBetaZeroVariance` `(5, 5, 5)` | Duração exata `5,00000`, variância `0,00000`, zero `NaN` | RQ2 |
 | **Reprodutibilidade por Índice** | `TestReproducibilityAcrossWorkers` (1, 4 e 16 *workers*) | Variação `0,000000` em Média Kahan (`11,893409`), $P_{50}, P_{85}, P_{95}$, $P(F\le 11)$ e $\mathrm{IC}_{\mathrm{T3}}$ | RNF08 |
-| **Escalabilidade (200 tarefas / 300 deps)** | Rede sintética em camadas ($N=10.000$, 1/2/4/8 *workers*, 5 rep.) | Mediana **`98,3 ms`** (8 *workers*), **`103,4 ms`** (4 *workers*, speedup `2,77x`), **`193,1 ms`** (2 *workers*) e **`286,4 ms`** (1 *worker*) | RNF06 |
-| **Cronograma Pré-Registrado TCC 2** | `AuditTCC2Schedule` (14 pacotes essenciais, 01/03/2027 a 16/07/2027, CEPE/UnB 0151/2026) | Nominal c/ riscos: $P_{50}=17{,}28$, $P_{85}=18{,}31$ sem. ($P(F\le 20)=99{,}8\%$); Estresse `+25%` + cortes pré-registrados (`E06`, `E08--E10`): $P_{85}=19{,}57 \le 20{,}0$ sem. | Cap. 6 |
+| **Escalabilidade (200 tarefas / 300 deps)** | Rede sintética em camadas ($N=10.000$, 1/2/4/8 *workers*, 5 rep.) | Mediana **`86,7 ms`** (8 *workers*), **`97,7 ms`** (4 *workers*, speedup `3,08x`), **`168,7 ms`** (2 *workers*) e **`301,1 ms`** (1 *worker*) | RNF06 |
+| **Cronograma Enxuto TCC 2** | `AuditTCC2Schedule` (14 pacotes essenciais *bottom-up*, 01/03/2027 a 16/07/2027, CEPE/UnB 0151/2026) | Base CPM = `12,00` sem.; Nominal c/ riscos + cópula ($\rho=0{,}50$): $P_{50}=12{,}52$, $P_{85}=13{,}76$ sem. ($P(F\le 20)=100{,}0\%$); Estresse R10 (`+40%` + $\rho=0{,}50$): $P_{85}=18{,}93 \le 20{,}0$ sem. ($P(F\le 20)=95{,}9\%$) | Cap. 6 |
 | **Poder Estatístico TOST (H1b)** | `power_h1b.py` ($M=500$ grafos/regime, TOST binomial exato / Clopper-Pearson 90% em $[80\%,90\%]$) | Poder exato de **`83,93%`** (`83,9%`) em $p=0{,}85$ (`47,96%` em $p=0{,}83$; `66,85%` em $p=0{,}87$; erro Tipo I `3,94% / 4,65%`) | RQ4, Cap. 3 |
 
 <details>
@@ -127,7 +127,7 @@ O núcleo estocástico implementado em [`Codigo/poc-engine/`](Codigo/poc-engine/
 cd Codigo/poc-engine
 go run .
 
-# 2. Rodar toda a suíte de validação com cobertura (93,8% de cobertura de instruções)
+# 2. Rodar toda a suíte de validação com cobertura (94,1% de cobertura de instruções)
 go test -v -count=1 -cover ./...
 
 # 3. Rodar os benchmarks de desempenho e alocações em 5 repetições (RNF06)
@@ -152,9 +152,9 @@ python Codigo/checks/check_latex.py
 | [`Codigo/poc-engine/random.go`](Codigo/poc-engine/random.go) | `Mix64`, `DeriveIterationSeed`, `DeriveEntitySeedFromKey`, `SampleGamma`, `SamplePERTBeta`, `ComputeKSBetaFit` | Derivação de sementes, Marsaglia-Tsang, CDF Beta (Lentz) e teste KS ($10^6$ + 100 seeds) |
 | [`Codigo/poc-engine/cpm.go`](Codigo/poc-engine/cpm.go) | `TopologicalSort`, `CompileGraph`, `FastCPM`, `CalculateExpectedDurationWithLambda` | Ordenação $\mathcal{O}(\lvert V\rvert+\lvert E\rvert)$ e CPM parametrizado por $\lambda$ |
 | [`Codigo/poc-engine/simulator.go`](Codigo/poc-engine/simulator.go) | `RunMonteCarlo`, `ComputeCRNDiff` | Orquestrador concorrente livre de *false sharing* e avaliador pareado CRN |
-| [`Codigo/poc-engine/validation_test.go`](Codigo/poc-engine/validation_test.go) | `TestPertBetaKSMultiSeed100`, `TestSplitMix64StreamIndependence`, `TestTCC2ScheduleMonteCarlo` | Suíte completa de validação com `93,8%` de cobertura |
+| [`Codigo/poc-engine/validation_test.go`](Codigo/poc-engine/validation_test.go) | `TestPertBetaKSMultiSeed100`, `TestSplitMix64StreamIndependence`, `TestTCC2ScheduleMonteCarlo` | Suíte completa de validação com `94,1%` de cobertura |
 | [`Codigo/scripts/extract_dataset.py`](Codigo/scripts/extract_dataset.py) | Extração de janelas de *release* via API GitHub + histórico pré-*squash* + vetores itemizados | Inclui `issue_assigned_at`, sensibilidade ao piso `{0,10; 0,25; 0,50}` d.u. e `--verify-local` |
-| [`Codigo/scripts/pilot_backtesting.py`](Codigo/scripts/pilot_backtesting.py) | Estudo exploratório de parametrização estocástica em 3 níveis (TCC1) | Exporta `Codigo/data/pilot_backtesting_results.json` e `Docs/monografia/tabelas/tab_piloto_backtesting.tex` |
+| [`Codigo/scripts/pilot_backtesting.py`](Codigo/scripts/pilot_backtesting.py) | Demonstração descritiva de parametrização causal em 2 níveis (TCC1) | Exporta `Codigo/data/pilot_backtesting_results.json` e `Docs/monografia/tabelas/tab_piloto_backtesting.tex` |
 | [`Codigo/scripts/power_h1b.py`](Codigo/scripts/power_h1b.py) | Estudo de poder estatístico binomial exato para H1b (TOST / Clopper-Pearson 90%) | Demonstra poder exato de `83,93%` (`[416, 438]`) para $M=500$ vs `0,00%` para $M=200$ (IC 95%) |
 | [`Codigo/checks/check_numbers.py`](Codigo/checks/check_numbers.py) | Verificador automatizado de consistência numérica JSON $\leftrightarrow$ LaTeX | Impede *drift* manual de números entre `poc-engine` e a monografia |
 | [`Codigo/checks/check_latex.py`](Codigo/checks/check_latex.py) | Verificador estrutural de LaTeX, citações BibTeX, isolamento Overleaf e logs | Garante zero referências indefinidas, zero entradas órfãs e zero erros |
@@ -167,9 +167,9 @@ Todo o pacote LaTeX compilável foi isolado exclusivamente na pasta [`Docs/monog
 
 > [!TIP]
 > **Upload direto no Overleaf sem *timeout* (plano gratuito de 10 s):**
-> 1. Envie **apenas o conteúdo de [`Docs/monografia/`](Docs/monografia/)** para a raiz do projeto Overleaf (`Main.tex`, `Referencias.bib`, `resultados_poc.tex`, `capa_fundo.png`, `tabelas/` e `figuras/`). Não envie `Docs/adr/`, `Docs/baseline/` nem `Docs/historico/`.
+> 1. Envie **apenas o conteúdo de [`Docs/monografia/`](Docs/monografia/)** para a raiz do projeto Overleaf (`Main.tex`, `Referencias.bib`, `resultados_poc.tex`, `capa_fundo.jpg`, `tabelas/` e `figuras/`). Não envie `Docs/adr/`, `Docs/baseline/` nem `Docs/historico/`.
 > 2. Defina `Main.tex` como documento principal em *Menu $\rightarrow$ Main document* (ou mantenha apenas um `.tex` raiz; evite enviar `main.tex` e `Main.tex` simultaneamente).
-> 3. As 8 imagens de [`Docs/monografia/figuras/`](Docs/monografia/figuras/) já estão otimizadas em **PNG 8-bit RGB opaco sem canal alfa (200 DPI)**, permitindo cópia direta rápida no `pdflatex` e pulando o carregamento do TikZ.
+> 3. A capa já está em JPEG baseline (`capa_fundo.jpg`) e as 8 imagens de [`Docs/monografia/figuras/`](Docs/monografia/figuras/) em **PNG 8-bit RGB opaco sem canal alfa (200 DPI, largura máx. 1400 px)** para compilar rapidamente dentro do limite do plano gratuito do Overleaf.
 > 4. Caso atualize o código `.tex`, limpe o cache (*Logs and output files* $\rightarrow$ lixeira *Clear cached files*) antes de recompilar.
 
 ---
@@ -191,7 +191,7 @@ TCC-01/
 │   ├── scripts/                         # Pipelines reprodutíveis em Python 3.11+
 │   │   ├── power_h1b.py                 # Cálculo binomial exato de poder estatístico TOST (H1b)
 │   │   ├── extract_dataset.py           # Coleta reprodutível via API do GitHub + git refs (cli/cli)
-│   │   ├── pilot_backtesting.py         # Estudo exploratório de parametrização em 3 níveis (TCC1)
+│   │   ├── pilot_backtesting.py         # Demonstração descritiva de parametrização em 2 níveis (TCC1)
 │   │   └── generate_figures.py          # Gerador estático das 8 figuras PNG (RGB 200 DPI)
 │   ├── checks/                          # Portas de auditoria automatizada (CI / local)
 │   │   ├── check_numbers.py             # Verificador de sincronia numérica JSON <-> LaTeX
@@ -204,15 +204,15 @@ TCC-01/
 ├── Docs/
 │   ├── monografia/                      # Pacote LaTeX 100% isolado e pronto para o Overleaf
 │   │   ├── Main.tex                     # Monografia completa do TCC 1 (abnTeX2, Cap. 1-6 + Apêndices)
-│   │   ├── Referencias.bib              # 61 referências auditadas compatíveis com abntex2cite
-│   │   ├── capa_fundo.png               # Imagem de fundo da capa
+│   │   ├── Referencias.bib              # 66 referências auditadas compatíveis com abntex2cite
+│   │   ├── capa_fundo.jpg               # Imagem de fundo da capa (JPEG otimizado)
 │   │   ├── resultados_poc.tex           # Macros LaTeX geradas automaticamente por poc-engine
 │   │   ├── tabelas/                     # 7 fragmentos LaTeX gerados (única fonte de verdade)
 │   │   └── figuras/                     # 8 figuras PNG RGB opacas (única fonte de verdade)
 │   ├── adr/                             # 8 Architecture Decision Records (ADR-001 a ADR-008)
 │   ├── baseline/                        # Logs de baseline pré-correções (tag pre-correcoes)
 │   ├── historico/                       # Especificação de correção, planos (tasks) e rascunhos legados
-│   └── bib_audit.md                     # Relatório de auditoria primária das 61 referências .bib
+│   └── bib_audit.md                     # Relatório de auditoria primária das referências .bib
 ├── CONSTRAINTS.md                       # Contrato de qualidade (C1–C9) e invariantes verificáveis
 └── README.md                            # Documentação principal do projeto
 ```
