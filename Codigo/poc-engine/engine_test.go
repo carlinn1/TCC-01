@@ -284,8 +284,93 @@ func TestComputeCRNDiff(t *testing.T) {
 	if diff.DeltaMeanSE >= indepSE {
 		t.Errorf("CRN did not reduce variance: paired SE=%.6f >= independent SE=%.6f", diff.DeltaMeanSE, indepSE)
 	}
+	// Because Scenario C' cuts T3 below T2 (switching dominant critical path from T3 to T2) while disabling R1,
+	// only T4 and partial path overlaps remain shared (~1.75x theoretical ceiling here).
+	if diff.VarianceRedRatio <= 1.5 {
+		t.Errorf("CRN variance reduction ratio %.2f too low (expected > 1.5)", diff.VarianceRedRatio)
+	}
 	if math.Abs(diff.DeltaMean-(resCPrime.Mean-resC.Mean)) > 1e-6 {
 		t.Errorf("DeltaMean %.6f does not match difference of means %.6f", diff.DeltaMean, resCPrime.Mean-resC.Mean)
+	}
+
+	// Second CRN check: perturbs T3 estimates WITHOUT collapsing below T2 (tests Marsaglia-Tsang rejection-count
+	// isolation under per-entity sub-streams: T2, T4, and R1 streams must remain synchronized -> > 4.0x reduction).
+	netCMild := buildBaseNetwork()
+	netCMild.StatusDate = 5.0
+	netCMild.Tasks[0].Completed = true
+	netCMild.Tasks[0].Progress = 1.0
+	netCMild.Tasks[0].ActualDuration = 3.0
+	netCMild.Tasks[1].Progress = 0.40
+	netCMild.Tasks[2].Progress = 0.30
+	netCMild.Risks = []Risk{{ID: "R1", TaskID: "T3", Probability: 0.30, ImpactDays: 2.0, Active: true}}
+
+	netCMildPrime := buildBaseNetwork()
+	netCMildPrime.StatusDate = 5.0
+	netCMildPrime.Tasks[0].Completed = true
+	netCMildPrime.Tasks[0].Progress = 1.0
+	netCMildPrime.Tasks[0].ActualDuration = 3.0
+	netCMildPrime.Tasks[1].Progress = 0.40
+	netCMildPrime.Tasks[2].Progress = 0.30
+	netCMildPrime.Tasks[2].To = 2.5
+	netCMildPrime.Tasks[2].Tm = 4.5
+	netCMildPrime.Tasks[2].Tp = 8.5
+	netCMildPrime.Risks = []Risk{{ID: "R1", TaskID: "T3", Probability: 0.30, ImpactDays: 2.0, Active: false}}
+
+	resMild, err := RunMonteCarlo(netCMild, cfg)
+	if err != nil {
+		t.Fatalf("Scenario Mild C failed: %v", err)
+	}
+	resMildPrime, err := RunMonteCarlo(netCMildPrime, cfg)
+	if err != nil {
+		t.Fatalf("Scenario Mild C' failed: %v", err)
+	}
+	diffMild, err := ComputeCRNDiff(resMild, resMildPrime, 42)
+	if err != nil {
+		t.Fatalf("ComputeCRNDiff (mild) failed: %v", err)
+	}
+	if diffMild.VarianceRedRatio <= 3.0 {
+		t.Errorf("Per-entity sub-stream CRN ratio %.2f too low under T3 perturbation (expected > 3.0)", diffMild.VarianceRedRatio)
+	}
+}
+
+// TestTCC2StressUniformAppliesToCuts (PK-03) enforces that in stress_with_cuts mode:
+// 1. E14 remains fixed at (1.0, 1.0, 1.0);
+// 2. All contingency cuts are applied BEFORE the +25% stress multiplier, so every E01..E13
+//    task in stress_with_cuts carries the uniform 1.25x inflation (including cut packages);
+// 3. E11 (IC=0% in base/risks) is NOT cut, while critical/near-critical packages (E10, E06, E09, E08) receive the cuts.
+func TestTCC2StressUniformAppliesToCuts(t *testing.T) {
+	baseNet := buildTCC2ScheduleNetworkWithMode("base")
+	stressCutsNet := buildTCC2ScheduleNetworkWithMode("stress_with_cuts")
+
+	preStressCutTargets := map[string][3]float64{
+		"E10": {1.5, 2.0, 2.5},
+		"E06": {1.0, 1.5, 2.0},
+		"E09": {1.0, 1.5, 2.0},
+		"E08": {1.0, 1.5, 2.0},
+	}
+
+	baseByID := make(map[string]Task, len(baseNet.Tasks))
+	for _, task := range baseNet.Tasks {
+		baseByID[task.ID] = task
+	}
+
+	for _, got := range stressCutsNet.Tasks {
+		base := baseByID[got.ID]
+		if got.ID == "E14" {
+			if math.Abs(got.To-1.0) > 1e-9 || math.Abs(got.Tm-1.0) > 1e-9 || math.Abs(got.Tp-1.0) > 1e-9 {
+				t.Errorf("E14 must remain fixed at (1,1,1), got (%.3f, %.3f, %.3f)", got.To, got.Tm, got.Tp)
+			}
+			continue
+		}
+		wantPre := [3]float64{base.To, base.Tm, base.Tp}
+		if cut, ok := preStressCutTargets[got.ID]; ok {
+			wantPre = cut
+		}
+		wantTo, wantTm, wantTp := wantPre[0]*1.25, wantPre[1]*1.25, wantPre[2]*1.25
+		if math.Abs(got.To-wantTo) > 1e-9 || math.Abs(got.Tm-wantTm) > 1e-9 || math.Abs(got.Tp-wantTp) > 1e-9 {
+			t.Errorf("%s in stress_with_cuts = (%.3f, %.3f, %.3f), want uniform 1.25x over (%.2f, %.2f, %.2f) = (%.3f, %.3f, %.3f)",
+				got.ID, got.To, got.Tm, got.Tp, wantPre[0], wantPre[1], wantPre[2], wantTo, wantTm, wantTp)
+		}
 	}
 }
 

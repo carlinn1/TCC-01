@@ -6,7 +6,7 @@ import (
 )
 
 // SplitMix64 is a high-quality fast 64-bit PRNG.
-// Each iteration uses an independent seed derived via SplitMix64(S0 ^ k).
+// Each iteration uses an independent seed derived via non-commutative dual Mix64 avalanching.
 type SplitMix64 struct {
 	state uint64
 }
@@ -15,13 +15,19 @@ func NewSplitMix64(seed uint64) *SplitMix64 {
 	return &SplitMix64{state: seed}
 }
 
-// NextUint64 produces the next pseudo-random 64-bit integer.
-func (s *SplitMix64) NextUint64() uint64 {
-	s.state += 0x9e3779b97f4a7c15
-	z := s.state
+const goldenGamma uint64 = 0x9e3779b97f4a7c15
+
+// Mix64 applies Stafford's Mix13 bijective 64-bit avalanching finalizer (Steele, Lea & Flood, 2014).
+func Mix64(z uint64) uint64 {
 	z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9
 	z = (z ^ (z >> 27)) * 0x94d049bb133111eb
 	return z ^ (z >> 31)
+}
+
+// NextUint64 produces the next pseudo-random 64-bit integer.
+func (s *SplitMix64) NextUint64() uint64 {
+	s.state += goldenGamma
+	return Mix64(s.state)
 }
 
 // Float64 returns a pseudo-random float64 in [0, 1) with 53 bits of precision.
@@ -124,10 +130,38 @@ func (s *SplitMix64) SampleBernoulli(p float64) bool {
 	return s.Float64() < p
 }
 
-// DeriveIterationSeed calculates sk = SplitMix64(S0 ^ k)
+// DeriveIterationSeed derives an independent 64-bit per-iteration seed from master seed s0
+// and iteration index k using non-commutative dual Mix64 avalanching:
+// base = Mix64(s0 + goldenGamma), returning Mix64(base + uint64(k)*goldenGamma).
+// This eliminates XOR symmetry collisions between adjacent seeds (e.g., S0=42 vs S0=43)
+// while guaranteeing a collision-free bijection over k for each s0.
 func DeriveIterationSeed(s0 uint64, k int) uint64 {
-	sm := NewSplitMix64(s0 ^ uint64(k))
-	return sm.NextUint64()
+	base := Mix64(s0 + goldenGamma)
+	return Mix64(base + uint64(k)*goldenGamma)
+}
+
+// EntitySeedKey precomputes a 64-bit mixing key from an entity identifier (task or risk ID).
+func EntitySeedKey(entityID string) uint64 {
+	const fnvOffset64 uint64 = 14695981039346656037
+	const fnvPrime64 uint64 = 1099511628211
+	h := fnvOffset64
+	for i := 0; i < len(entityID); i++ {
+		h ^= uint64(entityID[i])
+		h *= fnvPrime64
+	}
+	return Mix64(h + 0xbf58476d1ce4e5b9)
+}
+
+// DeriveEntitySeedFromKey derives a per-entity sub-stream seed from an iteration seed and
+// a precomputed EntitySeedKey without heap allocation in inner Monte Carlo loops.
+func DeriveEntitySeedFromKey(iterSeed, entityKey uint64) uint64 {
+	return Mix64(iterSeed ^ entityKey)
+}
+
+// DeriveEntitySeed derives an independent 64-bit sub-stream seed for (s0, k, entityID)
+// using FNV-1a 64-bit mixing with Mix64 avalanching, enabling task/risk-level CRN sub-streams.
+func DeriveEntitySeed(s0 uint64, k int, entityID string) uint64 {
+	return DeriveEntitySeedFromKey(DeriveIterationSeed(s0, k), EntitySeedKey(entityID))
 }
 
 // RegularizedIncompleteBeta calculates I_x(a, b) via Lentz's continued fraction expansion

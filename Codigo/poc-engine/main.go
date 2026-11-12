@@ -109,11 +109,11 @@ func buildTCC2ScheduleNetwork(withRisks bool) ProjectNetwork {
 	return buildTCC2ScheduleNetworkWithMode("base")
 }
 
-// buildTCC2ScheduleNetworkWithMode builds the TCC2 network under four modes (COD-10 & DEC-4):
+// buildTCC2ScheduleNetworkWithMode builds the TCC2 network under four modes (COD-10, DEC-4 & PK-03):
 // - "base": nominal PERT-Beta without discrete risks
 // - "with_risks": nominal PERT-Beta with discrete risks (R_DAG, R_LEAK, R_LLM)
-// - "stress": +25% inflation across all (to, tm, tp) estimates + active discrete risks
-// - "stress_with_cuts": +25% inflation on non-cut tasks + active risks + ordered contingency cuts (DEC-4)
+// - "stress": +25% inflation across all non-fixed (to, tm, tp) estimates (E01..E13) + active discrete risks
+// - "stress_with_cuts": contingency cuts applied BEFORE uniform +25% inflation on all non-fixed tasks (E01..E13)
 func buildTCC2ScheduleNetworkWithMode(mode string) ProjectNetwork {
 	withRisks := mode == "with_risks" || mode == "stress" || mode == "stress_with_cuts"
 	net := ProjectNetwork{
@@ -169,29 +169,18 @@ func buildTCC2ScheduleNetworkWithMode(mode string) ProjectNetwork {
 		},
 	}
 
-	if mode == "stress" || mode == "stress_with_cuts" {
-		for i := range net.Tasks {
-			// Apply +25% stress factor to non-fixed tasks (E14 is fixed 1-week defense/submission window)
-			if net.Tasks[i].ID != "E14" {
-				net.Tasks[i].To *= 1.25
-				net.Tasks[i].Tm *= 1.25
-				net.Tasks[i].Tp *= 1.25
-			}
-		}
-	}
-
 	if mode == "stress_with_cuts" {
-		// Apply pre-registered contingency cuts inside essential packages (DEC-4 / ADR-004):
+		// Apply pre-registered contingency cuts BEFORE uniform +25% stress inflation (DEC-4 / ADR-004 / PK-03):
 		// 1st cut: E10 single open LLM (1.5 / 2.0 / 2.5)
-		// 2nd cut: E11 static tabular + CLI/HTTP approval (0.5 / 1.0 / 1.5)
+		// 2nd cut: E06 simplified synchronous/in-process simulation runner (1.0 / 1.5 / 2.0) — replaces E11 (IC=0%)
 		// 3rd cut: E09 reduced from 10 to 5 releases (1.0 / 1.5 / 2.0)
 		// 4th cut: E08 focused on 6 core regimes (1.0 / 1.5 / 2.0)
 		for i := range net.Tasks {
 			switch net.Tasks[i].ID {
 			case "E10":
 				net.Tasks[i].To, net.Tasks[i].Tm, net.Tasks[i].Tp = 1.5, 2.0, 2.5
-			case "E11":
-				net.Tasks[i].To, net.Tasks[i].Tm, net.Tasks[i].Tp = 0.5, 1.0, 1.5
+			case "E06":
+				net.Tasks[i].To, net.Tasks[i].Tm, net.Tasks[i].Tp = 1.0, 1.5, 2.0
 			case "E09":
 				net.Tasks[i].To, net.Tasks[i].Tm, net.Tasks[i].Tp = 1.0, 1.5, 2.0
 			case "E08":
@@ -201,6 +190,17 @@ func buildTCC2ScheduleNetworkWithMode(mode string) ProjectNetwork {
 		for i := range net.Risks {
 			if net.Risks[i].ID == "R_LLM" || net.Risks[i].ID == "R_LEAK" {
 				net.Risks[i].ImpactDays = 0.5
+			}
+		}
+	}
+
+	if mode == "stress" || mode == "stress_with_cuts" {
+		for i := range net.Tasks {
+			// Apply +25% stress factor uniformly AFTER any contingency cuts (E14 is fixed 1-week defense/submission window)
+			if net.Tasks[i].ID != "E14" {
+				net.Tasks[i].To *= 1.25
+				net.Tasks[i].Tm *= 1.25
+				net.Tasks[i].Tp *= 1.25
 			}
 		}
 	}
@@ -341,7 +341,7 @@ func RunBenchmarkSuite(runs int) (*BenchmarkEnvironmentSuite, error) {
 			t0 := time.Now()
 			_, err := RunMonteCarlo(net, MonteCarloConfig{
 				Iterations:   10000,
-				Seed:         uint64(42 + i),
+				Seed:         uint64(42 + i*1000),
 				NumWorkers:   workers,
 				Lambda:       4.0,
 				EpsilonFloat: 1e-9,
@@ -475,6 +475,10 @@ func computeECDFAndHist(resA, resB *MonteCarloResult) ECDFGridData {
 func fmtBR(val float64, decimals int) string {
 	s := fmt.Sprintf("%.*f", decimals, val)
 	return strings.ReplaceAll(s, ".", "{,}")
+}
+
+func fmtEN(val float64, decimals int) string {
+	return fmt.Sprintf("%.*f", decimals, val)
 }
 
 func main() {
@@ -704,9 +708,27 @@ func exportLatexMacrosAndTables(
 	bSynthW4 := benchSuite.Results[3]
 	bSynthW8 := benchSuite.Results[4]
 
+	speedup2w := 0.0
+	if bSynthW2.MedianMs > 0 {
+		speedup2w = bSynthW1.MedianMs / bSynthW2.MedianMs
+	}
+	speedup4w := 0.0
+	if bSynthW4.MedianMs > 0 {
+		speedup4w = bSynthW1.MedianMs / bSynthW4.MedianMs
+	}
+	eff4w := (speedup4w / 4.0) * 100.0
+	speedup8w := 0.0
+	marginRNF := 0.0
+	if bSynthW8.MedianMs > 0 {
+		speedup8w = bSynthW1.MedianMs / bSynthW8.MedianMs
+		marginRNF = 500.0 / bSynthW8.MedianMs
+	}
+	cpmPctA := float64(sort.SearchFloat64s(resA.Durations, resA.CPMDeterministic+1e-9)) / float64(len(resA.Durations)) * 100.0
+
 	macros := fmt.Sprintf(`%% Arquivo gerado automaticamente por Codigo/poc-engine/main.go (N = 10.000, seed = 42)
 %% Nao edite manualmente; execute "cd Codigo/poc-engine && go run ." para atualizar.
 \providecommand{\pocACPM}{%s}
+\providecommand{\pocACPMPercentile}{%s}
 \providecommand{\pocAMean}{%s}
 \providecommand{\pocAMeanSE}{%s}
 \providecommand{\pocAPcinquenta}{%s}
@@ -726,6 +748,7 @@ func exportLatexMacrosAndTables(
 \providecommand{\pocBPnoventaeCinco}{%s}
 \providecommand{\pocBPnoventaeCincoSE}{%s}
 \providecommand{\pocBProbMeta}{%s}
+\providecommand{\pocBICTVTres}{%s}
 \providecommand{\pocCCPM}{%s}
 \providecommand{\pocCMean}{%s}
 \providecommand{\pocCMeanSE}{%s}
@@ -736,6 +759,7 @@ func exportLatexMacrosAndTables(
 \providecommand{\pocCPnoventaeCinco}{%s}
 \providecommand{\pocCPnoventaeCincoSE}{%s}
 \providecommand{\pocCProbMeta}{%s}
+\providecommand{\pocCICTVTres}{%s}
 \providecommand{\pocCPrimeCPM}{%s}
 \providecommand{\pocCPrimeMean}{%s}
 \providecommand{\pocCPrimeMeanSE}{%s}
@@ -746,12 +770,14 @@ func exportLatexMacrosAndTables(
 \providecommand{\pocCPrimePnoventaeCinco}{%s}
 \providecommand{\pocCPrimePnoventaeCincoSE}{%s}
 \providecommand{\pocCPrimeProbMeta}{%s}
+\providecommand{\pocCPrimeICTVTres}{%s}
 \providecommand{\crnDeltaMean}{%s}
 \providecommand{\crnDeltaMeanSE}{%s}
 \providecommand{\crnIndepSE}{%s}
 \providecommand{\crnVarRedRatio}{%s}
 \providecommand{\crnDeltaPoitentaeCinco}{%s}
 \providecommand{\crnDeltaPoitentaeCincoSE}{%s}
+\providecommand{\crnProbDiffPP}{%s}
 \providecommand{\tccDoisBaseCPM}{%s}
 \providecommand{\tccDoisBaseMean}{%s}
 \providecommand{\tccDoisBaseMeanSE}{%s}
@@ -765,12 +791,15 @@ func exportLatexMacrosAndTables(
 \providecommand{\tccDoisRiscosMean}{%s}
 \providecommand{\tccDoisRiscosMeanSE}{%s}
 \providecommand{\tccDoisRiscosPcinquenta}{%s}
+\providecommand{\tccDoisRiscosPcinquentaEN}{%s}
 \providecommand{\tccDoisRiscosPcinquentaSE}{%s}
 \providecommand{\tccDoisRiscosPoitentaeCinco}{%s}
+\providecommand{\tccDoisRiscosPoitentaeCincoEN}{%s}
 \providecommand{\tccDoisRiscosPoitentaeCincoSE}{%s}
 \providecommand{\tccDoisRiscosPnoventaeCinco}{%s}
 \providecommand{\tccDoisRiscosPnoventaeCincoSE}{%s}
 \providecommand{\tccDoisRiscosProbVinte}{%s}
+\providecommand{\tccDoisRiscosProbVinteEN}{%s}
 \providecommand{\tccDoisStressCPM}{%s}
 \providecommand{\tccDoisStressMean}{%s}
 \providecommand{\tccDoisStressPcinquenta}{%s}
@@ -781,24 +810,47 @@ func exportLatexMacrosAndTables(
 \providecommand{\tccDoisCutsMean}{%s}
 \providecommand{\tccDoisCutsPcinquenta}{%s}
 \providecommand{\tccDoisCutsPoitentaeCinco}{%s}
+\providecommand{\tccDoisCutsPoitentaeCincoEN}{%s}
 \providecommand{\tccDoisCutsPnoventaeCinco}{%s}
 \providecommand{\tccDoisCutsProbVinte}{%s}
+\providecommand{\tccDoisTFEUm}{%s}
+\providecommand{\tccDoisTFEQuatro}{%s}
+\providecommand{\tccDoisTFESeis}{%s}
+\providecommand{\tccDoisTFESete}{%s}
+\providecommand{\tccDoisTFEOnze}{%s}
+\providecommand{\tccDoisRiscosICESeis}{%s}
+\providecommand{\tccDoisRiscosICESete}{%s}
+\providecommand{\tccDoisRiscosICEOito}{%s}
+\providecommand{\tccDoisRiscosICENove}{%s}
+\providecommand{\tccDoisRiscosICEOnze}{%s}
 \providecommand{\benchBaseMedMs}{%s}
+\providecommand{\benchBaseMedMsEN}{%s}
 \providecommand{\benchSynthWOneMedMs}{%s}
+\providecommand{\benchSynthWOneMedMsEN}{%s}
 \providecommand{\benchSynthWTwoMedMs}{%s}
 \providecommand{\benchSynthWFourMedMs}{%s}
+\providecommand{\benchSynthWFourMedMsEN}{%s}
 \providecommand{\benchSynthWEightMedMs}{%s}
+\providecommand{\benchSynthWEightMedMsEN}{%s}
+\providecommand{\benchSpeedupDoisW}{%s}
+\providecommand{\benchSpeedupQuatroW}{%s}
+\providecommand{\benchEffQuatroW}{%s}
+\providecommand{\benchSpeedupOitoW}{%s}
+\providecommand{\benchMarginRNF}{%s}
 `,
-		fmtBR(resA.CPMDeterministic, 2), fmtBR(resA.Mean, 2), fmtBR(resA.MeanSE, 3), fmtBR(resA.P50, 2), fmtBR(resA.P50SE, 3), fmtBR(resA.P85, 2), fmtBR(resA.P85SE, 3), fmtBR(resA.P95, 2), fmtBR(resA.P95SE, 3), fmtBR(resA.ProbTarget, 1),
-		fmtBR(resB.CPMDeterministic, 2), fmtBR(resB.Mean, 2), fmtBR(resB.MeanSE, 3), fmtBR(resB.P50, 2), fmtBR(resB.P50SE, 3), fmtBR(resB.P85, 2), fmtBR(resB.P85SE, 3), fmtBR(resB.P95, 2), fmtBR(resB.P95SE, 3), fmtBR(resB.ProbTarget, 1),
-		fmtBR(resC.CPMDeterministic, 2), fmtBR(resC.Mean, 2), fmtBR(resC.MeanSE, 3), fmtBR(resC.P50, 2), fmtBR(resC.P50SE, 3), fmtBR(resC.P85, 2), fmtBR(resC.P85SE, 3), fmtBR(resC.P95, 2), fmtBR(resC.P95SE, 3), fmtBR(resC.ProbTarget, 1),
-		fmtBR(resCPrime.CPMDeterministic, 2), fmtBR(resCPrime.Mean, 2), fmtBR(resCPrime.MeanSE, 3), fmtBR(resCPrime.P50, 2), fmtBR(resCPrime.P50SE, 3), fmtBR(resCPrime.P85, 2), fmtBR(resCPrime.P85SE, 3), fmtBR(resCPrime.P95, 2), fmtBR(resCPrime.P95SE, 3), fmtBR(resCPrime.ProbTarget, 1),
-		fmtBR(crnDiff.DeltaMean, 2), fmtBR(crnDiff.DeltaMeanSE, 4), fmtBR(crnDiff.IndependentSE, 4), fmtBR(crnDiff.VarianceRedRatio, 1), fmtBR(crnDiff.DeltaP85, 2), fmtBR(crnDiff.DeltaP85SE, 3),
+		fmtBR(resA.CPMDeterministic, 2), fmtBR(cpmPctA, 1), fmtBR(resA.Mean, 2), fmtBR(resA.MeanSE, 3), fmtBR(resA.P50, 2), fmtBR(resA.P50SE, 3), fmtBR(resA.P85, 2), fmtBR(resA.P85SE, 3), fmtBR(resA.P95, 2), fmtBR(resA.P95SE, 3), fmtBR(resA.ProbTarget, 1),
+		fmtBR(resB.CPMDeterministic, 2), fmtBR(resB.Mean, 2), fmtBR(resB.MeanSE, 3), fmtBR(resB.P50, 2), fmtBR(resB.P50SE, 3), fmtBR(resB.P85, 2), fmtBR(resB.P85SE, 3), fmtBR(resB.P95, 2), fmtBR(resB.P95SE, 3), fmtBR(resB.ProbTarget, 1), fmtBR(resB.CriticalityIndex["T3"], 1),
+		fmtBR(resC.CPMDeterministic, 2), fmtBR(resC.Mean, 2), fmtBR(resC.MeanSE, 3), fmtBR(resC.P50, 2), fmtBR(resC.P50SE, 3), fmtBR(resC.P85, 2), fmtBR(resC.P85SE, 3), fmtBR(resC.P95, 2), fmtBR(resC.P95SE, 3), fmtBR(resC.ProbTarget, 1), fmtBR(resC.CriticalityIndex["T3"], 1),
+		fmtBR(resCPrime.CPMDeterministic, 2), fmtBR(resCPrime.Mean, 2), fmtBR(resCPrime.MeanSE, 3), fmtBR(resCPrime.P50, 2), fmtBR(resCPrime.P50SE, 3), fmtBR(resCPrime.P85, 2), fmtBR(resCPrime.P85SE, 3), fmtBR(resCPrime.P95, 2), fmtBR(resCPrime.P95SE, 3), fmtBR(resCPrime.ProbTarget, 1), fmtBR(resCPrime.CriticalityIndex["T3"], 1),
+		fmtBR(crnDiff.DeltaMean, 2), fmtBR(crnDiff.DeltaMeanSE, 4), fmtBR(crnDiff.IndependentSE, 4), fmtBR(crnDiff.VarianceRedRatio, 1), fmtBR(crnDiff.DeltaP85, 2), fmtBR(crnDiff.DeltaP85SE, 3), fmtBR(resCPrime.ProbTarget-resC.ProbTarget, 1),
 		fmtBR(tcc2Base.CPMDeterministic, 2), fmtBR(tcc2Base.Mean, 2), fmtBR(tcc2Base.MeanSE, 3), fmtBR(tcc2Base.P50, 2), fmtBR(tcc2Base.P50SE, 3), fmtBR(tcc2Base.P85, 2), fmtBR(tcc2Base.P85SE, 3), fmtBR(tcc2Base.P95, 2), fmtBR(tcc2Base.P95SE, 3), fmtBR(tcc2Base.ProbTarget, 1),
-		fmtBR(tcc2Risks.Mean, 2), fmtBR(tcc2Risks.MeanSE, 3), fmtBR(tcc2Risks.P50, 2), fmtBR(tcc2Risks.P50SE, 3), fmtBR(tcc2Risks.P85, 2), fmtBR(tcc2Risks.P85SE, 3), fmtBR(tcc2Risks.P95, 2), fmtBR(tcc2Risks.P95SE, 3), fmtBR(tcc2Risks.ProbTarget, 1),
+		fmtBR(tcc2Risks.Mean, 2), fmtBR(tcc2Risks.MeanSE, 3), fmtBR(tcc2Risks.P50, 2), fmtEN(tcc2Risks.P50, 2), fmtBR(tcc2Risks.P50SE, 3), fmtBR(tcc2Risks.P85, 2), fmtEN(tcc2Risks.P85, 2), fmtBR(tcc2Risks.P85SE, 3), fmtBR(tcc2Risks.P95, 2), fmtBR(tcc2Risks.P95SE, 3), fmtBR(tcc2Risks.ProbTarget, 1), fmtEN(tcc2Risks.ProbTarget, 1),
 		fmtBR(tcc2Stress.CPMDeterministic, 2), fmtBR(tcc2Stress.Mean, 2), fmtBR(tcc2Stress.P50, 2), fmtBR(tcc2Stress.P85, 2), fmtBR(tcc2Stress.P95, 2), fmtBR(tcc2Stress.ProbTarget, 1),
-		fmtBR(tcc2Cuts.CPMDeterministic, 2), fmtBR(tcc2Cuts.Mean, 2), fmtBR(tcc2Cuts.P50, 2), fmtBR(tcc2Cuts.P85, 2), fmtBR(tcc2Cuts.P95, 2), fmtBR(tcc2Cuts.ProbTarget, 1),
-		fmtBR(bBase.MedianMs, 2), fmtBR(bSynthW1.MedianMs, 1), fmtBR(bSynthW2.MedianMs, 1), fmtBR(bSynthW4.MedianMs, 1), fmtBR(bSynthW8.MedianMs, 1),
+		fmtBR(tcc2Cuts.CPMDeterministic, 2), fmtBR(tcc2Cuts.Mean, 2), fmtBR(tcc2Cuts.P50, 2), fmtBR(tcc2Cuts.P85, 2), fmtEN(tcc2Cuts.P85, 2), fmtBR(tcc2Cuts.P95, 2), fmtBR(tcc2Cuts.ProbTarget, 1),
+		fmtBR(tcc2Audit.TaskCPM["E01"].TF, 2), fmtBR(tcc2Audit.TaskCPM["E04"].TF, 2), fmtBR(tcc2Audit.TaskCPM["E06"].TF, 2), fmtBR(tcc2Audit.TaskCPM["E07"].TF, 2), fmtBR(tcc2Audit.TaskCPM["E11"].TF, 2),
+		fmtBR(tcc2Risks.CriticalityIndex["E06"], 1), fmtBR(tcc2Risks.CriticalityIndex["E07"], 1), fmtBR(tcc2Risks.CriticalityIndex["E08"], 1), fmtBR(tcc2Risks.CriticalityIndex["E09"], 1), fmtBR(tcc2Risks.CriticalityIndex["E11"], 1),
+		fmtBR(bBase.MedianMs, 2), fmtEN(bBase.MedianMs, 2), fmtBR(bSynthW1.MedianMs, 1), fmtEN(bSynthW1.MedianMs, 1), fmtBR(bSynthW2.MedianMs, 1), fmtBR(bSynthW4.MedianMs, 1), fmtEN(bSynthW4.MedianMs, 1), fmtBR(bSynthW8.MedianMs, 1), fmtEN(bSynthW8.MedianMs, 1),
+		fmtBR(speedup2w, 2), fmtBR(speedup4w, 2), fmtBR(eff4w, 1), fmtBR(speedup8w, 2), fmtBR(marginRNF, 1),
 	)
 
 	if err := os.MkdirAll(docsDir, 0755); err != nil {
@@ -919,7 +971,7 @@ func exportLatexMacrosAndTables(
 \textbf{Base PERT-Beta (sem riscos discretos)} & $%s$ & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & $%s\%%$ \\
 \textbf{Com Riscos Discretos ($\text{R}_{\text{DAG}}$, $\text{R}_{\text{LEAK}}$, $\text{R}_{\text{LLM}}$)} & $%s$ & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & $%s\%%$ \\
 \textbf{Estresse ($+25\%%$ em O/M/P + riscos ativos)} & $%s$ & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & $%s\%%$ \\
-\textbf{Estresse + Cortes Pré-Registrados (E08--E11)} & $%s$ & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & $%s\%%$ \\%%
+\textbf{Estresse + Cortes Pré-Registrados (E06, E08--E10)} & $%s$ & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & $%s\%%$ \\%%
 }
 `,
 		fmtBR(tcc2Base.CPMDeterministic, 2), fmtBR(tcc2Base.Mean, 2), fmtBR(tcc2Base.MeanSE, 3), fmtBR(tcc2Base.P50, 2), fmtBR(tcc2Base.P50SE, 3), fmtBR(tcc2Base.P85, 2), fmtBR(tcc2Base.P85SE, 3), fmtBR(tcc2Base.P95, 2), fmtBR(tcc2Base.P95SE, 3), fmtBR(tcc2Base.ProbTarget, 1),

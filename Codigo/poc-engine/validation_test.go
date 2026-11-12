@@ -209,6 +209,84 @@ func TestSplitMix64StreamIndependence(t *testing.T) {
 	t.Logf("Stream independence verified: lag-1 r=%.5f, inter-task r=%.5f (threshold |r| <= 0.03)", rLag1, rTasks)
 }
 
+// TestSeedIndependence42vs43 (PK-02.1) verifies that adjacent master seeds S0=42 and S0=43
+// do not collide under DeriveIterationSeed (unlike naive S0 ^ k) and produce distinct
+// sorted finish vectors with Euclidean distance ||X_42 - X_43||_2 > eps and uncorrelated raw streams.
+func TestSeedIndependence42vs43(t *testing.T) {
+	net := buildBaseNetwork()
+	net.Risks = []Risk{{ID: "R1", TaskID: "T3", Probability: 0.30, ImpactDays: 2.0, Active: true}}
+
+	res42, err := RunMonteCarlo(net, MonteCarloConfig{
+		Iterations: 10000, Seed: 42, NumWorkers: 4, Lambda: 4.0, EpsilonFloat: 1e-9, TargetDate: 11.0,
+	})
+	if err != nil {
+		t.Fatalf("RunMonteCarlo seed=42 failed: %v", err)
+	}
+	res43, err := RunMonteCarlo(net, MonteCarloConfig{
+		Iterations: 10000, Seed: 43, NumWorkers: 4, Lambda: 4.0, EpsilonFloat: 1e-9, TargetDate: 11.0,
+	})
+	if err != nil {
+		t.Fatalf("RunMonteCarlo seed=43 failed: %v", err)
+	}
+
+	var sqSortedDiff float64
+	var sx, sy, sxx, syy, sxy float64
+	n := float64(len(res42.Durations))
+	for i := range res42.Durations {
+		d := res42.Durations[i] - res43.Durations[i]
+		sqSortedDiff += d * d
+
+		x := res42.RawFinishes[i]
+		y := res43.RawFinishes[i]
+		sx += x
+		sy += y
+		sxx += x * x
+		syy += y * y
+		sxy += x * y
+	}
+	l2Sorted := math.Sqrt(sqSortedDiff)
+	if l2Sorted <= 1e-3 {
+		t.Fatalf("seed collision detected: sorted durations for S0=42 and S0=43 have ||X_42 - X_43||_2 = %.9f (expected > 1e-3)", l2Sorted)
+	}
+	if res42.Mean == res43.Mean && res42.P50 == res43.P50 && res42.P85 == res43.P85 {
+		t.Fatalf("seed collision detected: S0=42 and S0=43 produced identical summary statistics (Mean=%.6f, P85=%.6f)", res42.Mean, res42.P85)
+	}
+
+	cov := sxy/n - (sx/n)*(sy/n)
+	vx := sxx/n - (sx/n)*(sx/n)
+	vy := syy/n - (sy/n)*(sy/n)
+	corr := cov / math.Sqrt(vx*vy)
+	if math.Abs(corr) > 0.04 {
+		t.Errorf("excessive correlation between S0=42 and S0=43 raw finishes: r=%.5f", corr)
+	}
+
+	// Verify entity-level sub-stream derivation differs across seeds and entity IDs
+	const nCheck = 5000
+	eA := make([]float64, nCheck)
+	eB := make([]float64, nCheck)
+	for k := 0; k < nCheck; k++ {
+		eA[k] = NewSplitMix64(DeriveEntitySeed(42, k, "T3")).Float64()
+		eB[k] = NewSplitMix64(DeriveEntitySeed(42, k, "T2")).Float64()
+		if DeriveEntitySeed(42, k, "T3") == DeriveEntitySeed(43, k, "T3") {
+			t.Fatalf("entity seed collision at k=%d between S0=42 and S0=43", k)
+		}
+	}
+	var eax, eby, eaxx, ebyy, eaxy float64
+	for k := 0; k < nCheck; k++ {
+		eax += eA[k]
+		eby += eB[k]
+		eaxx += eA[k] * eA[k]
+		ebyy += eB[k] * eB[k]
+		eaxy += eA[k] * eB[k]
+	}
+	nf := float64(nCheck)
+	ecorr := (eaxy/nf - (eax/nf)*(eby/nf)) / math.Sqrt((eaxx/nf-(eax/nf)*(eax/nf))*(ebyy/nf-(eby/nf)*(eby/nf)))
+	if math.Abs(ecorr) > 0.04 {
+		t.Errorf("excessive correlation between entity sub-streams T3 and T2: r=%.5f", ecorr)
+	}
+	t.Logf("S0=42 vs S0=43 divergence verified: ||X_42 - X_43||_2=%.4f, raw corr r=%.5f, entity corr r=%.5f", l2Sorted, corr, ecorr)
+}
+
 // TestDegeneratePertBetaZeroVariance validates the degenerate case to = tm = tp.
 func TestDegeneratePertBetaZeroVariance(t *testing.T) {
 	rng := NewSplitMix64(2026)
@@ -327,6 +405,12 @@ func TestTCC2ScheduleMonteCarlo(t *testing.T) {
 	}
 	if math.Abs(audit.TaskCPM["E07"].TF-0.50) > 1e-6 {
 		t.Errorf("TF(E07) = %.6f, want 0.50", audit.TaskCPM["E07"].TF)
+	}
+	if math.Abs(audit.TaskCPM["E01"].TF-23.0/12.0) > 1e-6 {
+		t.Errorf("TF(E01) = %.6f, want %.6f (1.92)", audit.TaskCPM["E01"].TF, 23.0/12.0)
+	}
+	if math.Abs(audit.TaskCPM["E04"].TF-23.0/12.0) > 1e-6 {
+		t.Errorf("TF(E04) = %.6f, want %.6f (1.92)", audit.TaskCPM["E04"].TF, 23.0/12.0)
 	}
 
 	// 5. Assert Stress scenario exceeds 20 weeks at P85, and StressWithCuts brings P85 <= 20 weeks (DEC-4)

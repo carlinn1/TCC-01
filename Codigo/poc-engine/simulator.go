@@ -10,7 +10,7 @@ import (
 
 // RunMonteCarlo executes the concurrent Monte Carlo simulation.
 // Guaranteed exact reproducibility regardless of worker count due to
-// independent per-iteration seed derivation: sk = SplitMix64(S0 ^ k).
+// independent per-iteration seed derivation via DeriveIterationSeed(S0, k).
 func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult, error) {
 	startTime := time.Now()
 
@@ -91,6 +91,12 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 		return nil, err
 	}
 
+	// Precompute per-task and per-risk CRN entity keys once before worker fan-out
+	taskKeys := make([]uint64, len(sortedTasks))
+	for i, t := range sortedTasks {
+		taskKeys[i] = EntitySeedKey("TASK:" + t.ID)
+	}
+
 	// Pre-map risks to integer task indices
 	type compiledRisk struct {
 		taskIdx    int
@@ -98,6 +104,7 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 		prob       float64
 		impact     float64
 		isAbsolute bool
+		seedKey    uint64
 	}
 	activeRisks := make([]compiledRisk, 0, len(sortedRisks))
 	for _, r := range sortedRisks {
@@ -109,6 +116,7 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 			impact:     r.ImpactDays,
 			isAbsolute: r.IsAbsolute,
 			hasTask:    r.TaskID != "",
+			seedKey:    EntitySeedKey("RISK:" + r.ID),
 		}
 		if cr.hasTask {
 			if idx, ok := compiledGraph.TaskMap[r.TaskID]; ok {
@@ -151,12 +159,12 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 			lf := make([]float64, n)
 			crit := make([]bool, n)
 			localCrit := workerCritCounts[workerIdx]
+			var entityRNG SplitMix64
 
 			for k := workerStart; k < workerEnd; k++ {
 				iterSeed := DeriveIterationSeed(cfg.Seed, k)
-				rng := NewSplitMix64(iterSeed)
 
-				// A. Sample task base durations in fixed ID order
+				// A. Sample task base durations using isolated per-(iteration, taskID) CRN sub-streams
 				for i, t := range sortedTasks {
 					if !compiledGraph.IsActive[i] {
 						durs[i] = 0
@@ -167,15 +175,17 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 					if bp.isConst {
 						d = t.To
 					} else {
-						x := rng.SampleBeta(bp.alpha, bp.beta)
+						entityRNG.state = DeriveEntitySeedFromKey(iterSeed, taskKeys[i])
+						x := entityRNG.SampleBeta(bp.alpha, bp.beta)
 						d = t.To + x*bp.rangeVal
 					}
 					durs[i] = d * (1.0 - t.Progress)
 				}
 
-				// B. Sample active risks in fixed ID order
+				// B. Sample active risks using isolated per-(iteration, riskID) CRN sub-streams
 				for _, r := range activeRisks {
-					if rng.SampleBernoulli(r.prob) {
+					entityRNG.state = DeriveEntitySeedFromKey(iterSeed, r.seedKey)
+					if entityRNG.SampleBernoulli(r.prob) {
 						if r.hasTask {
 							i := r.taskIdx
 							if compiledGraph.IsActive[i] {
@@ -375,7 +385,7 @@ func ComputeCRNDiff(resBase, resVariant *MonteCarloResult, seed uint64) (*CRNDif
 	bootP95 := make([]float64, B)
 	sampBase := make([]float64, n)
 	sampVar := make([]float64, n)
-	rng := NewSplitMix64(seed ^ 0xA5A5A5A5A5A5A5A5)
+	rng := NewSplitMix64(Mix64(seed + 0xA5A5A5A5A5A5A5A5))
 	for b := 0; b < B; b++ {
 		for k := 0; k < n; k++ {
 			idx := int(rng.NextUint64() % uint64(n))
