@@ -1,6 +1,6 @@
-# Auditoria Bibliográfica de Fontes Primárias (`Docs/Referencias.bib`)
+# Auditoria Bibliográfica de Fontes Primárias (`Docs/monografia/Referencias.bib`)
 
-Este documento registra a verificação individual de cada entrada em [`Docs/Referencias.bib`](file:///c:/Users/Carlos/Documents/TCC-01/Docs/Referencias.bib) contra sua fonte primária oficial (CrossRef/DOI, arXiv, ACM Digital Library, IEEE Xplore, SpringerLink, INFORMS, JASA, ISO, NIST, PMI, OWASP e ISBN de editoras), em cumprimento ao requisito `BIB-01` de [`SPEC_CORRECAO_TCC1.md`](file:///c:/Users/Carlos/Documents/TCC-01/SPEC_CORRECAO_TCC1.md) e à restrição `C4` de [`CONSTRAINTS.md`](file:///c:/Users/Carlos/Documents/TCC-01/CONSTRAINTS.md).
+Este documento registra a verificação individual de cada entrada em [`Docs/monografia/Referencias.bib`](file:///c:/Users/Carlos/Documents/TCC-01/Docs/monografia/Referencias.bib) contra sua fonte primária oficial (CrossRef/DOI, arXiv, ACM Digital Library, IEEE Xplore, SpringerLink, INFORMS, JASA, ISO, NIST, PMI, OWASP e ISBN de editoras), em cumprimento à restrição `C3` de [`CONSTRAINTS.md`](file:///c:/Users/Carlos/Documents/TCC-01/CONSTRAINTS.md).
 
 ## Tabela de Verificação das Entradas (50 referências)
 
@@ -56,4 +56,15 @@ Este documento registra a verificação individual de cada entrada em [`Docs/Ref
 | 48 | `vose2008` | `@book` | Vose, D. | 2008 | ISBN `978-0-470-51284-5` (Wiley, *Risk Analysis: A Quantitative Guide*, 3rd Ed.) | Verificado |
 | 49 | `w3c2015` | `@misc` | World Wide Web Consortium (W3C) | 2015 | https://www.w3.org/TR/eventsource/ (*Server-Sent Events*) | Verificado |
 | 50 | `williams1992` | `@article` | Williams, T. M. | 1992 | DOI `10.1057/jors.1992.50` (*J. Oper. Res. Soc.*, 43(4), 353–357) | Verificado |
+| 51 | `clopper1934` | `@article` | Clopper, C. J.; Pearson, E. S. | 1934 | DOI `10.1093/biomet/26.4.404` (*Biometrika*, 26(4), 404–413) | Adicionado e Verificado |
+| 52 | `cohen1960` | `@article` | Cohen, J. | 1960 | DOI `10.1177/001316446002000104` (*Educ. Psychol. Meas.*, 20(1), 37–46) | Adicionado e Verificado |
+| 53 | `flyvbjerg2006` | `@article` | Flyvbjerg, B. | 2006 | DOI `10.1177/875697280603700302` (*Project Management Journal*, 37(3), 5–15) | Adicionado e Verificado |
+| 54 | `hodges1963` | `@article` | Hodges Jr., J. L.; Lehmann, E. L. | 1963 | DOI `10.1214/aoms/1177704172` (*Ann. Math. Stat.*, 34(2), 598–611) | Adicionado e Verificado |
+| 55 | `holm1979` | `@article` | Holm, S. | 1979 | JSTOR `4615733` (*Scandinavian Journal of Statistics*, 6(2), 65–70) | Adicionado e Verificado |
+| 56 | `kahan1965` | `@article` | Kahan, W. | 1965 | DOI `10.1145/363707.363723` (*Commun. ACM*, 8(1), 40) | Adicionado e Verificado |
+| 57 | `mcnemar1947` | `@article` | McNemar, Q. | 1947 | DOI `10.1007/BF02295996` (*Psychometrika*, 12(2), 153–157) | Adicionado e Verificado |
+| 58 | `pmi2025pulse` | `@misc` | Project Management Institute (PMI) | 2025 | *Pulse of the Profession 2025* (https://www.pmi.org/learning/thought-leadership/pulse) | Adicionado e Verificado |
+| 59 | `rfc2104` | `@techreport` | Krawczyk, H.; Bellare, M.; Canetti, R. | 1997 | IETF RFC 2104 (`10.17487/RFC2104`) | Adicionado e Verificado |
+| 60 | `rfc8032` | `@techreport` | Josefsson, S.; Liusvaara, I. | 2017 | IETF RFC 8032 (`10.17487/RFC8032`) | Adicionado e Verificado |
+| 61 | `wilson1927` | `@article` | Wilson, E. B. | 1927 | DOI `10.1080/01621459.1927.10502953` (*JASA*, 22(158), 209–212) | Adicionado e Verificado |
 

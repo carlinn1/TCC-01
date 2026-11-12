@@ -23,5 +23,5 @@ As métricas $\mathrm{MdAE}$ e $\mathrm{NMAE}$ são reportadas exclusivamente co
 
 ## Consequences
 - Elimina a inconsistência teórica de funções de perda apontada na revisão técnica.
-- Mantém compatibilidade total com os testes pareados de Wilcoxon + Holm-Bonferroni planejados para a Dimensão 2.
+- Mantém compatibilidade total com a inferência primária da Dimensão 2 via *bootstrap* pareado com correção de Holm-Bonferroni ($m=3$) sobre $\Delta\overline{\mathrm{AE}}$ e $\Delta\overline{\mathrm{SE}}$ (reportando Wilcoxon pareado e estimador de Hodges-Lehmann como análise complementar).
 

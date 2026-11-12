@@ -16,6 +16,7 @@ Dois pontos de posicionamento arquitetural exigem formalização explícita:
 2. **Modelo de Custódia e Escopo da Auditoria (`SEG-03`):**
    - Corrigir a terminologia de `"chave privada HMAC"` para **chave secreta simétrica HMAC** (no MVP básico) ou **par de chaves assimétricas Ed25519** (onde o `Core` detém a chave privada de assinatura e o verificador externo retém apenas a chave pública);
    - Fixar o intervalo de ancoragem externa em **a cada $K = 100$ eventos ou a cada $\Delta t = 15$ minutos (e obrigatoriamente a cada aprovação de Categoria 2)**;
+   - Isolar cadeias por projeto incluindo `\texttt{project\_id}_k` no encadeamento $H_k$, na mensagem assinada da âncora $M_k = (\texttt{project\_id}_k \,\|\, k \,\|\, \texttt{timestamp}_k \,\|\, H_k)$ e na restrição `UNIQUE (project_id, prev_hash)` do PostgreSQL;
    - Delimitar o critério **CA2**: qualquer mutação ou exclusão retroativa (`UPDATE`/`DELETE`) em `audit_logs` sobre registros **anteriores à última âncora externa exportada** é detectada em 100% dos casos; registros gerados na janela ainda não ancorada ou sob comprometimento simultâneo do host do `Core` e do armazenamento externo são declarados como risco residual fora do escopo do controle.
 
 ## Consequences
