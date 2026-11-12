@@ -333,43 +333,75 @@ func TestComputeCRNDiff(t *testing.T) {
 	}
 }
 
-// TestTCC2StressUniformAppliesToCuts (PK-03) enforces that in stress_with_cuts mode:
-// 1. E14 remains fixed at (1.0, 1.0, 1.0);
-// 2. All contingency cuts are applied BEFORE the +25% stress multiplier, so every E01..E13
-//    task in stress_with_cuts carries the uniform 1.25x inflation (including cut packages);
-// 3. E11 (IC=0% in base/risks) is NOT cut, while critical/near-critical packages (E10, E06, E09, E08) receive the cuts.
-func TestTCC2StressUniformAppliesToCuts(t *testing.T) {
+// TestTCC2StressModesUniformIncludingE14 (A6 / DEC-6) enforces that:
+// 1. All E01..E14 tasks (including E14 review/submission) carry stochastic bounds (To < Tp) and uniform
+//    stress inflation (+25% in stress, +40% matching R10 in stress_40);
+// 2. CorrelationRho validation rejects out-of-range values (< 0 or >= 1) and preserves reproducibility across workers.
+func TestTCC2StressModesUniformIncludingE14(t *testing.T) {
 	baseNet := buildTCC2ScheduleNetworkWithMode("base")
-	stressCutsNet := buildTCC2ScheduleNetworkWithMode("stress_with_cuts")
-
-	preStressCutTargets := map[string][3]float64{
-		"E10": {1.5, 2.0, 2.5},
-		"E06": {1.0, 1.5, 2.0},
-		"E09": {1.0, 1.5, 2.0},
-		"E08": {1.0, 1.5, 2.0},
-	}
+	stress25Net := buildTCC2ScheduleNetworkWithMode("stress")
+	stress40Net := buildTCC2ScheduleNetworkWithMode("stress_40")
 
 	baseByID := make(map[string]Task, len(baseNet.Tasks))
 	for _, task := range baseNet.Tasks {
+		if task.Tp <= task.To {
+			t.Errorf("Task %s must be modeled stochastically (To < Tp), got (%.2f, %.2f)", task.ID, task.To, task.Tp)
+		}
 		baseByID[task.ID] = task
 	}
 
-	for _, got := range stressCutsNet.Tasks {
+	for _, got := range stress25Net.Tasks {
 		base := baseByID[got.ID]
-		if got.ID == "E14" {
-			if math.Abs(got.To-1.0) > 1e-9 || math.Abs(got.Tm-1.0) > 1e-9 || math.Abs(got.Tp-1.0) > 1e-9 {
-				t.Errorf("E14 must remain fixed at (1,1,1), got (%.3f, %.3f, %.3f)", got.To, got.Tm, got.Tp)
+		if math.Abs(got.To-base.To*1.25) > 1e-9 || math.Abs(got.Tm-base.Tm*1.25) > 1e-9 || math.Abs(got.Tp-base.Tp*1.25) > 1e-9 {
+			t.Errorf("%s in stress25 = (%.3f, %.3f, %.3f), want 1.25x base", got.ID, got.To, got.Tm, got.Tp)
+		}
+	}
+	for _, got := range stress40Net.Tasks {
+		base := baseByID[got.ID]
+		if math.Abs(got.To-base.To*1.40) > 1e-9 || math.Abs(got.Tm-base.Tm*1.40) > 1e-9 || math.Abs(got.Tp-base.Tp*1.40) > 1e-9 {
+			t.Errorf("%s in stress40 = (%.3f, %.3f, %.3f), want 1.40x base", got.ID, got.To, got.Tm, got.Tp)
+		}
+	}
+
+	// Reject invalid CorrelationRho
+	for _, badRho := range []float64{-0.1, 1.0, 1.5, math.NaN()} {
+		if err := ValidateNetwork(baseNet, MonteCarloConfig{CorrelationRho: badRho}); err == nil {
+			t.Errorf("Expected error for invalid CorrelationRho=%v", badRho)
+		}
+	}
+
+	// Copula determinism across 1 and 8 workers + strictly increases P85 over rho=0
+	resIndep, err := RunMonteCarlo(baseNet, MonteCarloConfig{Iterations: 5000, Seed: 77, NumWorkers: 4})
+	if err != nil {
+		t.Fatalf("indep failed: %v", err)
+	}
+	resCorrW1, err := RunMonteCarlo(baseNet, MonteCarloConfig{Iterations: 5000, Seed: 77, NumWorkers: 1, CorrelationRho: 0.50})
+	if err != nil {
+		t.Fatalf("corr w1 failed: %v", err)
+	}
+	resCorrW8, err := RunMonteCarlo(baseNet, MonteCarloConfig{Iterations: 5000, Seed: 77, NumWorkers: 8, CorrelationRho: 0.50})
+	if err != nil {
+		t.Fatalf("corr w8 failed: %v", err)
+	}
+	if math.Abs(resCorrW1.Mean-resCorrW8.Mean) > 1e-12 || math.Abs(resCorrW1.P85-resCorrW8.P85) > 1e-12 {
+		t.Errorf("Copula reproducibility mismatch w1 vs w8: Mean=%.12f/%.12f P85=%.12f/%.12f",
+			resCorrW1.Mean, resCorrW8.Mean, resCorrW1.P85, resCorrW8.P85)
+	}
+	if resCorrW1.P85 <= resIndep.P85 {
+		t.Errorf("Expected positive correlation (rho=0.50) to widen upper tail P85 (got %.3f <= %.3f)", resCorrW1.P85, resIndep.P85)
+	}
+}
+
+// TestInverseRegularizedIncompleteBeta verifies round-trip inversion accuracy I_{I^{-1}(u)}(a,b) == u.
+func TestInverseRegularizedIncompleteBeta(t *testing.T) {
+	cases := [][2]float64{{2.0, 4.0}, {3.0, 3.0}, {1.5, 5.0}}
+	for _, ab := range cases {
+		for _, u := range []float64{0.0, 0.05, 0.25, 0.50, 0.85, 0.99, 1.0} {
+			x := InverseRegularizedIncompleteBeta(u, ab[0], ab[1])
+			got := RegularizedIncompleteBeta(x, ab[0], ab[1])
+			if math.Abs(got-u) > 1e-9 {
+				t.Errorf("Round-trip beta inversion (a=%.1f,b=%.1f,u=%.2f): x=%.12f, I_x=%.12f", ab[0], ab[1], u, x, got)
 			}
-			continue
-		}
-		wantPre := [3]float64{base.To, base.Tm, base.Tp}
-		if cut, ok := preStressCutTargets[got.ID]; ok {
-			wantPre = cut
-		}
-		wantTo, wantTm, wantTp := wantPre[0]*1.25, wantPre[1]*1.25, wantPre[2]*1.25
-		if math.Abs(got.To-wantTo) > 1e-9 || math.Abs(got.Tm-wantTm) > 1e-9 || math.Abs(got.Tp-wantTp) > 1e-9 {
-			t.Errorf("%s in stress_with_cuts = (%.3f, %.3f, %.3f), want uniform 1.25x over (%.2f, %.2f, %.2f) = (%.3f, %.3f, %.3f)",
-				got.ID, got.To, got.Tm, got.Tp, wantPre[0], wantPre[1], wantPre[2], wantTo, wantTm, wantTp)
 		}
 	}
 }

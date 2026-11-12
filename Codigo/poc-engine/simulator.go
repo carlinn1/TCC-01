@@ -96,6 +96,10 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 	for i, t := range sortedTasks {
 		taskKeys[i] = EntitySeedKey("TASK:" + t.ID)
 	}
+	latentKey := EntitySeedKey("LATENT:COMMON")
+	useCopula := cfg.CorrelationRho > 0.0
+	sqrtRho := math.Sqrt(cfg.CorrelationRho)
+	sqrtOneMinusRho := math.Sqrt(1.0 - cfg.CorrelationRho)
 
 	// Pre-map risks to integer task indices
 	type compiledRisk struct {
@@ -163,6 +167,11 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 
 			for k := workerStart; k < workerEnd; k++ {
 				iterSeed := DeriveIterationSeed(cfg.Seed, k)
+				var z0 float64
+				if useCopula {
+					entityRNG.state = DeriveEntitySeedFromKey(iterSeed, latentKey)
+					z0 = entityRNG.StandardNormal()
+				}
 
 				// A. Sample task base durations using isolated per-(iteration, taskID) CRN sub-streams
 				for i, t := range sortedTasks {
@@ -176,7 +185,15 @@ func RunMonteCarlo(net ProjectNetwork, cfg MonteCarloConfig) (*MonteCarloResult,
 						d = t.To
 					} else {
 						entityRNG.state = DeriveEntitySeedFromKey(iterSeed, taskKeys[i])
-						x := entityRNG.SampleBeta(bp.alpha, bp.beta)
+						var x float64
+						if useCopula {
+							eps := entityRNG.StandardNormal()
+							z := sqrtRho*z0 + sqrtOneMinusRho*eps
+							u := 0.5 * (1.0 + math.Erf(z/math.Sqrt2))
+							x = InverseRegularizedIncompleteBeta(u, bp.alpha, bp.beta)
+						} else {
+							x = entityRNG.SampleBeta(bp.alpha, bp.beta)
+						}
 						d = t.To + x*bp.rangeVal
 					}
 					durs[i] = d * (1.0 - t.Progress)

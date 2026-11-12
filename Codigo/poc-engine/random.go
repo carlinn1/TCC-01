@@ -442,4 +442,25 @@ func RunKSMultiSeedSuite(id string, to, tm, tp, lambda float64, seedOffset int, 
 	}
 }
 
+// InverseRegularizedIncompleteBeta inverts I_x(a, b) = u on [0, 1] by bisection to machine precision.
+// Used to sample correlated PERT-Beta durations through a Gaussian copula while preserving marginal Beta shapes.
+func InverseRegularizedIncompleteBeta(u, a, b float64) float64 {
+	if u <= 0.0 {
+		return 0.0
+	}
+	if u >= 1.0 {
+		return 1.0
+	}
+	lo, hi := 0.0, 1.0
+	for i := 0; i < 52; i++ {
+		mid := 0.5 * (lo + hi)
+		if RegularizedIncompleteBeta(mid, a, b) < u {
+			lo = mid
+		} else {
+			hi = mid
+		}
+	}
+	return 0.5 * (lo + hi)
+}
+
 

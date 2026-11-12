@@ -365,28 +365,28 @@ func TestPrintReproducibilityValues(t *testing.T) {
 	}
 }
 
-// TestTCC2ScheduleMonteCarlo (COD-10) verifies the deterministic CPM duration, track sums,
-// critical path, total floats, and all 4 stochastic configurations (Base, WithRisks, Stress, StressWithCuts).
+// TestTCC2ScheduleMonteCarlo (A6 / DEC-6) verifies the deterministic CPM duration, bottom-up track sums,
+// critical path, total floats, and all 4 stochastic configurations including R9 correlation (rho=0.50) and R10 +40% bias.
 func TestTCC2ScheduleMonteCarlo(t *testing.T) {
 	audit, err := AuditTCC2Schedule()
 	if err != nil {
 		t.Fatalf("AuditTCC2Schedule failed: %v", err)
 	}
 
-	// 1. Assert deterministic CPM duration = 16.75 weeks
-	if math.Abs(audit.CPMDuration-16.75) > 1e-6 {
-		t.Errorf("TCC2 CPMDuration = %.6f, want 16.75", audit.CPMDuration)
+	// 1. Assert deterministic CPM duration = 12.00 weeks
+	if math.Abs(audit.CPMDuration-12.00) > 1e-6 {
+		t.Errorf("TCC2 CPMDuration = %.6f, want 12.00", audit.CPMDuration)
 	}
 
-	// 2. Assert Track A sum = 133/12 (~11.0833), Track B sum = 129/12 (10.75), Joint sum = 49/12 (~4.0833)
-	if math.Abs(audit.TrackASum-133.0/12.0) > 1e-6 {
-		t.Errorf("TrackASum = %.6f, want %.6f (11.08)", audit.TrackASum, 133.0/12.0)
+	// 2. Assert Track A sum = 7.25 (87 h), Track B sum = 6.75 (81 h), Joint sum = 3.75 (45 h/author)
+	if math.Abs(audit.TrackASum-7.25) > 1e-6 {
+		t.Errorf("TrackASum = %.6f, want 7.25", audit.TrackASum)
 	}
-	if math.Abs(audit.TrackBSum-10.75) > 1e-6 {
-		t.Errorf("TrackBSum = %.6f, want 10.75", audit.TrackBSum)
+	if math.Abs(audit.TrackBSum-6.75) > 1e-6 {
+		t.Errorf("TrackBSum = %.6f, want 6.75", audit.TrackBSum)
 	}
-	if math.Abs(audit.JointSum-49.0/12.0) > 1e-6 {
-		t.Errorf("JointSum = %.6f, want %.6f (4.08)", audit.JointSum, 49.0/12.0)
+	if math.Abs(audit.JointSum-3.75) > 1e-6 {
+		t.Errorf("JointSum = %.6f, want 3.75", audit.JointSum)
 	}
 
 	// 3. Assert critical path is E02->E03->E05->E08->E09->E10->E12->E13->E14
@@ -396,9 +396,9 @@ func TestTCC2ScheduleMonteCarlo(t *testing.T) {
 		t.Errorf("CriticalPath = %s, want %s", gotCP, wantCP)
 	}
 
-	// 4. Assert total float of E11 = 19/12 (~1.5833) and E06/E07 = 0.50
-	if math.Abs(audit.TaskCPM["E11"].TF-19.0/12.0) > 1e-6 {
-		t.Errorf("TF(E11) = %.6f, want %.6f (1.58)", audit.TaskCPM["E11"].TF, 19.0/12.0)
+	// 4. Assert total float of E06/E07 = 0.50 (limited by E07->E10), E11 = 1.00, E01/E04 = 1.50
+	if math.Abs(audit.TaskCPM["E11"].TF-1.00) > 1e-6 {
+		t.Errorf("TF(E11) = %.6f, want 1.00", audit.TaskCPM["E11"].TF)
 	}
 	if math.Abs(audit.TaskCPM["E06"].TF-0.50) > 1e-6 {
 		t.Errorf("TF(E06) = %.6f, want 0.50", audit.TaskCPM["E06"].TF)
@@ -406,29 +406,26 @@ func TestTCC2ScheduleMonteCarlo(t *testing.T) {
 	if math.Abs(audit.TaskCPM["E07"].TF-0.50) > 1e-6 {
 		t.Errorf("TF(E07) = %.6f, want 0.50", audit.TaskCPM["E07"].TF)
 	}
-	if math.Abs(audit.TaskCPM["E01"].TF-23.0/12.0) > 1e-6 {
-		t.Errorf("TF(E01) = %.6f, want %.6f (1.92)", audit.TaskCPM["E01"].TF, 23.0/12.0)
+	if math.Abs(audit.TaskCPM["E01"].TF-1.50) > 1e-6 {
+		t.Errorf("TF(E01) = %.6f, want 1.50", audit.TaskCPM["E01"].TF)
 	}
-	if math.Abs(audit.TaskCPM["E04"].TF-23.0/12.0) > 1e-6 {
-		t.Errorf("TF(E04) = %.6f, want %.6f (1.92)", audit.TaskCPM["E04"].TF, 23.0/12.0)
+	if math.Abs(audit.TaskCPM["E04"].TF-1.00) > 1e-6 {
+		t.Errorf("TF(E04) = %.6f, want 1.00", audit.TaskCPM["E04"].TF)
 	}
 
-	// 5. Assert Stress scenario exceeds 20 weeks at P85, and StressWithCuts brings P85 <= 20 weeks (DEC-4)
-	if audit.Stress.P85 <= 20.0 {
-		t.Errorf("Expected Stress P85 > 20.0 weeks, got %.2f", audit.Stress.P85)
-	}
-	if audit.StressWithCuts.P85 > 20.0 {
-		t.Errorf("Expected StressWithCuts P85 <= 20.0 weeks after DEC-4 cuts, got %.2f", audit.StressWithCuts.P85)
+	// 5. Assert pre-trimmed scope keeps Stress40 (R10 +40% bias + rho=0.50 + risks) P85 <= 20.0 weeks!
+	if audit.Stress40.P85 > 20.0 {
+		t.Errorf("Expected Stress40 (+40%% + rho=0.50) P85 <= 20.0 weeks with pre-trimmed scope, got %.2f", audit.Stress40.P85)
 	}
 
 	t.Logf("TCC2 Base: CPM=%.2f | Mean=%.2f | P50=%.2f | P85=%.2f | P95=%.2f | P(F<=20)=%.1f%%",
 		audit.Base.CPMDeterministic, audit.Base.Mean, audit.Base.P50, audit.Base.P85, audit.Base.P95, audit.Base.ProbTarget)
-	t.Logf("TCC2 Risks: CPM=%.2f | Mean=%.2f | P50=%.2f | P85=%.2f | P95=%.2f | P(F<=20)=%.1f%%",
+	t.Logf("TCC2 Nominal (Risks+rho=0.50): CPM=%.2f | Mean=%.2f | P50=%.2f | P85=%.2f | P95=%.2f | P(F<=20)=%.1f%%",
 		audit.WithRisks.CPMDeterministic, audit.WithRisks.Mean, audit.WithRisks.P50, audit.WithRisks.P85, audit.WithRisks.P95, audit.WithRisks.ProbTarget)
-	t.Logf("TCC2 Stress (+25%%): CPM=%.2f | Mean=%.2f | P50=%.2f | P85=%.2f | P95=%.2f | P(F<=20)=%.1f%%",
-		audit.Stress.CPMDeterministic, audit.Stress.Mean, audit.Stress.P50, audit.Stress.P85, audit.Stress.P95, audit.Stress.ProbTarget)
-	t.Logf("TCC2 Stress+Cuts: CPM=%.2f | Mean=%.2f | P50=%.2f | P85=%.2f | P95=%.2f | P(F<=20)=%.1f%%",
-		audit.StressWithCuts.CPMDeterministic, audit.StressWithCuts.Mean, audit.StressWithCuts.P50, audit.StressWithCuts.P85, audit.StressWithCuts.P95, audit.StressWithCuts.ProbTarget)
+	t.Logf("TCC2 Stress25 (+25%%+rho=0.50): CPM=%.2f | Mean=%.2f | P50=%.2f | P85=%.2f | P95=%.2f | P(F<=20)=%.1f%%",
+		audit.Stress25.CPMDeterministic, audit.Stress25.Mean, audit.Stress25.P50, audit.Stress25.P85, audit.Stress25.P95, audit.Stress25.ProbTarget)
+	t.Logf("TCC2 Stress40 (+40%%+rho=0.50): CPM=%.2f | Mean=%.2f | P50=%.2f | P85=%.2f | P95=%.2f | P(F<=20)=%.1f%%",
+		audit.Stress40.CPMDeterministic, audit.Stress40.Mean, audit.Stress40.P50, audit.Stress40.P85, audit.Stress40.P95, audit.Stress40.ProbTarget)
 }
 
 // TestBenchmarkDispersion5Runs (COD-09 & BASE-02) measures 5-run dispersion across

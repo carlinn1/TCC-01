@@ -109,35 +109,35 @@ func buildTCC2ScheduleNetwork(withRisks bool) ProjectNetwork {
 	return buildTCC2ScheduleNetworkWithMode("base")
 }
 
-// buildTCC2ScheduleNetworkWithMode builds the TCC2 network under four modes (COD-10, DEC-4 & PK-03):
-// - "base": nominal PERT-Beta without discrete risks
-// - "with_risks": nominal PERT-Beta with discrete risks (R_DAG, R_LEAK, R_LLM)
-// - "stress": +25% inflation across all non-fixed (to, tm, tp) estimates (E01..E13) + active discrete risks
-// - "stress_with_cuts": contingency cuts applied BEFORE uniform +25% inflation on all non-fixed tasks (E01..E13)
+// buildTCC2ScheduleNetworkWithMode builds the pre-trimmed TCC2 network under four modes (A6 / DEC-6):
+// - "base": nominal PERT-Beta (with E14 stochastic) without discrete risks and rho = 0
+// - "with_risks": nominal PERT-Beta + discrete risks (R_DAG, R_LEAK, R_LLM) + intra-semester correlation (rho = 0.50)
+// - "stress": +25% uniform optimism-bias inflation across all E01..E14 + active discrete risks + rho = 0.50
+// - "stress_40": +40% R10 systematic bias inflation across all E01..E14 + active discrete risks + rho = 0.50
 func buildTCC2ScheduleNetworkWithMode(mode string) ProjectNetwork {
-	withRisks := mode == "with_risks" || mode == "stress" || mode == "stress_with_cuts"
+	withRisks := mode == "with_risks" || mode == "stress" || mode == "stress_40"
 	net := ProjectNetwork{
 		StatusDate: 0.0,
 		Tasks: []Task{
-			// Trilha A (Autor 1 — Motor, Worker, Governança e UI Mínima)
-			{ID: "E02", Name: "Contrato congelado e banco SQL/migrations", To: 1.0, Tm: 1.5, Tp: 2.0},
-			{ID: "E03", Name: "API de leitura, paginação e projeções do estado vivo", To: 1.5, Tm: 2.0, Tp: 2.5},
-			{ID: "E05", Name: "Port do núcleo estocástico da PoC com subfluxos CRN", To: 1.5, Tm: 2.0, Tp: 2.5},
-			{ID: "E06", Name: "Worker assíncrono de simulação e persistência de execuções", To: 1.5, Tm: 2.0, Tp: 3.0},
-			{ID: "E07", Name: "Propostas governadas, máquina de estados, diff, auditoria e guardrails", To: 1.5, Tm: 2.0, Tp: 2.5},
-			{ID: "E11", Name: "Interface web mínima para inspeção do estado vivo, simulação e aprovação", To: 1.0, Tm: 1.5, Tp: 2.0},
+			// Trilha A (Autor 1 — Infra, Core Service, Guardrails e Cartão Mínimo) — 87 h nominais (7,25 sem)
+			{ID: "E02", Name: "Contrato congelado, egress proxy, SQL reduzido e âncora única Ed25519", To: 1.00, Tm: 1.50, Tp: 2.00},
+			{ID: "E03", Name: "API REST essencial, paginação e autenticação JWT/RBAC (403)", To: 1.00, Tm: 1.25, Tp: 1.50},
+			{ID: "E05", Name: "Integração do núcleo estocástico da PoC com subfluxos CRN e RF12", To: 0.75, Tm: 1.00, Tp: 1.25},
+			{ID: "E06", Name: "Persistência de simulações e execução enxuta (< 2,0 s)", To: 0.75, Tm: 1.00, Tp: 1.25},
+			{ID: "E07", Name: "Proxy LLM isolado, sanitização NFKC, fail-closed e testes CA1/CA2", To: 1.00, Tm: 1.50, Tp: 2.00},
+			{ID: "E11", Name: "Interface mínima funcional para cartão de aprovação governada e CSP", To: 0.75, Tm: 1.00, Tp: 1.25},
 
-			// Trilha B (Autor 2 — Dataset, Replay e Dimensões Experimentais 2, 3 e 5)
-			{ID: "E01", Name: "Extrator GitHub, dataset de backtesting e replay temporal estrito", To: 1.5, Tm: 2.0, Tp: 2.5},
-			{ID: "E04", Name: "Ingestão idempotente de eventos, outbox, DLQ e trilha de auditoria", To: 1.0, Tm: 1.5, Tp: 2.5},
-			{ID: "E08", Name: "Suíte sintética da Dimensão 2 (10 regimes, M=500) e análise de sensibilidade", To: 1.5, Tm: 2.0, Tp: 3.0},
-			{ID: "E09", Name: "Backtesting descritivo da Dimensão 3 (10 cortes, 4 baselines e sensibilidade)", To: 1.5, Tm: 2.5, Tp: 3.5},
-			{ID: "E10", Name: "Agente consultivo e avaliação da Dimensão 5 (300 cenários, ablação e guardrails)", To: 2.0, Tm: 2.5, Tp: 3.5},
+			// Trilha B (Autor 2 — Dataset, Ingestão e Dimensões Enxutas 2, 3 e 5) — 81 h nominais (6,75 sem)
+			{ID: "E01", Name: "Extrator cli/cli (10 releases) e replay temporal causal", To: 0.75, Tm: 1.00, Tp: 1.25},
+			{ID: "E04", Name: "Ingestão idempotente de webhooks HMAC e trilha audit_logs", To: 1.00, Tm: 1.25, Tp: 1.50},
+			{ID: "E08", Name: "Dimensão 2 enxuta (6 regimes preservando R9/R10, M=500, baselines indep.)", To: 1.00, Tm: 1.50, Tp: 2.00},
+			{ID: "E09", Name: "Dimensão 3 descritiva (10 cortes cli/cli, regra em 2 níveis sem Nível 2)", To: 1.00, Tm: 1.50, Tp: 2.00},
+			{ID: "E10", Name: "Dimensão 5 (1 modelo Llama-3 em temp=0.0, H2a e diag. exploratório H2b)", To: 1.00, Tm: 1.50, Tp: 2.00},
 
-			// Fechamento Conjunto (Autor 1 + Autor 2)
-			{ID: "E12", Name: "Consolidação estatística, tabelas finais e verificação reprodutível", To: 1.0, Tm: 1.5, Tp: 2.5},
-			{ID: "E13", Name: "Redação final dos capítulos de resultados, discussão e ameaças à validade", To: 1.0, Tm: 1.5, Tp: 2.0},
-			{ID: "E14", Name: "Revisão final ABNT, pacote de replicação Zenodo e preparação da defesa", To: 1.0, Tm: 1.0, Tp: 1.0},
+			// Fechamento Conjunto (Autor 1 + Autor 2) — 45 h/autor = 90 h conjuntas (3,75 sem)
+			{ID: "E12", Name: "Consolidação estatística, apêndices e pacote de replicação Zenodo", To: 1.00, Tm: 1.25, Tp: 1.50},
+			{ID: "E13", Name: "Redação final de resultados, discussão, ameaças e revisão do orientador", To: 1.00, Tm: 1.50, Tp: 2.00},
+			{ID: "E14", Name: "Revisão ABNT, depósito final e submissão para banca (agenda externa)", To: 0.75, Tm: 1.00, Tp: 1.25},
 		},
 		Dependencies: []Dependency{
 			// Sequenciamento intra-Trilha A (Autor 1)
@@ -169,60 +169,39 @@ func buildTCC2ScheduleNetworkWithMode(mode string) ProjectNetwork {
 		},
 	}
 
-	if mode == "stress_with_cuts" {
-		// Apply pre-registered contingency cuts BEFORE uniform +25% stress inflation (DEC-4 / ADR-004 / PK-03):
-		// 1st cut: E10 single open LLM (1.5 / 2.0 / 2.5)
-		// 2nd cut: E06 simplified synchronous/in-process simulation runner (1.0 / 1.5 / 2.0) — replaces E11 (IC=0%)
-		// 3rd cut: E09 reduced from 10 to 5 releases (1.0 / 1.5 / 2.0)
-		// 4th cut: E08 focused on 6 core regimes (1.0 / 1.5 / 2.0)
-		for i := range net.Tasks {
-			switch net.Tasks[i].ID {
-			case "E10":
-				net.Tasks[i].To, net.Tasks[i].Tm, net.Tasks[i].Tp = 1.5, 2.0, 2.5
-			case "E06":
-				net.Tasks[i].To, net.Tasks[i].Tm, net.Tasks[i].Tp = 1.0, 1.5, 2.0
-			case "E09":
-				net.Tasks[i].To, net.Tasks[i].Tm, net.Tasks[i].Tp = 1.0, 1.5, 2.0
-			case "E08":
-				net.Tasks[i].To, net.Tasks[i].Tm, net.Tasks[i].Tp = 1.0, 1.5, 2.0
-			}
-		}
-		for i := range net.Risks {
-			if net.Risks[i].ID == "R_LLM" || net.Risks[i].ID == "R_LEAK" {
-				net.Risks[i].ImpactDays = 0.5
-			}
-		}
+	stressFactor := 1.0
+	if mode == "stress" {
+		stressFactor = 1.25
+	} else if mode == "stress_40" {
+		stressFactor = 1.40
 	}
-
-	if mode == "stress" || mode == "stress_with_cuts" {
+	if stressFactor > 1.0 {
 		for i := range net.Tasks {
-			// Apply +25% stress factor uniformly AFTER any contingency cuts (E14 is fixed 1-week defense/submission window)
-			if net.Tasks[i].ID != "E14" {
-				net.Tasks[i].To *= 1.25
-				net.Tasks[i].Tm *= 1.25
-				net.Tasks[i].Tp *= 1.25
-			}
+			net.Tasks[i].To *= stressFactor
+			net.Tasks[i].Tm *= stressFactor
+			net.Tasks[i].Tp *= stressFactor
 		}
 	}
 
 	return net
 }
 
-// TCC2AuditSummary stores the complete deterministic and stochastic audit of the TCC2 schedule (COD-10).
+// TCC2AuditSummary stores the complete deterministic and stochastic audit of the TCC2 schedule (A6).
 type TCC2AuditSummary struct {
-	CPMDuration      float64                    `json:"cpm_duration"`
-	TrackASum        float64                    `json:"track_a_sum"`
-	TrackBSum        float64                    `json:"track_b_sum"`
-	JointSum         float64                    `json:"joint_sum"`
-	CriticalPath     []string                   `json:"critical_path"`
-	TaskCPM          map[string]CPMTaskResult   `json:"task_cpm"`
-	Base             *MonteCarloResult          `json:"base"`
-	WithRisks        *MonteCarloResult          `json:"with_risks"`
-	Stress           *MonteCarloResult          `json:"stress"`
-	StressWithCuts   *MonteCarloResult          `json:"stress_with_cuts"`
+	CPMDuration    float64                  `json:"cpm_duration"`
+	TrackASum      float64                  `json:"track_a_sum"`
+	TrackBSum      float64                  `json:"track_b_sum"`
+	JointSum       float64                  `json:"joint_sum"`
+	CriticalPath   []string                 `json:"critical_path"`
+	TaskCPM        map[string]CPMTaskResult `json:"task_cpm"`
+	CorrelationRho float64                  `json:"correlation_rho"`
+	Base           *MonteCarloResult        `json:"base"`
+	WithRisks      *MonteCarloResult        `json:"with_risks"`
+	Stress25       *MonteCarloResult        `json:"stress_25"`
+	Stress40       *MonteCarloResult        `json:"stress_40"`
 }
 
-// AuditTCC2Schedule runs deterministic CPM and all 4 Monte Carlo configurations on the TCC2 schedule (COD-10).
+// AuditTCC2Schedule runs deterministic CPM and 4 stochastic configurations including R9 correlation and R10 +40% bias (A6).
 func AuditTCC2Schedule() (*TCC2AuditSummary, error) {
 	baseNet := buildTCC2ScheduleNetworkWithMode("base")
 	detDurs := make(map[string]float64)
@@ -256,7 +235,7 @@ func AuditTCC2Schedule() (*TCC2AuditSummary, error) {
 		}
 	}
 
-	cfg := MonteCarloConfig{
+	cfgBase := MonteCarloConfig{
 		Iterations:   10000,
 		Seed:         42,
 		NumWorkers:   8,
@@ -264,20 +243,23 @@ func AuditTCC2Schedule() (*TCC2AuditSummary, error) {
 		Lambda:       4.0,
 		EpsilonFloat: 1e-9,
 	}
+	const semesterRho = 0.50
+	cfgCorr := cfgBase
+	cfgCorr.CorrelationRho = semesterRho
 
-	resBase, err := RunMonteCarlo(baseNet, cfg)
+	resBase, err := RunMonteCarlo(baseNet, cfgBase)
 	if err != nil {
 		return nil, err
 	}
-	resRisks, err := RunMonteCarlo(buildTCC2ScheduleNetworkWithMode("with_risks"), cfg)
+	resRisks, err := RunMonteCarlo(buildTCC2ScheduleNetworkWithMode("with_risks"), cfgCorr)
 	if err != nil {
 		return nil, err
 	}
-	resStress, err := RunMonteCarlo(buildTCC2ScheduleNetworkWithMode("stress"), cfg)
+	resStress25, err := RunMonteCarlo(buildTCC2ScheduleNetworkWithMode("stress"), cfgCorr)
 	if err != nil {
 		return nil, err
 	}
-	resCuts, err := RunMonteCarlo(buildTCC2ScheduleNetworkWithMode("stress_with_cuts"), cfg)
+	resStress40, err := RunMonteCarlo(buildTCC2ScheduleNetworkWithMode("stress_40"), cfgCorr)
 	if err != nil {
 		return nil, err
 	}
@@ -289,10 +271,11 @@ func AuditTCC2Schedule() (*TCC2AuditSummary, error) {
 		JointSum:       sumJoint,
 		CriticalPath:   critPath,
 		TaskCPM:        cpmRes.Tasks,
+		CorrelationRho: semesterRho,
 		Base:           resBase,
 		WithRisks:      resRisks,
-		Stress:         resStress,
-		StressWithCuts: resCuts,
+		Stress25:       resStress25,
+		Stress40:       resStress40,
 	}, nil
 }
 
@@ -393,7 +376,11 @@ func RunBenchmarkSuite(runs int) (*BenchmarkEnvironmentSuite, error) {
 	results = append(results, mBase)
 
 	for _, w := range []int{1, 2, 4, 8} {
-		mSynth, err := measure(fmt.Sprintf("Rede Sintética (200 tarefas, 300 dep., %d workers)", w), synthNet, w)
+		unit := "workers"
+		if w == 1 {
+			unit = "worker"
+		}
+		mSynth, err := measure(fmt.Sprintf("Rede Sintética (200 tarefas, 300 dep., %d %s)", w, unit), synthNet, w)
 		if err != nil {
 			return nil, err
 		}
@@ -638,34 +625,34 @@ func RunAllPoCValidationAndExportToDir(jsonDir, docsDir string, benchRuns int) e
 	fmt.Printf("| CRN Diff (C' - C) | DeltaMean=%.3f (SE pareado=%.4f vs indep=%.4f, red=%.1fx) | DeltaP85=%.2f (±%.3f) |\n\n",
 		crnDiff.DeltaMean, crnDiff.DeltaMeanSE, crnDiff.IndependentSE, crnDiff.VarianceRedRatio, crnDiff.DeltaP85, crnDiff.DeltaP85SE)
 
-	fmt.Println("### Simulação do Cronograma TCC 2 (20 semanas, N = 10.000, seed = 42)")
-	fmt.Printf("| Base (sem riscos)          | CPM=%.2f | Mean=%.2f | P50=%.2f | P85=%.2f | P95=%.2f | P(F<=20)=%.1f%% |\n",
+	fmt.Println("### Simulação do Cronograma TCC 2 (20 semanas, N = 10.000, seed = 42, escopo enxuto pré-cortado)")
+	fmt.Printf("| Base (sem riscos, indep.)  | CPM=%.2f | Mean=%.2f | P50=%.2f | P85=%.2f | P95=%.2f | P(F<=20)=%.1f%% |\n",
 		tcc2Audit.Base.CPMDeterministic, tcc2Audit.Base.Mean, tcc2Audit.Base.P50, tcc2Audit.Base.P85, tcc2Audit.Base.P95, tcc2Audit.Base.ProbTarget)
-	fmt.Printf("| Com Riscos (R_DAG/LEAK/LLM)| CPM=%.2f | Mean=%.2f | P50=%.2f | P85=%.2f | P95=%.2f | P(F<=20)=%.1f%% |\n",
+	fmt.Printf("| Nominal (riscos + rho=0.50)| CPM=%.2f | Mean=%.2f | P50=%.2f | P85=%.2f | P95=%.2f | P(F<=20)=%.1f%% |\n",
 		tcc2Audit.WithRisks.CPMDeterministic, tcc2Audit.WithRisks.Mean, tcc2Audit.WithRisks.P50, tcc2Audit.WithRisks.P85, tcc2Audit.WithRisks.P95, tcc2Audit.WithRisks.ProbTarget)
-	fmt.Printf("| Estresse (+25%% O/M/P+riscos)| CPM=%.2f | Mean=%.2f | P50=%.2f | P85=%.2f | P95=%.2f | P(F<=20)=%.1f%% |\n",
-		tcc2Audit.Stress.CPMDeterministic, tcc2Audit.Stress.Mean, tcc2Audit.Stress.P50, tcc2Audit.Stress.P85, tcc2Audit.Stress.P95, tcc2Audit.Stress.ProbTarget)
-	fmt.Printf("| Estresse + Cortes (DEC-4)  | CPM=%.2f | Mean=%.2f | P50=%.2f | P85=%.2f | P95=%.2f | P(F<=20)=%.1f%% |\n\n",
-		tcc2Audit.StressWithCuts.CPMDeterministic, tcc2Audit.StressWithCuts.Mean, tcc2Audit.StressWithCuts.P50, tcc2Audit.StressWithCuts.P85, tcc2Audit.StressWithCuts.P95, tcc2Audit.StressWithCuts.ProbTarget)
+	fmt.Printf("| Estresse (+25%% + rho=0.50) | CPM=%.2f | Mean=%.2f | P50=%.2f | P85=%.2f | P95=%.2f | P(F<=20)=%.1f%% |\n",
+		tcc2Audit.Stress25.CPMDeterministic, tcc2Audit.Stress25.Mean, tcc2Audit.Stress25.P50, tcc2Audit.Stress25.P85, tcc2Audit.Stress25.P95, tcc2Audit.Stress25.ProbTarget)
+	fmt.Printf("| Estresse R10 (+40%%+rho=0.5)| CPM=%.2f | Mean=%.2f | P50=%.2f | P85=%.2f | P95=%.2f | P(F<=20)=%.1f%% |\n\n",
+		tcc2Audit.Stress40.CPMDeterministic, tcc2Audit.Stress40.Mean, tcc2Audit.Stress40.P50, tcc2Audit.Stress40.P85, tcc2Audit.Stress40.P95, tcc2Audit.Stress40.ProbTarget)
 
 	ecdfData := computeECDFAndHist(resA, resB)
 
 	outputData := map[string]interface{}{
-		"scenario_a":              resA,
-		"scenario_b":              resB,
-		"scenario_c":              resC,
-		"scenario_c_prime":        resCPrime,
-		"crn_diff_c_cprime":       crnDiff,
-		"ecdf_ab":                 ecdfData,
-		"ks_single_seed_1m":       ksSingle,
-		"ks_multi_seed_100":       ksMulti,
-		"reproducibility_workers": reproWorkers,
-		"benchmarks":              benchSuite,
-		"tcc2_schedule_base":      tcc2Audit.Base,
-		"tcc2_schedule_risks":     tcc2Audit.WithRisks,
-		"tcc2_schedule_stress":    tcc2Audit.Stress,
-		"tcc2_schedule_cuts":      tcc2Audit.StressWithCuts,
-		"tcc2_audit":              tcc2Audit,
+		"scenario_a":               resA,
+		"scenario_b":               resB,
+		"scenario_c":               resC,
+		"scenario_c_prime":         resCPrime,
+		"crn_diff_c_cprime":        crnDiff,
+		"ecdf_ab":                  ecdfData,
+		"ks_single_seed_1m":        ksSingle,
+		"ks_multi_seed_100":        ksMulti,
+		"reproducibility_workers":  reproWorkers,
+		"benchmarks":               benchSuite,
+		"tcc2_schedule_base":       tcc2Audit.Base,
+		"tcc2_schedule_risks":      tcc2Audit.WithRisks,
+		"tcc2_schedule_stress_25":  tcc2Audit.Stress25,
+		"tcc2_schedule_stress_40":  tcc2Audit.Stress40,
+		"tcc2_audit":               tcc2Audit,
 	}
 	jsonData, err := json.MarshalIndent(outputData, "", "  ")
 	if err != nil {
@@ -699,8 +686,8 @@ func exportLatexMacrosAndTables(
 ) error {
 	tcc2Base := tcc2Audit.Base
 	tcc2Risks := tcc2Audit.WithRisks
-	tcc2Stress := tcc2Audit.Stress
-	tcc2Cuts := tcc2Audit.StressWithCuts
+	tcc2Stress25 := tcc2Audit.Stress25
+	tcc2Stress40 := tcc2Audit.Stress40
 
 	bBase := benchSuite.Results[0]
 	bSynthW1 := benchSuite.Results[1]
@@ -806,13 +793,14 @@ func exportLatexMacrosAndTables(
 \providecommand{\tccDoisStressPoitentaeCinco}{%s}
 \providecommand{\tccDoisStressPnoventaeCinco}{%s}
 \providecommand{\tccDoisStressProbVinte}{%s}
-\providecommand{\tccDoisCutsCPM}{%s}
-\providecommand{\tccDoisCutsMean}{%s}
-\providecommand{\tccDoisCutsPcinquenta}{%s}
-\providecommand{\tccDoisCutsPoitentaeCinco}{%s}
-\providecommand{\tccDoisCutsPoitentaeCincoEN}{%s}
-\providecommand{\tccDoisCutsPnoventaeCinco}{%s}
-\providecommand{\tccDoisCutsProbVinte}{%s}
+\providecommand{\tccDoisQuarentaCPM}{%s}
+\providecommand{\tccDoisQuarentaMean}{%s}
+\providecommand{\tccDoisQuarentaPcinquenta}{%s}
+\providecommand{\tccDoisQuarentaPoitentaeCinco}{%s}
+\providecommand{\tccDoisQuarentaPoitentaeCincoEN}{%s}
+\providecommand{\tccDoisQuarentaPnoventaeCinco}{%s}
+\providecommand{\tccDoisQuarentaProbVinte}{%s}
+\providecommand{\tccDoisQuarentaProbVinteEN}{%s}
 \providecommand{\tccDoisTFEUm}{%s}
 \providecommand{\tccDoisTFEQuatro}{%s}
 \providecommand{\tccDoisTFESeis}{%s}
@@ -845,8 +833,8 @@ func exportLatexMacrosAndTables(
 		fmtBR(crnDiff.DeltaMean, 2), fmtBR(crnDiff.DeltaMeanSE, 4), fmtBR(crnDiff.IndependentSE, 4), fmtBR(crnDiff.VarianceRedRatio, 1), fmtBR(crnDiff.DeltaP85, 2), fmtBR(crnDiff.DeltaP85SE, 3), fmtBR(resCPrime.ProbTarget-resC.ProbTarget, 1),
 		fmtBR(tcc2Base.CPMDeterministic, 2), fmtBR(tcc2Base.Mean, 2), fmtBR(tcc2Base.MeanSE, 3), fmtBR(tcc2Base.P50, 2), fmtBR(tcc2Base.P50SE, 3), fmtBR(tcc2Base.P85, 2), fmtBR(tcc2Base.P85SE, 3), fmtBR(tcc2Base.P95, 2), fmtBR(tcc2Base.P95SE, 3), fmtBR(tcc2Base.ProbTarget, 1),
 		fmtBR(tcc2Risks.Mean, 2), fmtBR(tcc2Risks.MeanSE, 3), fmtBR(tcc2Risks.P50, 2), fmtEN(tcc2Risks.P50, 2), fmtBR(tcc2Risks.P50SE, 3), fmtBR(tcc2Risks.P85, 2), fmtEN(tcc2Risks.P85, 2), fmtBR(tcc2Risks.P85SE, 3), fmtBR(tcc2Risks.P95, 2), fmtBR(tcc2Risks.P95SE, 3), fmtBR(tcc2Risks.ProbTarget, 1), fmtEN(tcc2Risks.ProbTarget, 1),
-		fmtBR(tcc2Stress.CPMDeterministic, 2), fmtBR(tcc2Stress.Mean, 2), fmtBR(tcc2Stress.P50, 2), fmtBR(tcc2Stress.P85, 2), fmtBR(tcc2Stress.P95, 2), fmtBR(tcc2Stress.ProbTarget, 1),
-		fmtBR(tcc2Cuts.CPMDeterministic, 2), fmtBR(tcc2Cuts.Mean, 2), fmtBR(tcc2Cuts.P50, 2), fmtBR(tcc2Cuts.P85, 2), fmtEN(tcc2Cuts.P85, 2), fmtBR(tcc2Cuts.P95, 2), fmtBR(tcc2Cuts.ProbTarget, 1),
+		fmtBR(tcc2Stress25.CPMDeterministic, 2), fmtBR(tcc2Stress25.Mean, 2), fmtBR(tcc2Stress25.P50, 2), fmtBR(tcc2Stress25.P85, 2), fmtBR(tcc2Stress25.P95, 2), fmtBR(tcc2Stress25.ProbTarget, 1),
+		fmtBR(tcc2Stress40.CPMDeterministic, 2), fmtBR(tcc2Stress40.Mean, 2), fmtBR(tcc2Stress40.P50, 2), fmtBR(tcc2Stress40.P85, 2), fmtEN(tcc2Stress40.P85, 2), fmtBR(tcc2Stress40.P95, 2), fmtBR(tcc2Stress40.ProbTarget, 1), fmtEN(tcc2Stress40.ProbTarget, 1),
 		fmtBR(tcc2Audit.TaskCPM["E01"].TF, 2), fmtBR(tcc2Audit.TaskCPM["E04"].TF, 2), fmtBR(tcc2Audit.TaskCPM["E06"].TF, 2), fmtBR(tcc2Audit.TaskCPM["E07"].TF, 2), fmtBR(tcc2Audit.TaskCPM["E11"].TF, 2),
 		fmtBR(tcc2Risks.CriticalityIndex["E06"], 1), fmtBR(tcc2Risks.CriticalityIndex["E07"], 1), fmtBR(tcc2Risks.CriticalityIndex["E08"], 1), fmtBR(tcc2Risks.CriticalityIndex["E09"], 1), fmtBR(tcc2Risks.CriticalityIndex["E11"], 1),
 		fmtBR(bBase.MedianMs, 2), fmtEN(bBase.MedianMs, 2), fmtBR(bSynthW1.MedianMs, 1), fmtEN(bSynthW1.MedianMs, 1), fmtBR(bSynthW2.MedianMs, 1), fmtBR(bSynthW4.MedianMs, 1), fmtEN(bSynthW4.MedianMs, 1), fmtBR(bSynthW8.MedianMs, 1), fmtEN(bSynthW8.MedianMs, 1),
@@ -968,16 +956,16 @@ func exportLatexMacrosAndTables(
 	// 6. tab_tcc2_mc.tex
 	tcc2Rows := fmt.Sprintf(`%% Gerado automaticamente por Codigo/poc-engine/main.go
 \providecommand{\tabRowsTccDoisMC}{%%
-\textbf{Base PERT-Beta (sem riscos discretos)} & $%s$ & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & $%s\%%$ \\
-\textbf{Com Riscos Discretos ($\text{R}_{\text{DAG}}$, $\text{R}_{\text{LEAK}}$, $\text{R}_{\text{LLM}}$)} & $%s$ & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & $%s\%%$ \\
-\textbf{Estresse ($+25\%%$ em O/M/P + riscos ativos)} & $%s$ & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & $%s\%%$ \\
-\textbf{Estresse + Cortes Pré-Registrados (E06, E08--E10)} & $%s$ & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & $%s\%%$ \\%%
+\textbf{Base PERT-Beta (sem riscos, $\rho=0$)} & $%s$ & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & $%s\%%$ \\
+\textbf{Nominal ($\text{R}_{\text{DAG}}, \text{R}_{\text{LEAK}}, \text{R}_{\text{LLM}}$, $\rho=0{,}50$)} & $%s$ & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & $%s\%%$ \\
+\textbf{Estresse Moderado ($+25\%%$ O/M/P + riscos + $\rho=0{,}50$)} & $%s$ & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & $%s\%%$ \\
+\textbf{Estresse Severo R10 ($+40\%%$ O/M/P + riscos + $\rho=0{,}50$)} & $%s$ & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & \mc{%s}{%s} & $%s\%%$ \\%%
 }
 `,
 		fmtBR(tcc2Base.CPMDeterministic, 2), fmtBR(tcc2Base.Mean, 2), fmtBR(tcc2Base.MeanSE, 3), fmtBR(tcc2Base.P50, 2), fmtBR(tcc2Base.P50SE, 3), fmtBR(tcc2Base.P85, 2), fmtBR(tcc2Base.P85SE, 3), fmtBR(tcc2Base.P95, 2), fmtBR(tcc2Base.P95SE, 3), fmtBR(tcc2Base.ProbTarget, 1),
 		fmtBR(tcc2Risks.CPMDeterministic, 2), fmtBR(tcc2Risks.Mean, 2), fmtBR(tcc2Risks.MeanSE, 3), fmtBR(tcc2Risks.P50, 2), fmtBR(tcc2Risks.P50SE, 3), fmtBR(tcc2Risks.P85, 2), fmtBR(tcc2Risks.P85SE, 3), fmtBR(tcc2Risks.P95, 2), fmtBR(tcc2Risks.P95SE, 3), fmtBR(tcc2Risks.ProbTarget, 1),
-		fmtBR(tcc2Stress.CPMDeterministic, 2), fmtBR(tcc2Stress.Mean, 2), fmtBR(tcc2Stress.MeanSE, 3), fmtBR(tcc2Stress.P50, 2), fmtBR(tcc2Stress.P50SE, 3), fmtBR(tcc2Stress.P85, 2), fmtBR(tcc2Stress.P85SE, 3), fmtBR(tcc2Stress.P95, 2), fmtBR(tcc2Stress.P95SE, 3), fmtBR(tcc2Stress.ProbTarget, 1),
-		fmtBR(tcc2Cuts.CPMDeterministic, 2), fmtBR(tcc2Cuts.Mean, 2), fmtBR(tcc2Cuts.MeanSE, 3), fmtBR(tcc2Cuts.P50, 2), fmtBR(tcc2Cuts.P50SE, 3), fmtBR(tcc2Cuts.P85, 2), fmtBR(tcc2Cuts.P85SE, 3), fmtBR(tcc2Cuts.P95, 2), fmtBR(tcc2Cuts.P95SE, 3), fmtBR(tcc2Cuts.ProbTarget, 1),
+		fmtBR(tcc2Stress25.CPMDeterministic, 2), fmtBR(tcc2Stress25.Mean, 2), fmtBR(tcc2Stress25.MeanSE, 3), fmtBR(tcc2Stress25.P50, 2), fmtBR(tcc2Stress25.P50SE, 3), fmtBR(tcc2Stress25.P85, 2), fmtBR(tcc2Stress25.P85SE, 3), fmtBR(tcc2Stress25.P95, 2), fmtBR(tcc2Stress25.P95SE, 3), fmtBR(tcc2Stress25.ProbTarget, 1),
+		fmtBR(tcc2Stress40.CPMDeterministic, 2), fmtBR(tcc2Stress40.Mean, 2), fmtBR(tcc2Stress40.MeanSE, 3), fmtBR(tcc2Stress40.P50, 2), fmtBR(tcc2Stress40.P50SE, 3), fmtBR(tcc2Stress40.P85, 2), fmtBR(tcc2Stress40.P85SE, 3), fmtBR(tcc2Stress40.P95, 2), fmtBR(tcc2Stress40.P95SE, 3), fmtBR(tcc2Stress40.ProbTarget, 1),
 	)
 	if err := os.WriteFile(filepath.Join(dir, "tab_tcc2_mc.tex"), []byte(tcc2Rows), 0644); err != nil {
 		return err

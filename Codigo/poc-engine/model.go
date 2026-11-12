@@ -60,12 +60,13 @@ type CPMResult struct {
 
 // MonteCarloConfig holds configuration for the simulation.
 type MonteCarloConfig struct {
-	Iterations   int     `json:"iterations"`
-	Seed         uint64  `json:"seed"`
-	NumWorkers   int     `json:"num_workers"`
-	TargetDate   float64 `json:"target_date"` // Threshold for P(F <= target)
-	Lambda       float64 `json:"lambda"`      // PERT-Beta shape parameter (default 4.0, must be > 0)
-	EpsilonFloat float64 `json:"epsilon"`     // Numerical tolerance for float comparison (default 1e-9)
+	Iterations     int     `json:"iterations"`
+	Seed           uint64  `json:"seed"`
+	NumWorkers     int     `json:"num_workers"`
+	TargetDate     float64 `json:"target_date"`     // Threshold for P(F <= target)
+	Lambda         float64 `json:"lambda"`          // PERT-Beta shape parameter (default 4.0, must be > 0)
+	EpsilonFloat   float64 `json:"epsilon"`         // Numerical tolerance for float comparison (default 1e-9)
+	CorrelationRho float64 `json:"correlation_rho"` // Latent Gaussian copula correlation in [0, 1)
 }
 
 // MonteCarloResult holds the aggregated statistical distribution of project outcomes.
@@ -163,6 +164,9 @@ func ValidateNetwork(net ProjectNetwork, cfg MonteCarloConfig) error {
 	}
 	if isInvalidFloat(cfg.EpsilonFloat) || cfg.EpsilonFloat < 0.0 {
 		return fmt.Errorf("invalid epsilon (must be > 0): %v", cfg.EpsilonFloat)
+	}
+	if isInvalidFloat(cfg.CorrelationRho) || cfg.CorrelationRho < 0.0 || cfg.CorrelationRho >= 1.0 {
+		return fmt.Errorf("invalid correlation_rho (must be in [0, 1)): %v", cfg.CorrelationRho)
 	}
 
 	taskSet := make(map[string]bool, len(net.Tasks))
