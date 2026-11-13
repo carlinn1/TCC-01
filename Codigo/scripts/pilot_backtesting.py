@@ -4,7 +4,7 @@ Demonstracao exploratoria de parametrizacao estocastica da Dimensao 3
 (Arvore em 2 Niveis — EST-02, EST-03, DAD-05, ADR-002, ADR-003, ADR-005, C1).
 
 Nota metodologica (PK-01 / C1 / B2): No TCC 1 este script executa EXCLUSIVAMENTE a calibracao
-exploratoria da regra em 2 niveis (Nível 1: Q05/m_HSM/Q95; Fallback: Bootstrap empirico quando Q50 <= 0.25)
+exploratoria da regra em 2 niveis (Nível 1: Q05/m_HSM/Q95; Fallback: Bootstrap empirico quando Q50 <= 0.25 ou dispersao <= 0.05)
 sobre as distribuicoes empiricas extraidas de `cli/cli`, removendo o antigo Nivel 2 (casamento Q10/Q90)
 que nunca disparava por coincidir Q10 com o piso operacional. Sem vazamento temporal (`y_real`), e o
 backtesting descritivo com congelamento causal fica reservado a E09 (TCC 2).
@@ -51,6 +51,7 @@ def half_sample_mode(xs: list[float]) -> float:
 
 
 MIN_SAMPLE_SIZE_N = 15
+MIN_SPREAD_BD = 0.05
 
 
 def classify_and_parameterize(durations: list[float]) -> dict:
@@ -73,11 +74,13 @@ def classify_and_parameterize(durations: list[float]) -> dict:
 
     passes_min_n = len(durations) >= MIN_SAMPLE_SIZE_N
 
-    # Verifica condicao de degenerescencia no piso (Q50 == 0.25 d.u.)
-    if q50 <= FLOOR_BD + 1e-9:
+    to = max(FLOOR_BD, q05)
+    tp = q95
+    # A tolerancia evita que erro de ponto flutuante altere a fronteira de 0,05.
+    if q50 <= FLOOR_BD + 1e-9 or tp - to <= MIN_SPREAD_BD + 1e-9:
         return {
             "selected_rule": "fallback_bootstrap_empirico",
-            "reason": "Mediana Q50 atinge o piso de truncamento (0,25 d.u.); parametrizacao Beta degenerada.",
+            "reason": "Mediana no piso ou dispersao Q95-max(piso,Q05) <= 0,05 d.u.; reamostragem sem ampliar suporte.",
             "passes_min_sample_n15": passes_min_n,
             "q05": round(q05, 4),
             "q10": round(q10, 4),
@@ -93,8 +96,6 @@ def classify_and_parameterize(durations: list[float]) -> dict:
             "pert_expected_mean": None,
         }
 
-    to = max(FLOOR_BD, q05)
-    tp = max(to + 0.05, q95)
     tm = min(max(m_hsm, to), tp)
     pert_mean = (to + 4.0 * tm + tp) / 6.0
     return {
@@ -149,7 +150,8 @@ def main():
             assert wp["selected_rule"] == "fallback_bootstrap_empirico", (
                 f"{wp['target']} com Q50={wp['q50']} deveria acionar fallback_bootstrap_empirico"
             )
-            assert wp["to"] is None
+        if wp["selected_rule"] == "fallback_bootstrap_empirico":
+            assert wp["to"] is None and wp["tm"] is None and wp["tp"] is None
         else:
             assert wp["selected_rule"] == "primaria_quantis_regularizados_Q05_HSM_Q95", (
                 f"{wp['target']} com Q50={wp['q50']} deveria acionar regra primaria Q05/HSM/Q95"

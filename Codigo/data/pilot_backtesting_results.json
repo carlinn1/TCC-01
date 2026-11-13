@@ -28,7 +28,7 @@
     },
     {
       "selected_rule": "fallback_bootstrap_empirico",
-      "reason": "Mediana Q50 atinge o piso de truncamento (0,25 d.u.); parametrizacao Beta degenerada.",
+      "reason": "Mediana no piso ou dispersao Q95-max(piso,Q05) <= 0,05 d.u.; reamostragem sem ampliar suporte.",
       "passes_min_sample_n15": false,
       "q05": 0.25,
       "q10": 0.25,
