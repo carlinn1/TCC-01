@@ -334,9 +334,9 @@ func TestComputeCRNDiff(t *testing.T) {
 }
 
 // TestTCC2StressModesUniformIncludingE14 (A6 / DEC-6) enforces that:
-// 1. All E01..E14 tasks (including E14 review/submission) carry stochastic bounds (To < Tp) and uniform
-//    stress inflation (+25% in stress, +40% matching R10 in stress_40);
-// 2. CorrelationRho validation rejects out-of-range values (< 0 or >= 1) and preserves reproducibility across workers.
+//  1. All E01..E14 tasks (including E14 review/submission) carry stochastic bounds (To < Tp) and uniform
+//     stress inflation (+25% in stress, +40% matching R10 in stress_40);
+//  2. CorrelationRho validation rejects out-of-range values (< 0 or >= 1) and preserves reproducibility across workers.
 func TestTCC2StressModesUniformIncludingE14(t *testing.T) {
 	baseNet := buildTCC2ScheduleNetworkWithMode("base")
 	stress25Net := buildTCC2ScheduleNetworkWithMode("stress")
@@ -532,6 +532,18 @@ func BenchmarkMonteCarloSynthetic200Tasks(b *testing.B) {
 		_, err := RunMonteCarlo(net, cfg)
 		if err != nil {
 			b.Fatalf("Simulation error: %v", err)
+		}
+	}
+}
+
+func TestRiskIDsMustBeUniqueAndNonempty(t *testing.T) {
+	for _, ids := range [][]string{{"", "R2"}, {"R", "R"}} {
+		net := ProjectNetwork{Tasks: []Task{{ID: "T", To: 10, Tm: 10, Tp: 10}}, Risks: []Risk{
+			{ID: ids[0], TaskID: "T", Probability: 0.5, ImpactDays: 1, Active: true},
+			{ID: ids[1], TaskID: "T", Probability: 0.5, ImpactDays: 1, Active: true},
+		}}
+		if _, err := RunMonteCarlo(net, MonteCarloConfig{Iterations: 100, Seed: 42}); err == nil {
+			t.Errorf("accepted invalid risk IDs: %q", ids)
 		}
 	}
 }

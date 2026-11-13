@@ -174,7 +174,12 @@ func ValidateNetwork(net ProjectNetwork, cfg MonteCarloConfig) error {
 		taskSet[t.ID] = true
 	}
 
+	riskIDs := make(map[string]bool, len(net.Risks))
 	for _, r := range net.Risks {
+		if r.ID == "" || riskIDs[r.ID] {
+			return fmt.Errorf("risk ID must be nonempty and unique: %q", r.ID)
+		}
+		riskIDs[r.ID] = true
 		if r.TaskID == "" {
 			return fmt.Errorf("risk %s has empty TaskID (every risk must reference a valid TaskID)", r.ID)
 		}
@@ -190,5 +195,3 @@ func ValidateNetwork(net ProjectNetwork, cfg MonteCarloConfig) error {
 	}
 	return nil
 }
-
-
