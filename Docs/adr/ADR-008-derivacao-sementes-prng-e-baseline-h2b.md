@@ -24,6 +24,6 @@ Accepted
 ## Consequences
 - `TestSeedIndependence42vs43` valida divergência estatística real entre `S0=42` e `S0=43` ($|r| \le 0{,}04$ e vetores distintos).
 - `TestComputeCRNDiff` valida redução de variância CRN $> 3\times$ mesmo quando a reparametrização de `T3` altera sua taxa de aceitação Marsaglia-Tsang, além de redução $> 6\times$ no pareamento `C' - C` da Tabela 9.
-- `RNF08` permanece determinístico para 1, 4 e 16 *workers*, com cobertura de testes Go em `94,1%`.
+- `RNF08` permanece determinístico para 1, 4 e 16 *workers*, com cobertura de testes Go em `91,7% (medição Linux de 13/11/2026; `Docs/baseline/coverage_current.json`)`.
 - O desenho experimental do TCC 2 adquire referência de controle sem IA para caracterizar qualitativamente e numericamente eventuais limitações do agente explicativo sem reivindicações confirmatórias sobre cognição humana.
 

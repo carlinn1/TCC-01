@@ -35,6 +35,16 @@ class TestPowerH1B(unittest.TestCase):
             self.assertLessEqual(res["type_i_error_lower_pct"], 5.0, f"M={m} violated lower alpha")
             self.assertLessEqual(res["type_i_error_upper_pct"], 5.0, f"M={m} violated upper alpha")
 
+    def test_power_table_uses_exported_results(self):
+        results = {"tost_exact_90": {str(m): {str(p): power_h1b.compute_exact_tost_power(m, p)
+                   for p in (0.83, 0.85, 0.87)} for m in (200, 400, 500)}}
+        rendered = power_h1b.render_power_table(results)
+        self.assertIn(r"83{,}93\%", rendered)
+        self.assertIn(r"[416,\,438]", rendered)
+        results["tost_exact_90"]["500"]["0.85"]["power_pct"] = 12.34
+        self.assertIn(r"12{,}34\%", power_h1b.render_power_table(results))
+        self.assertNotIn(r"83{,}93\%", power_h1b.render_power_table(results))
+
 
 if __name__ == "__main__":
     unittest.main()

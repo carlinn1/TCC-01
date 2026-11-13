@@ -7,7 +7,7 @@
 [![Go Version](https://img.shields.io/badge/Go-1.27%2B-00ADD8?style=flat-square&logo=go&logoColor=white)](Codigo/poc-engine/go.mod)
 [![Python Version](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=flat-square&logo=python&logoColor=white)](Codigo/scripts/extract_dataset.py)
 [![LaTeX](https://img.shields.io/badge/Monografia-abnTeX2%20%7C%20Overleaf-008080?style=flat-square&logo=overleaf&logoColor=white)](Docs/monografia/Main.tex)
-[![Tests](https://img.shields.io/badge/PoC%20Tests-PASS%20(94.1%25%20cov)-008C4F?style=flat-square)](#como-executar-a-poc-e-os-testes)
+[![Tests](https://img.shields.io/badge/PoC%20Tests-PASS%20(91.7%25%20cov)-008C4F?style=flat-square)](#como-executar-a-poc-e-os-testes)
 [![UnB FCTE](https://img.shields.io/badge/UnB%20%7C%20FCTE-TCC%201%20(2026)-1D4B7C?style=flat-square)](Docs/monografia/Main.tex)
 
 [Visão Geral](#visão-geral) •
@@ -83,7 +83,7 @@ O núcleo estocástico implementado em [`Codigo/poc-engine/`](Codigo/poc-engine/
 | **Teste KS PERT-Beta ($n=10^6$ + 100 seeds)** | `ComputeKSBetaFit` ($D_{\mathrm{crit},0{,}05}=0{,}00136$) + `RunKSMultiSeedSuite` | $H_0$ não rejeitada em T1–T4 ($D_n \in [0{,}00067;\, 0{,}00104]$, $p \in [0{,}229;\, 0{,}768]$; taxa de rejeição em 100 seeds: `2%–7%`, média `4,75%`) | RQ2 |
 | **Caso Degenerado ($t_o=t_m=t_p$)** | `TestDegeneratePertBetaZeroVariance` `(5, 5, 5)` | Duração exata `5,00000`, variância `0,00000`, zero `NaN` | RQ2 |
 | **Reprodutibilidade por Índice** | `TestReproducibilityAcrossWorkers` (1, 4 e 16 *workers*) | Variação `0,000000` em Média Kahan (`11,893409`), $P_{50}, P_{85}, P_{95}$, $P(F\le 11)$ e $\mathrm{IC}_{\mathrm{T3}}$ | RNF08 |
-| **Escalabilidade (200 tarefas / 300 deps)** | Rede sintética em camadas ($N=10.000$, 1/2/4/8 *workers*, 5 rep.) | Mediana **`86,7 ms`** (8 *workers*), **`97,7 ms`** (4 *workers*, speedup `3,08x`), **`168,7 ms`** (2 *workers*) e **`301,1 ms`** (1 *worker*) | RNF06 |
+| **Escalabilidade (200 tarefas / 300 deps)** | Rede sintética ($N=10.000$, 1/2/4/8 workers, 5 rep.) | Medições locais em [`tab_benchmarks.tex`](Docs/monografia/tabelas/tab_benchmarks.tex); ambiente registrado no JSON exportado. A reprodução verifica mediana < 500 ms, sem exigir igualdade entre máquinas. | RNF06 |
 | **Cronograma Enxuto TCC 2** | `AuditTCC2Schedule` (14 pacotes essenciais *bottom-up*, 01/03/2027 a 16/07/2027, CEPE/UnB 0151/2026) | Base CPM = `12,00` sem.; Nominal c/ riscos + cópula ($\rho=0{,}50$): $P_{50}=12{,}52$, $P_{85}=13{,}76$ sem. ($P(F\le 20)=100{,}0\%$); Estresse R10 (`+40%` + $\rho=0{,}50$): $P_{85}=18{,}93 \le 20{,}0$ sem. ($P(F\le 20)=95{,}9\%$) | Cap. 6 |
 | **Poder Estatístico TOST (H1b)** | `power_h1b.py` ($M=500$ grafos/regime, TOST binomial exato / Clopper-Pearson 90% em $[80\%,90\%]$) | Poder exato de **`83,93%`** (`83,9%`) em $p=0{,}85$ (`47,96%` em $p=0{,}83$; `66,85%` em $p=0{,}87$; erro Tipo I `3,94% / 4,65%`) | RQ4, Cap. 3 |
 
@@ -127,8 +127,10 @@ O núcleo estocástico implementado em [`Codigo/poc-engine/`](Codigo/poc-engine/
 cd Codigo/poc-engine
 go run .
 
-# 2. Rodar toda a suíte de validação com cobertura (94,1% de cobertura de instruções)
-go test -v -count=1 -cover ./...
+# 2. Rodar a suíte e exportar cobertura/ambiente/revisão para Docs/baseline/coverage_current.*
+cd ../..
+python Codigo/scripts/export_coverage.py
+cd Codigo/poc-engine
 
 # 3. Rodar os benchmarks de desempenho e alocações em 5 repetições (RNF06)
 go test -bench=Benchmark -benchmem -count=5
@@ -152,7 +154,7 @@ python Codigo/checks/check_latex.py
 | [`Codigo/poc-engine/random.go`](Codigo/poc-engine/random.go) | `Mix64`, `DeriveIterationSeed`, `DeriveEntitySeedFromKey`, `SampleGamma`, `SamplePERTBeta`, `ComputeKSBetaFit` | Derivação de sementes, Marsaglia-Tsang, CDF Beta (Lentz) e teste KS ($10^6$ + 100 seeds) |
 | [`Codigo/poc-engine/cpm.go`](Codigo/poc-engine/cpm.go) | `TopologicalSort`, `CompileGraph`, `FastCPM`, `CalculateExpectedDurationWithLambda` | Ordenação $\mathcal{O}(\lvert V\rvert+\lvert E\rvert)$ e CPM parametrizado por $\lambda$ |
 | [`Codigo/poc-engine/simulator.go`](Codigo/poc-engine/simulator.go) | `RunMonteCarlo`, `ComputeCRNDiff` | Orquestrador concorrente livre de *false sharing* e avaliador pareado CRN |
-| [`Codigo/poc-engine/validation_test.go`](Codigo/poc-engine/validation_test.go) | `TestPertBetaKSMultiSeed100`, `TestSplitMix64StreamIndependence`, `TestTCC2ScheduleMonteCarlo` | Suíte completa de validação com `94,1%` de cobertura |
+| [`Codigo/poc-engine/validation_test.go`](Codigo/poc-engine/validation_test.go) | `TestPertBetaKSMultiSeed100`, `TestSplitMix64StreamIndependence`, `TestTCC2ScheduleMonteCarlo` | Suíte completa de validação com `91,7%` de cobertura |
 | [`Codigo/scripts/extract_dataset.py`](Codigo/scripts/extract_dataset.py) | Extração de janelas de *release* via API GitHub + histórico pré-*squash* + vetores itemizados | Inclui `issue_assigned_at`, sensibilidade ao piso `{0,10; 0,25; 0,50}` d.u. e `--verify-local` |
 | [`Codigo/scripts/pilot_backtesting.py`](Codigo/scripts/pilot_backtesting.py) | Demonstração descritiva de parametrização causal em 2 níveis (TCC1) | Exporta `Codigo/data/pilot_backtesting_results.json` e `Docs/monografia/tabelas/tab_piloto_backtesting.tex` |
 | [`Codigo/scripts/power_h1b.py`](Codigo/scripts/power_h1b.py) | Estudo de poder estatístico binomial exato para H1b (TOST / Clopper-Pearson 90%) | Demonstra poder exato de `83,93%` (`[416, 438]`) para $M=500$ vs `0,00%` para $M=200$ (IC 95%) |

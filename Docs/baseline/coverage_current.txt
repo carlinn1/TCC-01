@@ -1,0 +1,96 @@
+=== RUN   TestCycleDetection
+--- PASS: TestCycleDetection (0.00s)
+=== RUN   TestAnalyticalCPM
+--- PASS: TestAnalyticalCPM (0.00s)
+=== RUN   TestBernoulliRiskComponent
+--- PASS: TestBernoulliRiskComponent (0.00s)
+=== RUN   TestInputValidationRejectsInvalidNetworks
+--- PASS: TestInputValidationRejectsInvalidNetworks (0.00s)
+=== RUN   TestComputeCRNDiff
+--- PASS: TestComputeCRNDiff (0.64s)
+=== RUN   TestTCC2StressModesUniformIncludingE14
+--- PASS: TestTCC2StressModesUniformIncludingE14 (0.84s)
+=== RUN   TestInverseRegularizedIncompleteBeta
+--- PASS: TestInverseRegularizedIncompleteBeta (0.00s)
+=== RUN   TestLambdaConsistencyAcrossCPMAndMonteCarlo
+--- PASS: TestLambdaConsistencyAcrossCPMAndMonteCarlo (0.03s)
+=== RUN   TestReproducibilityAcrossWorkers
+--- PASS: TestReproducibilityAcrossWorkers (0.01s)
+=== RUN   TestRiskIDsMustBeUniqueAndNonempty
+--- PASS: TestRiskIDsMustBeUniqueAndNonempty (0.00s)
+=== RUN   TestRegularizedIncompleteBetaAnalytical
+--- PASS: TestRegularizedIncompleteBetaAnalytical (0.00s)
+=== RUN   TestPertBetaMomentsMatchAnalytical
+    validation_test.go:101: T1  mu=3.16604 (analytical 3.16667)  var=0.30544 (analytical 0.30556)
+    validation_test.go:101: T2  mu=5.50078 (analytical 5.50000)  var=0.75046 (analytical 0.75000)
+    validation_test.go:101: T3  mu=5.50104 (analytical 5.50000)  var=1.60992 (analytical 1.60714)
+    validation_test.go:101: T4  mu=2.16604 (analytical 2.16667)  var=0.30544 (analytical 0.30556)
+--- PASS: TestPertBetaMomentsMatchAnalytical (0.47s)
+=== RUN   TestPertBetaKSGoodnessOfFit
+    validation_test.go:129: T1  KS full D_n=0.00067 (p=0.768) | grid2000 D_n=0.00066 (p=0.778) | D_crit=0.00136
+    validation_test.go:129: T2  KS full D_n=0.00104 (p=0.229) | grid2000 D_n=0.00102 (p=0.247) | D_crit=0.00136
+    validation_test.go:129: T3  KS full D_n=0.00088 (p=0.415) | grid2000 D_n=0.00087 (p=0.434) | D_crit=0.00136
+    validation_test.go:129: T4  KS full D_n=0.00091 (p=0.374) | grid2000 D_n=0.00091 (p=0.377) | D_crit=0.00136
+--- PASS: TestPertBetaKSGoodnessOfFit (1.66s)
+=== RUN   TestPertBetaKSMultiSeed100
+    validation_test.go:157: T1 (100 seeds x 10k): mean D_n=0.00873, max D_n=0.01690, mean p=0.497, median p=0.525, rejections@0.05=4/100
+    validation_test.go:157: T2 (100 seeds x 10k): mean D_n=0.00878, max D_n=0.01728, mean p=0.490, median p=0.440, rejections@0.05=6/100
+    validation_test.go:157: T3 (100 seeds x 10k): mean D_n=0.00856, max D_n=0.01543, mean p=0.502, median p=0.487, rejections@0.05=2/100
+    validation_test.go:157: T4 (100 seeds x 10k): mean D_n=0.00901, max D_n=0.01741, mean p=0.473, median p=0.495, rejections@0.05=7/100
+--- PASS: TestPertBetaKSMultiSeed100 (1.52s)
+=== RUN   TestSplitMix64StreamIndependence
+    validation_test.go:209: Stream independence verified: lag-1 r=0.01644, inter-task r=0.00890 (threshold |r| <= 0.03)
+--- PASS: TestSplitMix64StreamIndependence (0.00s)
+=== RUN   TestSeedIndependence42vs43
+    validation_test.go:287: S0=42 vs S0=43 divergence verified: ||X_42 - X_43||_2=2.5628, raw corr r=0.00408, entity corr r=0.00340
+--- PASS: TestSeedIndependence42vs43 (0.02s)
+=== RUN   TestDegeneratePertBetaZeroVariance
+--- PASS: TestDegeneratePertBetaZeroVariance (0.00s)
+=== RUN   TestDeterministicCPMScenarios
+--- PASS: TestDeterministicCPMScenarios (0.00s)
+=== RUN   TestPrintReproducibilityValues
+    validation_test.go:363: workers= 1  Mean=11.893409  P50=11.783295  P85=13.457458  P95=14.479872  P(F<=11)=29.0000%  IC(T3)=61.4000%
+    validation_test.go:363: workers= 4  Mean=11.893409  P50=11.783295  P85=13.457458  P95=14.479872  P(F<=11)=29.0000%  IC(T3)=61.4000%
+    validation_test.go:363: workers=16  Mean=11.893409  P50=11.783295  P85=13.457458  P95=14.479872  P(F<=11)=29.0000%  IC(T3)=61.4000%
+--- PASS: TestPrintReproducibilityValues (0.01s)
+=== RUN   TestTCC2ScheduleMonteCarlo
+    validation_test.go:421: TCC2 Base: CPM=12.00 | Mean=12.01 | P50=12.01 | P85=12.49 | P95=12.76 | P(F<=20)=100.0%
+    validation_test.go:423: TCC2 Nominal (Risks+rho=0.50): CPM=12.00 | Mean=12.53 | P50=12.52 | P85=13.76 | P95=14.53 | P(F<=20)=100.0%
+    validation_test.go:425: TCC2 Stress25 (+25%+rho=0.50): CPM=15.00 | Mean=15.53 | P50=15.52 | P85=17.00 | P95=17.86 | P(F<=20)=100.0%
+    validation_test.go:427: TCC2 Stress40 (+40%+rho=0.50): CPM=16.80 | Mean=17.33 | P50=17.32 | P85=18.93 | P95=19.88 | P(F<=20)=95.9%
+--- PASS: TestTCC2ScheduleMonteCarlo (1.21s)
+=== RUN   TestBenchmarkDispersion5Runs
+    validation_test.go:443: Environment: OS=linux ARCH=amd64 Go=go1.27.3-X:nodwarf5 NumCPU=12 (cover="set")
+    validation_test.go:445: Rede Base (4 tarefas, 4 dep.) (workers=1): median=6.44 ms | mean=6.46±0.14 ms | [6.32, 6.61] ms | ~1552313 it/s
+    validation_test.go:445: Rede Sintética (200 tarefas, 300 dep., 1 worker) (workers=1): median=298.21 ms | mean=300.31±6.82 ms | [293.47, 309.36] ms | ~33533 it/s
+    validation_test.go:445: Rede Sintética (200 tarefas, 300 dep., 2 workers) (workers=2): median=451.86 ms | mean=457.20±11.25 ms | [446.62, 474.44] ms | ~22131 it/s
+    validation_test.go:445: Rede Sintética (200 tarefas, 300 dep., 4 workers) (workers=4): median=532.29 ms | mean=530.18±6.51 ms | [519.20, 536.48] ms | ~18787 it/s
+    validation_test.go:445: Rede Sintética (200 tarefas, 300 dep., 8 workers) (workers=8): median=469.24 ms | mean=472.61±7.09 ms | [466.05, 480.89] ms | ~21311 it/s
+--- PASS: TestBenchmarkDispersion5Runs (9.19s)
+=== RUN   TestResolveRepoRoot
+--- PASS: TestResolveRepoRoot (0.00s)
+=== RUN   TestRunAllPoCValidationAndExport
+=================================================================
+  PoC Go - Validação Algorítmica do Motor CPM & Monte Carlo
+  TCC 1 - Sombra Digital Governada e IA em Projetos de Software
+=================================================================
+
+### Tabela 9 Reproduzida pela PoC em Go (N = 10.000 iterações, seed = 42)
+| A | CPM=10.83 | Mean=11.46 (±0.013) | P50=11.40 (±0.017) | P85=12.81 (±0.020) | P95=13.62 (±0.026) | P(F<=11)=37.4% |
+| B | CPM=10.83 | Mean=11.89 (±0.015) | P50=11.78 (±0.017) | P85=13.45 (±0.028) | P95=14.55 (±0.041) | P(F<=11)=29.0% |
+| C | CPM=11.02 | Mean=11.57 (±0.011) | P50=11.47 (±0.016) | P85=12.77 (±0.021) | P95=13.62 (±0.031) | P(F<=11)=33.5% |
+| C'| CPM=11.02 | Mean=11.21 (±0.009) | P50=11.15 (±0.011) | P85=12.21 (±0.017) | P95=12.87 (±0.023) | P(F<=11)=43.9% |
+| CRN Diff (C' - C) | DeltaMean=-0.360 (SE pareado=0.0059 vs indep=0.0147, red=6.3x) | DeltaP85=-0.56 (±0.019) |
+
+### Simulação do Cronograma TCC 2 (20 semanas, N = 10.000, seed = 42, escopo enxuto pré-cortado)
+| Base (sem riscos, indep.)  | CPM=12.00 | Mean=12.01 | P50=12.01 | P85=12.49 | P95=12.76 | P(F<=20)=100.0% |
+| Nominal (riscos + rho=0.50)| CPM=12.00 | Mean=12.53 | P50=12.52 | P85=13.76 | P95=14.53 | P(F<=20)=100.0% |
+| Estresse (+25% + rho=0.50) | CPM=15.00 | Mean=15.53 | P50=15.52 | P85=17.00 | P95=17.86 | P(F<=20)=100.0% |
+| Estresse R10 (+40%+rho=0.5)| CPM=16.80 | Mean=17.33 | P50=17.32 | P85=18.93 | P95=19.88 | P(F<=20)=95.9% |
+
+Resultados exportados para /tmp/TestRunAllPoCValidationAndExport2180301376/001/poc_results.json com sucesso.
+Macros e tabelas LaTeX exportadas com sucesso.
+--- PASS: TestRunAllPoCValidationAndExport (10.43s)
+PASS
+coverage: 91.7% of statements
+ok  	poc-engine	26.060s	coverage: 91.7% of statements

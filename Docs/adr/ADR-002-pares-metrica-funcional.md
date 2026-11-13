@@ -25,3 +25,6 @@ As métricas $\mathrm{MdAE}$ e $\mathrm{NMAE}$ são reportadas exclusivamente co
 - Elimina a inconsistência teórica de funções de perda apontada na revisão técnica.
 - Mantém compatibilidade total com a inferência primária da Dimensão 2 via *bootstrap* pareado unilateral com correção de Holm-Bonferroni ($m=2$ por regime e funcional contra CPM e regressão linear em H1a; $m=3$ entre os regimes R1, R3 e R5 para *Pinball Loss* em H1b) sobre $\Delta\overline{\mathrm{AE}}$ e $\Delta\overline{\mathrm{SE}}$ (reportando Wilcoxon pareado e estimador de Hodges-Lehmann como análise complementar).
 
+
+## Complemento operacional — 13/11/2026
+R7 preserva as marginais e riscos de R1, alterando a largura para k=2. R9 preserva as marginais PERT-Beta e riscos de R1, com transformação inversa da Beta sobre a cópula gaussiana rho=0,50. O motor preditivo permanece nominalmente independente (rho=0). Para cada grafo, o baseline recebe um histórico independente de 200 vetores completos; cada tarefa é reamostrada pela respectiva coluna, com riscos já incorporados e sem novo incremento. Todos os métodos têm acesso ao mesmo histórico e às estimativas visíveis. Em R10, o histórico permanece nominal e o viés de +40% incide somente sobre o desfecho futuro. A especificação integral está na seção de protocolo da monografia; sua execução pertence ao TCC2.

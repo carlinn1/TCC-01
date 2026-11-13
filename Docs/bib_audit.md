@@ -1,11 +1,13 @@
 # Auditoria Bibliográfica de Fontes Primárias (`Docs/monografia/Referencias.bib`)
 
-Este documento registra a verificação individual de cada entrada em [`Docs/monografia/Referencias.bib`](file:///c:/Users/Carlos/Documents/TCC-01/Docs/monografia/Referencias.bib) contra sua fonte primária oficial (CrossRef/DOI, arXiv, ACM Digital Library, IEEE Xplore, SpringerLink, INFORMS, JASA, ISO, NIST, PMI, OWASP e ISBN de editoras), em cumprimento à restrição `C3` de [`CONSTRAINTS.md`](file:///c:/Users/Carlos/Documents/TCC-01/CONSTRAINTS.md).
+Este documento registra a verificação individual de cada entrada em [`Docs/monografia/Referencias.bib`](monografia/Referencias.bib) contra sua fonte primária oficial (CrossRef/DOI, arXiv, ACM Digital Library, IEEE Xplore, SpringerLink, INFORMS, JASA, ISO, NIST, PMI, OWASP e ISBN de editoras), em cumprimento à restrição `C3` de [`CONSTRAINTS.md`](../CONSTRAINTS.md).
 
-## Tabela de Verificação das Entradas (50 referências)
+## Tabela de Verificação das Entradas (68 referências)
+
+Atualização de 13/11/2026: removidas três chaves obsoletas, incorporadas oito referências já citadas e duas normas Unicode. Os registros anteriores foram preservados; esta atualização não representa nova auditoria integral de todas as fontes.
 
 | # | Chave BibTeX | Tipo | Autores Verificados | Ano | Fonte Primária (DOI / arXiv / ISBN / URL Oficial) | Status |
-| :--- | :--- | :---: | :--- | :---: | :--- | :---: |
+| --- | --- | --- | --- | --- | --- | --- |
 | 1 | `beurerkellner2025patterns` | `@misc` | Beurer-Kellner, L.; Buesser, B.; Crețu, A.-M.; Debenedetti, E.; Dobos, D.; Fabian, D.; Fischer, M.; Froelicher, D.; Grosse, K.; Naeff, D.; Ozoani, E.; Paverd, A.; Tramèr, F.; Volhejn, V. | 2025 | `arXiv:2506.08837` (https://arxiv.org/abs/2506.08837) | Corrigido e Verificado |
 | 2 | `bickel2006` | `@article` | Bickel, D. R.; Frühwirth, R. | 2006 | DOI `10.1016/j.csda.2005.07.011` (*Comput. Stat. Data Anal.*, 50(12), 3500–3530) | Verificado |
 | 3 | `boehm1981` | `@book` | Boehm, B. W. | 1981 | ISBN `978-0-13-822122-5` (Prentice-Hall, *Software Engineering Economics*) | Adicionado e Verificado |
@@ -52,19 +54,25 @@ Este documento registra a verificação individual de cada entrada em [`Docs/mon
 | 44 | `steele2014` | `@inproceedings` | Steele Jr., G. L.; Lea, D.; Flood, C. H. | 2014 | DOI `10.1145/2660193.2660195` (*OOPSLA '14*, pp. 453–472) | Verificado |
 | 45 | `vacanti2015` | `@book` | Vacanti, D. S. | 2015 | ISBN `978-0-9864363-3-8` (ActionableAgile Press) | Verificado |
 | 46 | `vanslyke1963` | `@article` | Van Slyke, R. M. | 1963 | DOI `10.1287/opre.11.5.839` (*Operations Research*, 11(5), 839–860) | Verificado |
-| 47 | `vite2024` | `@misc` | Vite Consortium | 2024 | https://vitejs.dev/ | Verificado |
-| 48 | `vose2008` | `@book` | Vose, D. | 2008 | ISBN `978-0-470-51284-5` (Wiley, *Risk Analysis: A Quantitative Guide*, 3rd Ed.) | Verificado |
-| 49 | `w3c2015` | `@misc` | World Wide Web Consortium (W3C) | 2015 | https://www.w3.org/TR/eventsource/ (*Server-Sent Events*) | Verificado |
-| 50 | `williams1992` | `@article` | Williams, T. M. | 1992 | DOI `10.1057/jors.1992.50` (*J. Oper. Res. Soc.*, 43(4), 353–357) | Verificado |
-| 51 | `clopper1934` | `@article` | Clopper, C. J.; Pearson, E. S. | 1934 | DOI `10.1093/biomet/26.4.404` (*Biometrika*, 26(4), 404–413) | Adicionado e Verificado |
-| 52 | `cohen1960` | `@article` | Cohen, J. | 1960 | DOI `10.1177/001316446002000104` (*Educ. Psychol. Meas.*, 20(1), 37–46) | Adicionado e Verificado |
-| 53 | `flyvbjerg2006` | `@article` | Flyvbjerg, B. | 2006 | DOI `10.1177/875697280603700302` (*Project Management Journal*, 37(3), 5–15) | Adicionado e Verificado |
-| 54 | `hodges1963` | `@article` | Hodges Jr., J. L.; Lehmann, E. L. | 1963 | DOI `10.1214/aoms/1177704172` (*Ann. Math. Stat.*, 34(2), 598–611) | Adicionado e Verificado |
-| 55 | `holm1979` | `@article` | Holm, S. | 1979 | JSTOR `4615733` (*Scandinavian Journal of Statistics*, 6(2), 65–70) | Adicionado e Verificado |
-| 56 | `kahan1965` | `@article` | Kahan, W. | 1965 | DOI `10.1145/363707.363723` (*Commun. ACM*, 8(1), 40) | Adicionado e Verificado |
-| 57 | `mcnemar1947` | `@article` | McNemar, Q. | 1947 | DOI `10.1007/BF02295996` (*Psychometrika*, 12(2), 153–157) | Adicionado e Verificado |
-| 58 | `pmi2025pulse` | `@misc` | Project Management Institute (PMI) | 2025 | *Pulse of the Profession 2025* (https://www.pmi.org/learning/thought-leadership/pulse) | Adicionado e Verificado |
-| 59 | `rfc2104` | `@techreport` | Krawczyk, H.; Bellare, M.; Canetti, R. | 1997 | IETF RFC 2104 (`10.17487/RFC2104`) | Adicionado e Verificado |
-| 60 | `rfc8032` | `@techreport` | Josefsson, S.; Liusvaara, I. | 2017 | IETF RFC 8032 (`10.17487/RFC8032`) | Adicionado e Verificado |
-| 61 | `wilson1927` | `@article` | Wilson, E. B. | 1927 | DOI `10.1080/01621459.1927.10502953` (*JASA*, 22(158), 209–212) | Adicionado e Verificado |
-
+| 47 | `vose2008` | `@book` | Vose, D. | 2008 | ISBN `978-0-470-51284-5` (Wiley, *Risk Analysis: A Quantitative Guide*, 3rd Ed.) | Verificado |
+| 48 | `williams1992` | `@article` | Williams, T. M. | 1992 | DOI `10.1057/jors.1992.50` (*J. Oper. Res. Soc.*, 43(4), 353–357) | Verificado |
+| 49 | `clopper1934` | `@article` | Clopper, C. J.; Pearson, E. S. | 1934 | DOI `10.1093/biomet/26.4.404` (*Biometrika*, 26(4), 404–413) | Adicionado e Verificado |
+| 50 | `cohen1960` | `@article` | Cohen, J. | 1960 | DOI `10.1177/001316446002000104` (*Educ. Psychol. Meas.*, 20(1), 37–46) | Adicionado e Verificado |
+| 51 | `flyvbjerg2006` | `@article` | Flyvbjerg, B. | 2006 | DOI `10.1177/875697280603700302` (*Project Management Journal*, 37(3), 5–15) | Adicionado e Verificado |
+| 52 | `hodges1963` | `@article` | Hodges Jr., J. L.; Lehmann, E. L. | 1963 | DOI `10.1214/aoms/1177704172` (*Ann. Math. Stat.*, 34(2), 598–611) | Adicionado e Verificado |
+| 53 | `holm1979` | `@article` | Holm, S. | 1979 | JSTOR `4615733` (*Scandinavian Journal of Statistics*, 6(2), 65–70) | Adicionado e Verificado |
+| 54 | `kahan1965` | `@article` | Kahan, W. | 1965 | DOI `10.1145/363707.363723` (*Commun. ACM*, 8(1), 40) | Adicionado e Verificado |
+| 55 | `pmi2025pulse` | `@misc` | Project Management Institute (PMI) | 2025 | *Pulse of the Profession 2025* (https://www.pmi.org/learning/thought-leadership/pulse) | Adicionado e Verificado |
+| 56 | `rfc2104` | `@techreport` | Krawczyk, H.; Bellare, M.; Canetti, R. | 1997 | IETF RFC 2104 (`10.17487/RFC2104`) | Adicionado e Verificado |
+| 57 | `rfc8032` | `@techreport` | Josefsson, S.; Liusvaara, I. | 2017 | IETF RFC 8032 (`10.17487/RFC8032`) | Adicionado e Verificado |
+| 58 | `wilson1927` | `@article` | Wilson, E. B. | 1927 | DOI `10.1080/01621459.1927.10502953` (*JASA*, 22(158), 209–212) | Adicionado e Verificado |
+| 59 | `abdelhamid1991` | `@book` | Abdel-Hamid, T. K.; Madnick, S. E. | 1991 | ISBN 978-0-13-822040-2; fonte do autor: https://web.mit.edu/smadnick/www/Resume/Publications.htm | Verificado em fonte primária |
+| 60 | `kellner1999` | `@article` | Kellner, M. I.; Madachy, R. J.; Raffo, D. M. | 1999 | https://doi.org/10.1016/S0164-1212(99)00003-5; editora e metadados Crossref conferidos em 13/11/2026 | Verificado em fonte primária |
+| 61 | `herroelen2005` | `@article` | Herroelen, W.; Leus, R. | 2005 | https://doi.org/10.1016/j.ejor.2004.04.002; editora e metadados Crossref conferidos em 13/11/2026 | Verificado em fonte primária |
+| 62 | `tang2024grapharena` | `@misc` | Tang, J.; Zhang, Q.; Li, Y.; Chen, N.; Li, J. | 2024 | https://arxiv.org/abs/2407.00379v2; v2 de 15/02/2025, versão ICLR 2025; primeira submissão em 2024 | Verificado em fonte primária |
+| 63 | `richardeau2024graphs` | `@misc` | Richardeau, G.; Chali, S.; Le Merrer, E.; Penzo, C.; Trédan, G. | 2024 | https://arxiv.org/abs/2409.00159v3; v3 de 04/04/2025; primeira submissão em 2024 | Verificado em fonte primária |
+| 64 | `shrestha2025gsmranges` | `@misc` | Shrestha, S.; Kim, M.; Ross, K. | 2025 | https://arxiv.org/abs/2502.08680v1; v1 de 12/02/2025 | Verificado em fonte primária |
+| 65 | `amin2027llmspm` | `@article` | Amin, M. S.; Mendes, E.; Alami, A.; Britto, R. | 2027 | https://doi.org/10.1016/j.jss.2026.113129; JSS 244, 113129, fascículo fev. 2027; disponível antecipadamente em 2026 | Verificado em fonte primária |
+| 66 | `li2024finese` | `@inproceedings` | Li, Y.; Ren, Z.; Wang, Z.; Yang, L.; Dong, L.; Zhong, C.; Zhang, H. | 2024 | https://doi.org/10.1145/3597503.3623349; autoria e título conferidos nos metadados Crossref em 13/11/2026 | Verificado em fonte primária |
+| 67 | `unicode15` | `@manual` | Unicode Consortium | 2026 | https://www.unicode.org/reports/tr15/tr15-58.html; revisão 58, normalização por compatibilidade | Verificado em fonte primária |
+| 68 | `unicode39` | `@manual` | Unicode Consortium | 2026 | https://www.unicode.org/reports/tr39/tr39-34.html; revisão 34, mecanismos de caracteres confundíveis | Verificado em fonte primária |

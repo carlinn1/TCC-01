@@ -1,11 +1,11 @@
 # Constraints & Quality Contract (TCC 1 — Sombra Digital Governada)
 
-Last reviewed: 2026-11-11 by @Carlos, @Paulo
+Last reviewed: 2026-11-13 — caminhos de reprodução atualizados; limites C1–C9 preservados.
 
 ## 1. Floor & Project Restrictions (C1–C9 — Always Enforced)
 
 - **C1 (Continuidade científica):** Não reiniciar o trabalho. Preservar tema, DSRM, distinção clara entre TCC1 (especificação + PoC do núcleo estocástico + piloto/extração de dados) e TCC2 (implementação integrada dos serviços e avaliação empírica das Dimensões 2–5), PoC em Go e governança de IA.
-- **C2 (Fonte única de números):** Nenhum número de resultado experimental em tabela, figura, resumo ou conclusão pode ser digitado à mão; todos derivam do export automatizado do motor em Go (`Codigo/data/poc_results.json`, `Docs/monografia/resultados_poc.tex`, `Docs/monografia/tabelas/*.tex`) e do extrator de dados (`Codigo/data/dataset_backtesting.json`), verificados por `Codigo/checks/check_numbers.py`.
+- **C2 (Fonte única de números):** Nenhum número de resultado experimental em tabela, figura, resumo ou conclusão pode ser digitado à mão; todos derivam do export automatizado do motor em Go (`Codigo/data/poc_results.json`, `Docs/monografia/resultados_poc.tex`, `Docs/monografia/tabelas/*.tex`), do extrator de dados (`Codigo/data/dataset_backtesting.json`), do estudo de poder (`Codigo/scripts/power_h1b.py`) e do registro de cobertura (`Codigo/scripts/export_coverage.py`), verificados por `Codigo/checks/check_numbers.py`.
 - **C3 (Verificação em fonte primária):** Nenhuma afirmação ou citação nova sem fonte primária verificada (autoria completa, título, ano, veículo, URL/DOI/ISBN documentados em `Docs/bib_audit.md`).
 - **C4 (Fronteira de escopo TCC1/TCC2):** Não implementar o sistema web integrado no TCC1 (escopo do TCC2). No TCC1 são permitidos: correções e testes no motor da PoC (`Codigo/poc-engine/*.go`), scripts de extração/piloto/poder/figuras (`Codigo/scripts/*.py`), verificadores (`Codigo/checks/*.py`) e ajustes de especificação e texto (`Docs/`).
 - **C5 (Propagação integral de mudanças estatísticas):** Qualquer alteração estatística deve ser propagada para todos os pontos do documento: Resumo/Abstract, §1.2 (RQ4, H1a, H1b, H2a, H2b), §3.3, §3.4, Tabela 8, §3.5 e §6.5, verificada por busca textual automatizada em `Codigo/checks/check_latex.py`.
@@ -19,7 +19,7 @@ Last reviewed: 2026-11-11 by @Carlos, @Paulo
 
 | Dimensão | Regra / Limiar | Comando Verificador (`Checked by`) | Tipo |
 | :--- | :--- | :--- | :--- |
-| **Motor PoC (Go)** | 100% dos testes unitários, analíticos, KS exato ($10^6$), mutação Bernoulli, CRN e reprodutibilidade (1, 4 e 16 workers) verdes; cobertura $\ge 80\%$ | `cd Codigo/poc-engine && go test -count=1 -v -cover ./...` | Automatizado |
+| **Motor PoC (Go)** | 100% dos testes unitários, analíticos, KS exato ($10^6$), mutação Bernoulli, CRN e reprodutibilidade (1, 4 e 16 workers) verdes; cobertura $\ge 80\%$ | `python Codigo/scripts/export_coverage.py` (executa `go test -count=1 -v -cover ./...` e registra ambiente/cobertura) | Automatizado |
 | **Orçamento RNF06(i)** | Mediana de 5 execuções para 200 tarefas / 300 dependências ($N=10.000$) $< 500\text{ ms}$ | `cd Codigo/poc-engine && go test -count=1 -run TestBenchmarkDispersion5Runs ./...` | Automatizado |
 | **Export Único (C2)** | `Codigo/data/poc_results.json`, `Docs/monografia/resultados_poc.tex` e `Docs/monografia/tabelas/*.tex` sincronizados com `Docs/monografia/Main.tex` e `generate_figures.py` | `python Codigo/checks/check_numbers.py` | Automatizado |
 | **Dataset & Piloto (LGPD)** | `Codigo/data/dataset_backtesting.json` contém observações minimizadas por item, recalcula a Tabela 7 offline e possui zero PII | `python Codigo/scripts/extract_dataset.py --verify-local && python Codigo/scripts/pilot_backtesting.py` | Automatizado |

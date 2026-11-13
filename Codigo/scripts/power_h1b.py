@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
 Calculo exato do poder estatistico de H1b (Dimensao 2) sob distribuicao Binomial(M, p).
-Compara o criterio de inclusao do IC 95% de Wilson em [80%, 90%] contra o teste de
-equivalencia TOST (duas caudas unilaterais a alpha = 0,05, equivalente a IC 90% de Wilson
-inteiramente contido em [80%, 90%]) para p in {0.83, 0.85, 0.87} (EST-01 / ADR-001).
+Compara intervalos de Wilson com TOST binomial exato (Clopper-Pearson 90%).
+Somente o TOST exato e adotado; Wilson permanece como referencia comparativa.
 """
 
 import json
 import math
 import os
+from pathlib import Path
 
 
 def wilson_interval(k: int, n: int, z: float) -> tuple[float, float]:
@@ -129,6 +129,32 @@ def compute_exact_tost_power(
     )
 
 
+def render_power_table(results: dict) -> str:
+    """Fragmento LaTeX derivado exclusivamente dos resultados exportados."""
+    def percent(value):
+        return f"{value:.2f}".replace(".", "{,}") + r"\%"
+    rows = ["% Gerado por Codigo/scripts/power_h1b.py", r"\providecommand{\tabRowsPoderHUmB}{%"]
+    for family, m, label in [
+        ("tost_exact_90", 200, r"$M=200$, TOST binomial exato"),
+        ("tost_exact_90", 400, r"$M=400$, TOST binomial exato"),
+        ("tost_exact_90", 500, r"$M=500$, TOST binomial exato (adotado)"),
+    ]:
+        entry = results[family][str(m)]
+        e = entry["0.85"]
+        region = rf"$[{e['k_min']},\,{e['k_max']}]$"
+        powers = ["$" + percent(entry[p]["power_pct"]) + "$" for p in ("0.85", "0.83", "0.87")]
+        errors = "$" + percent(e["type_i_error_lower_pct"]) + "$ / $" + percent(e["type_i_error_upper_pct"]) + "$"
+        rows.append(" & ".join([label, region, *powers, errors]) + r"\\")
+    rows.append("}")
+    e = results["tost_exact_90"]["500"]["0.85"]
+    for name, value in (("hUmBPoderPT", f"{e['power_pct']:.2f}".replace(".", "{,}")),
+                        ("hUmBPoderCurtoPT", f"{e['power_pct']:.1f}".replace(".", "{,}")),
+                        ("hUmBPoderEN", f"{e['power_pct']:.1f}"),
+                        ("hUmBErroMaxPT", f"{max(e['type_i_error_lower_pct'], e['type_i_error_upper_pct']):.2f}".replace(".", "{,}"))):
+        rows.append("\\providecommand{\\" + name + "}{" + value + "}")
+    return "\n".join(rows) + "\n"
+
+
 def main():
     m_values = [200, 300, 400, 500, 600, 800, 1000]
     p_values = [0.83, 0.85, 0.87]
@@ -179,6 +205,8 @@ def main():
     out_path = os.path.join(data_dir, "power_h1b_results.json")
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2, ensure_ascii=False)
+    table_path = Path(script_dir).parents[1] / "Docs/monografia/tabelas/tab_poder_h1b.tex"
+    table_path.write_text(render_power_table(results), encoding="utf-8")
     print(f"\nResultados exportados com sucesso para {out_path}")
 
 

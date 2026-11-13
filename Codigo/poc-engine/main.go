@@ -297,11 +297,11 @@ type BenchmarkRunMetrics struct {
 
 // BenchmarkEnvironmentSuite holds environment metadata and benchmark results across worker counts (COD-09).
 type BenchmarkEnvironmentSuite struct {
-	GOOS       string                `json:"goos"`
-	GOARCH     string                `json:"goarch"`
-	GoVersion  string                `json:"go_version"`
-	NumCPU     int                   `json:"num_cpu"`
-	Results    []BenchmarkRunMetrics `json:"results"`
+	GOOS      string                `json:"goos"`
+	GOARCH    string                `json:"goarch"`
+	GoVersion string                `json:"go_version"`
+	NumCPU    int                   `json:"num_cpu"`
+	Results   []BenchmarkRunMetrics `json:"results"`
 }
 
 // RunBenchmarkSuite measures 5-run dispersion for the 4-task network (1 worker) and 200-task network (1, 2, 4, 8 workers).
@@ -638,21 +638,21 @@ func RunAllPoCValidationAndExportToDir(jsonDir, docsDir string, benchRuns int) e
 	ecdfData := computeECDFAndHist(resA, resB)
 
 	outputData := map[string]interface{}{
-		"scenario_a":               resA,
-		"scenario_b":               resB,
-		"scenario_c":               resC,
-		"scenario_c_prime":         resCPrime,
-		"crn_diff_c_cprime":        crnDiff,
-		"ecdf_ab":                  ecdfData,
-		"ks_single_seed_1m":        ksSingle,
-		"ks_multi_seed_100":        ksMulti,
-		"reproducibility_workers":  reproWorkers,
-		"benchmarks":               benchSuite,
-		"tcc2_schedule_base":       tcc2Audit.Base,
-		"tcc2_schedule_risks":      tcc2Audit.WithRisks,
-		"tcc2_schedule_stress_25":  tcc2Audit.Stress25,
-		"tcc2_schedule_stress_40":  tcc2Audit.Stress40,
-		"tcc2_audit":               tcc2Audit,
+		"scenario_a":              resA,
+		"scenario_b":              resB,
+		"scenario_c":              resC,
+		"scenario_c_prime":        resCPrime,
+		"crn_diff_c_cprime":       crnDiff,
+		"ecdf_ab":                 ecdfData,
+		"ks_single_seed_1m":       ksSingle,
+		"ks_multi_seed_100":       ksMulti,
+		"reproducibility_workers": reproWorkers,
+		"benchmarks":              benchSuite,
+		"tcc2_schedule_base":      tcc2Audit.Base,
+		"tcc2_schedule_risks":     tcc2Audit.WithRisks,
+		"tcc2_schedule_stress_25": tcc2Audit.Stress25,
+		"tcc2_schedule_stress_40": tcc2Audit.Stress40,
+		"tcc2_audit":              tcc2Audit,
 	}
 	jsonData, err := json.MarshalIndent(outputData, "", "  ")
 	if err != nil {
@@ -714,6 +714,7 @@ func exportLatexMacrosAndTables(
 
 	macros := fmt.Sprintf(`%% Arquivo gerado automaticamente por Codigo/poc-engine/main.go (N = 10.000, seed = 42)
 %% Nao edite manualmente; execute "cd Codigo/poc-engine && go run ." para atualizar.
+\providecommand{\benchEnvironment}{%s}
 \providecommand{\pocACPM}{%s}
 \providecommand{\pocACPMPercentile}{%s}
 \providecommand{\pocAMean}{%s}
@@ -826,6 +827,7 @@ func exportLatexMacrosAndTables(
 \providecommand{\benchSpeedupOitoW}{%s}
 \providecommand{\benchMarginRNF}{%s}
 `,
+		fmt.Sprintf("%s/%s, Go %s, %d CPUs lógicas", benchSuite.GOOS, benchSuite.GOARCH, benchSuite.GoVersion, benchSuite.NumCPU),
 		fmtBR(resA.CPMDeterministic, 2), fmtBR(cpmPctA, 1), fmtBR(resA.Mean, 2), fmtBR(resA.MeanSE, 3), fmtBR(resA.P50, 2), fmtBR(resA.P50SE, 3), fmtBR(resA.P85, 2), fmtBR(resA.P85SE, 3), fmtBR(resA.P95, 2), fmtBR(resA.P95SE, 3), fmtBR(resA.ProbTarget, 1),
 		fmtBR(resB.CPMDeterministic, 2), fmtBR(resB.Mean, 2), fmtBR(resB.MeanSE, 3), fmtBR(resB.P50, 2), fmtBR(resB.P50SE, 3), fmtBR(resB.P85, 2), fmtBR(resB.P85SE, 3), fmtBR(resB.P95, 2), fmtBR(resB.P95SE, 3), fmtBR(resB.ProbTarget, 1), fmtBR(resB.CriticalityIndex["T3"], 1),
 		fmtBR(resC.CPMDeterministic, 2), fmtBR(resC.Mean, 2), fmtBR(resC.MeanSE, 3), fmtBR(resC.P50, 2), fmtBR(resC.P50SE, 3), fmtBR(resC.P85, 2), fmtBR(resC.P85SE, 3), fmtBR(resC.P95, 2), fmtBR(resC.P95SE, 3), fmtBR(resC.ProbTarget, 1), fmtBR(resC.CriticalityIndex["T3"], 1),

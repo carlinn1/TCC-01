@@ -17,6 +17,9 @@ import json
 import os
 import re
 import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+from power_h1b import render_power_table
 
 
 def fmt_br(val: float, decimals: int = 2) -> str:
@@ -54,6 +57,7 @@ def main() -> None:
     with open(os.path.join(root_dir, "README.md"), "r", encoding="utf-8") as f:
         readme_md = f.read()
 
+    power_table_tex = (Path(docs_dir) / "tabelas/tab_poder_h1b.tex").read_text()
     errors = []
 
     # 1. Verifica sincronia de macros em Docs/monografia/resultados_poc.tex com Codigo/data/poc_results.json
@@ -169,6 +173,7 @@ def main() -> None:
         "tab_benchmarks.tex",
         "tab_tcc2_mc.tex",
         "tab_piloto_backtesting.tex",
+        "tab_poder_h1b.tex",
     ]
     for tname in expected_tables:
         p_docs = os.path.join(docs_dir, "tabelas", tname)
@@ -205,9 +210,9 @@ def main() -> None:
         errors.append("Wilson 90% nao acusou inflacao de Erro Tipo I > 5% como esperado na demonstracao PK-02.2")
     expected_p85_pwr_1d = fmt_br_plain(p500["power_pct"], 1)   # 83,9
     expected_p85_pwr_2d = fmt_br(p500["power_pct"], 2)         # 83{,}93
-    if expected_p85_pwr_1d not in main_tex and expected_p85_pwr_2d not in main_tex:
+    if expected_p85_pwr_1d not in main_tex + power_table_tex and expected_p85_pwr_2d not in main_tex + power_table_tex:
         errors.append(f"Poder TOST exato {expected_p85_pwr_1d}% / {expected_p85_pwr_2d}% para M=500 nao encontrado em Docs/monografia/Main.tex")
-    if "416" not in main_tex or "438" not in main_tex:
+    if "416" not in main_tex + power_table_tex or "438" not in main_tex + power_table_tex:
         errors.append("Intervalo de aceitacao exato [416, 438] para M=500 nao encontrado em Docs/monografia/Main.tex")
 
     # 4. Verifica dados de piso e invariante raw_eng >= ct_bd do dataset_backtesting.json em Main.tex
@@ -238,8 +243,20 @@ def main() -> None:
     s40_p85_str = fmt_br_plain(tcc2["stress_40"]["p85"], 2)
     s40_prob_plain = fmt_br_plain(tcc2["stress_40"]["prob_target"], 1)
     s40_prob_tex = fmt_br(tcc2["stress_40"]["prob_target"], 1)
-    w4_med_str = fmt_br_plain(b_res[3]["median_ms"], 1)
-    for token in ["94,1%", crn_ratio_str, "12,00", w4_med_str]:
+    # Benchmarks sao locais: validar artefatos da mesma execucao, nao um literal do README.
+    power_table = Path(docs_dir) / "tabelas/tab_poder_h1b.tex"
+    if power_table.read_text() != render_power_table(pwr):
+        errors.append("Tabela de poder diverge do JSON exportado")
+    coverage = json.loads((Path(root_dir) / "Docs/baseline/coverage_current.json").read_text())
+    expected_coverage = fmt_br(coverage["coverage_pct"], 1)
+    coverage_tex = (Path(docs_dir) / "resultados_verificacao.tex").read_text()
+    if "\\providecommand{\\pocCoverage}{" + expected_coverage + "}" not in coverage_tex:
+        errors.append("Macro de cobertura diverge do registro da medicao")
+    if coverage["coverage_pct"] < 80:
+        errors.append("Cobertura abaixo de 80%")
+    if fmt_br_plain(coverage["coverage_pct"], 1) + "%" not in readme_md:
+        errors.append("Cobertura do README diverge do registro da medicao")
+    for token in [crn_ratio_str, "12,00"]:
         if token not in readme_md:
             errors.append(f"Valor chave '{token}' ausente em README.md")
     if (
@@ -260,8 +277,8 @@ def main() -> None:
         sys.exit(1)
 
     print("=========================================================================")
-    print("  [OK] check_numbers.py: 100% dos numeros sincronizados entre JSON,")
-    print("       macros LaTeX, 7 tabelas geradas, Docs/monografia/Main.tex e README.md!")
+    print("  [OK] check_numbers.py: macros e valores selecionados conferidos entre JSON,")
+    print("       8 tabelas referenciadas, cobertura, Main.tex e README.md.")
     print("=========================================================================")
 
 

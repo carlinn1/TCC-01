@@ -16,6 +16,7 @@ Executa:
   6. Se 'pdflatex' estiver disponivel no PATH do sistema, executa a compilacao completa e
      verifica a ausencia de erros/warnings no Main.log.
 """
+import argparse
 import os
 import re
 import shutil
@@ -91,6 +92,9 @@ def extract_resumo_word_count(main_clean: str, is_english: bool, macros: dict[st
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--log", help="Inspeciona tambem um log LaTeX ja compilado")
+    args = parser.parse_args()
     checks_dir = os.path.dirname(os.path.abspath(__file__))
     code_dir = os.path.dirname(checks_dir)
     root_dir = os.path.dirname(code_dir)
@@ -182,6 +186,10 @@ def main() -> None:
         bib_raw = bf.read()
 
     bib_keys = set(re.findall(r"@\w+\{\s*([^,\s]+)\s*,", bib_raw))
+    with open(os.path.join(root_dir, "Docs/bib_audit.md"), encoding="utf-8") as audit_file:
+        audit_keys = set(re.findall(r"^\| \d+ \| `([^`]+)`", audit_file.read(), re.MULTILINE))
+    if audit_keys != bib_keys:
+        errors.append(f"Auditoria bibliografica: faltantes={sorted(bib_keys-audit_keys)}, obsoletas={sorted(audit_keys-bib_keys)}")
     cited_keys = set()
     for m in re.finditer(r"\\cite(?:online)?\{([^}]+)\}", main_clean):
         for k in m.group(1).split(","):
@@ -199,6 +207,8 @@ def main() -> None:
 
     # 5. Verifica ausencia de expressoes proibidas (DEC-1..7, PK-03..PK-06) e limite <= 250 palavras
     macros = load_latex_macros(os.path.join(docs_dir, "resultados_poc.tex"))
+    for extra in ("tabelas/tab_poder_h1b.tex", "resultados_verificacao.tex"):
+        macros.update(load_latex_macros(os.path.join(docs_dir, extra)))
     pt_words, pt_block = extract_resumo_word_count(main_clean, False, macros)
     en_words, en_block = extract_resumo_word_count(main_clean, True, macros)
     if pt_words is None or pt_words > 250:
@@ -273,6 +283,13 @@ def main() -> None:
             for pat in ["LaTeX Warning: Reference", "LaTeX Warning: Citation", "Overfull \\hbox"]:
                 if pat in log_txt:
                     errors.append(f"Main.log contem alerta: {pat}")
+
+    if args.log:
+        with open(args.log, encoding="utf-8", errors="replace") as logfile:
+            log_text = logfile.read()
+        for pattern in ("LaTeX Warning: Reference", "LaTeX Warning: Citation", "Overfull \\hbox", "! LaTeX Error", "! Undefined control sequence"):
+            if pattern in log_text:
+                errors.append(f"{args.log}: {pattern}")
 
     if errors:
         print("FALHA na verificacao LaTeX/BibTeX (check_latex.py):")

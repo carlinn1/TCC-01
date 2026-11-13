@@ -1,0 +1,8 @@
+{
+  "coverage_pct": 91.7,
+  "command": "go test -count=1 -v -cover ./...",
+  "go_version": "go version go1.27.3-X:nodwarf5 linux/amd64",
+  "base_revision": "acfafcefd57e67ec2b1b6c9144a1cc4eb141b9d6",
+  "working_tree_changes": true,
+  "date": "2026-11-13"
+}
