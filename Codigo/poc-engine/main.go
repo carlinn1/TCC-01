@@ -504,7 +504,7 @@ func RunAllPoCValidationAndExport() error {
 func RunAllPoCValidationAndExportToDir(jsonDir, docsDir string, benchRuns int) error {
 	fmt.Println("=================================================================")
 	fmt.Println("  PoC Go - Validação Algorítmica do Motor CPM & Monte Carlo")
-	fmt.Println("  TCC 1 - Sombra Digital Governada e IA em Projetos de Software")
+	fmt.Println("  TCC 1 - Gêmeo Digital Governado e IA em Projetos de Software")
 	fmt.Println("=================================================================")
 	fmt.Println()
 

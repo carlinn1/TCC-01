@@ -215,18 +215,18 @@ def main() -> None:
         errors.append(f"Resumo PT fora do limite ABNT <= 250 palavras (encontrado: {pt_words})")
     if en_words is None or en_words > 250:
         errors.append(f"Abstract EN fora do limite ABNT <= 250 palavras (encontrado: {en_words})")
-    if "Gêmeo Digital de Processo" in pt_block or "Sombra Digital de Processo" not in pt_block:
-        errors.append("PK-06: Resumo/Palavras-chave PT deve usar 'Sombra Digital de Processo' e nunca 'Gêmeo Digital de Processo'")
-    if "Process Digital Twin" in en_block or "Process Digital Shadow" not in en_block:
-        errors.append("PK-06: Abstract/Keywords EN deve usar 'Process Digital Shadow' e nunca 'Process Digital Twin'")
+    if "Sombra Digital de Processo" in pt_block or "Gêmeo Digital de Processo" not in pt_block:
+        errors.append("PK-06: Resumo/Palavras-chave PT deve usar 'Gêmeo Digital de Processo' e nunca 'Sombra Digital de Processo'")
+    if "Process Digital Shadow" in en_block or "Process Digital Twin" not in en_block:
+        errors.append("PK-06: Abstract/Keywords EN deve usar 'Process Digital Twin' e nunca 'Process Digital Shadow'")
 
     forbidden_phrases = [
         ("extensão metodológica proposta", "DEC-3 proibe a expressao 'extensao metodologica proposta'"),
-        ("Gêmeo Digital assistido", "TXT-01 exige padronizacao para 'Sombra Digital Governada'"),
+        ("Sombra Digital", "Padronizacao exige 'Gêmeo Digital' no lugar de 'Sombra Digital'"),
         ("assinada com HMAC pela chave privada", "DEC-7/SEG-01 proibe chamar segredo simetrico HMAC de 'chave privada'"),
         ("Prof. Dr. Sérgio", "Usuario solicitou remover nomes/data nao confirmados da folha de aprovacao"),
         ("27 de novembro de 2026", "Usuario solicitou remover data fixa da folha de aprovacao"),
-        ("Process Digital Twin", "PK-06 exige substituir por 'Process Digital Shadow'"),
+        ("Process Digital Shadow", "PK-06 exige substituir por 'Process Digital Twin'"),
         ("6.24 ms", "PK-05 proibe benchmark hardcoded antigo no Abstract EN"),
         ("61.00 ms", "PK-05 proibe benchmark hardcoded antigo no Abstract EN"),
         ("243.86 ms", "PK-05 proibe benchmark hardcoded antigo no Abstract EN"),

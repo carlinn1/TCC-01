@@ -1,6 +1,6 @@
 <div align="center">
 
-# Sombra Digital Governada & IA para Apoio à Decisão em Projetos de Software
+# Gêmeo Digital Governado & IA para Apoio à Decisão em Projetos de Software
 
 **Arquitetura Proposta com Simulação de Monte Carlo (PERT-Beta + Bernoulli + Cópula Gaussiana), Método do Caminho Crítico e Governança Determinística *Fail-Closed***
 
@@ -32,7 +32,7 @@
 
 Projetos de software em ciclos iterativos ou híbridos sofrem com desvios de prazo causados pela desconexão entre eventos reais de engenharia (PRs, *issues*, falhas de CI) e modelos formais de precedência ($FS$), agravados pelo **viés de convergência de caminhos** ($E[\max(X,Y)] \ge \max(E[X], E[Y])$). Paralelamente, conectar LLMs diretamente a repositórios sem isolamento expõe o projeto a **Injeção Indireta de Prompt (OWASP LLM01)**, **Divulgação de Dados Sensíveis (LLM02:2025)**, **Tratamento Inseguro de Saída (LLM05:2025)**, **Agência Excessiva (LLM06:2025)** e **Consumo Ilimitado (LLM10:2025)**, além de divergências numéricas em sínteses estocásticas.
 
-Este repositório reúne a especificação arquitetural, a monografia completa em LaTeX ([`Docs/monografia/Main.tex`](Docs/monografia/Main.tex)), os *scripts* auditáveis de dados/figuras e a **Prova de Conceito (`poc-engine`)** em **Go 1.27** de uma **Sombra Digital Governada de Processo** (taxonomia de Kritzinger):
+Este repositório reúne a especificação arquitetural, a monografia completa em LaTeX ([`Docs/monografia/Main.tex`](Docs/monografia/Main.tex)), os *scripts* auditáveis de dados/figuras e a **Prova de Conceito (`poc-engine`)** em **Go 1.27** de um **Gêmeo Digital Governado de Processo** (taxonomia de Kritzinger):
 
 - **Sincronização automatizada (Físico $\rightarrow$ Virtual):** ingestão idempotente de *webhooks* GitHub/CI com validação HMAC-SHA256 (RFC 2104), *debounce* configurável (30 s), regra de parametrização empírica em 2 níveis ($Q_{05}/\hat{m}_{\mathrm{HSM}}/Q_{95}$ ou *fallback* de *bootstrap* empírico) e progresso híbrido (incluindo tratamento explícito de `not_planned`, atribuição de *issues*, histórico pré-*squash* e PRs abandonados).
 - **Motor Estocástico Determinístico (`poc-engine`):** ordenação topológica $\mathcal{O}(\lvert V\rvert+\lvert E\rvert)$, CPM exato e Simulação de Monte Carlo concorrente (PERT-Beta via Marsaglia-Tsang, riscos discretos de Bernoulli e cópula gaussiana) com derivação não comutativa `Mix64` + subfluxos independentes por par $(\text{iteração } k, \text{entidade})$ para comparação pareada via Números Aleatórios Comuns (CRN, redução de variância de `6,3x`), soma compensada de Kahan e cálculo de erro-padrão de Monte Carlo (MCSE).

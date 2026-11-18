@@ -1,6 +1,6 @@
-﻿=================================================================
+=================================================================
   PoC Go - Validação Algorítmica do Motor CPM & Monte Carlo
-  TCC 1 - Sombra Digital Governada e IA em Projetos de Software
+  TCC 1 - Gêmeo Digital Governado e IA em Projetos de Software
 =================================================================
 
 ### Tabela 9 Reproduzida pela PoC em Go (N = 10.000 iterações, seed = 42)

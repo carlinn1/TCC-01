@@ -1,4 +1,4 @@
-# Constraints & Quality Contract (TCC 1 — Sombra Digital Governada)
+# Constraints & Quality Contract (TCC 1 — Gêmeo Digital Governado)
 
 Last reviewed: 2026-11-13 — caminhos de reprodução atualizados; limites C1–C9 preservados.
 

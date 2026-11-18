@@ -153,7 +153,7 @@ def fig03():
         (0.3, "1. Modelo Digital", "Processo Real", "Modelo Virtual", "Manual", "Manual", "#F3F4F6", "#6B7280", None),
         (
             5.0,
-            "2. Sombra Digital Governada\n(Este Trabalho)",
+            "2. Gêmeo Digital Governado\n(Este Trabalho)",
             "Repositório Git / CI",
             "Modelo Virtual + MC + Fila IA",
             "Auto\n(Webhooks)",
