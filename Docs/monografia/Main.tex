@@ -67,7 +67,7 @@
 \autor{Carlos Henrique de Souza Bispo, Paulo Henrique Virgilio Cerqueira}
 \local{Brasília, DF}
 \data{2026}
-\orientador{Prof. Dr. Ricardo Matos Chaim}
+\orientador[Orientadores]{Prof. Dr. Ricardo Matos Chaim\\Prof. Dr. Giovanni Almeida Santos\\Prof. Dr. Ricardo Ajax Dias Kosloski}
 \instituicao{Universidade de Brasília - UnB\par Faculdade de Ciências e Tecnologias em Engenharia - FCTE}
 \tipotrabalho{Trabalho de Conclusão de Curso}
 \preambulo{Monografia submetida ao curso de graduação em Engenharia de Software da Universidade de Brasília, como requisito parcial para obtenção do Título de Bacharel em Engenharia de Software.}
@@ -96,7 +96,7 @@
   \vspace*{1.4cm}
   {\bfseries Autores: Carlos Henrique de Souza Bispo, Paulo Henrique Virgilio Cerqueira\par
   \vspace{0.4cm}
-  Orientador: Prof. Dr. Ricardo Matos Chaim\par}
+  Orientadores\\\imprimirorientador\par}
   \vspace{0.8cm}
   Brasília, DF\par 2026
 \end{capa}
@@ -116,7 +116,7 @@
   Universidade de Brasília - UnB\par
   Faculdade de Ciências e Tecnologias em Engenharia - FCTE\par
   \vspace{0.5cm}
-  Orientador: Prof. Dr. Ricardo Matos Chaim\par
+  Orientadores\\\imprimirorientador\par
   \vfill
   Brasília, DF\par 2026
 \end{center}
@@ -135,15 +135,24 @@
   \end{flushright}
   \vspace{1cm}
   Trabalho aprovado. Brasília, DF, \mbox{\rule{1.0cm}{0.4pt} de \rule{2.8cm}{0.4pt} de 2026:}\par
-  \vspace{1.4cm}
-  \rule{9cm}{0.4pt}\par Prof. Dr. Ricardo Matos Chaim\par Orientador (UnB/FCTE)\par
-  \vspace{1.2cm}
+  \vspace{0.6cm}
+  \rule{9cm}{0.4pt}\par Prof. Dr. Ricardo Matos Chaim — Orientador (UnB/FCTE)\par
+  \vspace{0.6cm}
+  \rule{9cm}{0.4pt}\par Prof. Dr. Giovanni Almeida Santos — Orientador\par
+  \vspace{0.6cm}
+  \rule{9cm}{0.4pt}\par Prof. Dr. Ricardo Ajax Dias Kosloski — Orientador\par
+  \vspace{0.6cm}
   \rule{9cm}{0.4pt}\par Membro Examinador Interno (UnB/FCTE)\par
-  \vspace{1.2cm}
+  \vspace{0.6cm}
   \rule{9cm}{0.4pt}\par Membro Examinador Interno (UnB/FCTE)\par
   \vfill
   Brasília, DF\par 2026
 \end{center}
+\clearpage
+
+% ------------------------------------------------------------ DECLARAÇÃO DE USO DE IA
+\pretextualchapter{Declaração de uso de inteligência artificial}
+Utilizamos ferramentas de inteligência artificial como apoio em todas as etapas deste trabalho que envolveram estatística e probabilidade. Como graduandos em Engenharia de Software, recorremos a esse auxílio para aprofundar nossa compreensão dos métodos empregados e apoiar sua aplicação e a interpretação dos resultados. Assumimos a responsabilidade pelas escolhas metodológicas, pelas análises e pelas conclusões apresentadas nesta monografia.
 \clearpage
 
 % ------------------------------------------------------------ RESUMO
@@ -1218,7 +1227,7 @@ E09 & Dim. 3 descritiva (10 \textit{releases}, 3 cortes por janela) & Trilha B &
 E11 & Interface mínima: cartão de aprovação governada e CSP & Trilha A & 0,75/1,00/1,25 & 1,00 (12h) & 6,25--7,25 & E07 & Tabela crítica, $\Delta P_{50}/\Delta P_{85}/\Delta\IC_i$ e CSP estrita\\
 E10 & Dim. 5 (Llama-3 \texttt{t=0}, H2a e H2b exploratória) & Trilha B & 1,00/1,50/2,00 & 1,50 (18h) & 6,75--8,25 & E09, E07 & 300 cenários, verificador (200 casos) e rubrica\\
 E12 & Consolidação estatística e pacote de replicação & Conjunto & 1,00/1,25/1,50 & 1,25 (30h*) & 8,25--9,50 & E10, E11 & Scripts finais, macros LaTeX e Zenodo\\
-E13 & Redação final, discussão, ameaças e revisão orientador & Conjunto & 1,00/1,50/2,00 & 1,50 (36h*) & 9,50--11,00 & E12 & Monografia final revisada pelo orientador\\
+E13 & Redação final, discussão, ameaças e revisão com os orientadores & Conjunto & 1,00/1,50/2,00 & 1,50 (36h*) & 9,50--11,00 & E12 & Monografia final revisada pelos orientadores\\
 E14 & Revisão ABNT, depósito e banca (janela estocástica) & Conjunto & 0,75/1,00/1,25 & 1,00 (24h*) & 11,00--12,00 & E13 & Defesa e depósito; semanas 12--20 atuam como buffer\\
 \bottomrule
 \end{tabularx}}
